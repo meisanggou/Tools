@@ -17,8 +17,8 @@ class FirstWorker(RedisWorker):
             self.task_log(key + i)
 
 
-# r_work = FirstWorker(conf_path="conf/redis_worker.conf", heartbeat_value=uuid4().hex, log_dir="/tmp/")
-# r_work.run()
+r_work = FirstWorker(conf_path="conf/redis_worker.conf", heartbeat_value=uuid4().hex, log_dir="/tmp/", work_tag="")
+r_work.run()
 
 """
 """
