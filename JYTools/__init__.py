@@ -1,3 +1,5 @@
 #! /usr/bin/env python
 # coding: utf-8
 __author__ = 'meisanggou'
+
+TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
