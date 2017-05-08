@@ -162,7 +162,7 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
     def task_log(self, msg, level="INFO"):
         if self.current_task is None:
             return
-        log_file = os.path.join(self.log_dir, "%s.log" % self.current_task)
+        log_file = os.path.join(self.log_dir, "%s_%s.log" % (self.work_tag, self.current_task))
         now_time = datetime.now().strftime(TIME_FORMAT)
         with open(log_file, "a", 0) as wl:
             wl.write("%s: %s %s\n" % (now_time, level, msg))
