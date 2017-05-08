@@ -90,7 +90,7 @@ class _RedisWorkerConfig(object):
 
 class RedisQueue(_RedisWorkerConfig):
     def __init__(self, conf_path, **kwargs):
-        super(RedisQueue, self).__init__(conf_path)
+        _RedisWorkerConfig.__init__(self, conf_path)
         if "work_tag" in kwargs:
             self.work_tag = kwargs["work_tag"]
         self.redis_man = Redis(host=self.redis_host, port=self.redis_port, db=self.redis_db,
@@ -102,7 +102,7 @@ class RedisQueue(_RedisWorkerConfig):
         args_type: json
         example: jy_task,key_1,json,{"v":1}
         """
-        v = self.work_tag + "," + key + ","
+        v = "%s,%s," % (self.work_tag, key)
         if isinstance(args, dict):
             v += "json," + json.dumps(args)
         else:
@@ -123,7 +123,7 @@ class RedisQueue(_RedisWorkerConfig):
 
 class RedisWorker(_RedisWorkerConfig, _Worker):
     def __init__(self, conf_path=None, heartbeat_value=0, **kwargs):
-        super(RedisWorker, self).__init__(conf_path)
+        _RedisWorkerConfig.__init__(self, conf_path)
         if "work_tag" in kwargs:
             self.work_tag = kwargs["work_tag"]
         self.log_dir = None
