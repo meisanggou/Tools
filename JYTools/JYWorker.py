@@ -45,7 +45,7 @@ class _Worker(object):
 
 
 class _RedisWorkerConfig(object):
-    def __init__(self):
+    def __init__(self, conf_path=None):
         self.redis_host = "localhost"
         self.redis_port = 6379
         self.redis_password = None
@@ -56,6 +56,12 @@ class _RedisWorkerConfig(object):
 
         self.queue_prefix_key = "jy_task_queue"
         self.pop_time_out = 60
+        if conf_path is not None:
+            self.load_config(conf_path)
+        self.heartbeat_key = self.heartbeat_prefix_key + "_" + self.work_tag
+        self.queue_key = self.queue_prefix_key + "_" + self.work_tag
+        if self.redis_password == "":
+            self.redis_password = None
 
     def load_config(self, conf_path):
         config = ConfigParser.ConfigParser()
@@ -84,14 +90,9 @@ class _RedisWorkerConfig(object):
 
 class RedisQueue(_RedisWorkerConfig):
     def __init__(self, conf_path, **kwargs):
-        super(RedisQueue, self).__init__()
-        if conf_path is not None:
-            self.load_config(conf_path)
+        super(RedisQueue, self).__init__(conf_path)
         if "work_tag" in kwargs:
             self.work_tag = kwargs["work_tag"]
-        if self.redis_password == "":
-            self.redis_password = None
-        self.queue_key = self.queue_prefix_key + "_" + self.work_tag
         self.redis_man = Redis(host=self.redis_host, port=self.redis_port, db=self.redis_db,
                                password=self.redis_password)
 
@@ -122,20 +123,13 @@ class RedisQueue(_RedisWorkerConfig):
 
 class RedisWorker(_RedisWorkerConfig, _Worker):
     def __init__(self, conf_path=None, heartbeat_value=0, **kwargs):
-        super(RedisWorker, self).__init__()
-        if conf_path is not None:
-            self.load_config(conf_path)
+        super(RedisWorker, self).__init__(conf_path)
         if "work_tag" in kwargs:
             self.work_tag = kwargs["work_tag"]
         self.log_dir = None
         if "log_dir" in kwargs:
             self.log_dir = kwargs["log_dir"]
-        self.heartbeat_key = self.heartbeat_prefix_key + "_" + self.work_tag
         self.heartbeat_value = heartbeat_value
-
-        self.queue_key = self.queue_prefix_key + "_" + self.work_tag
-        if self.redis_password == "":
-            self.redis_password = None
         self.redis_man = Redis(host=self.redis_host, port=self.redis_port, db=self.redis_db,
                                password=self.redis_password)
         self.redis_man.set(self.heartbeat_key, heartbeat_value)

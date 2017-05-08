@@ -2,7 +2,6 @@
 # coding: utf-8
 
 from JYTools.JYWorker import RedisWorker, RedisQueue
-import threading
 
 __author__ = 'meisanggou'
 
