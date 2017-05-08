@@ -17,12 +17,11 @@ class FirstWorker(RedisWorker):
             self.task_log(key + i)
 
 
-r_work = FirstWorker(conf_path="conf/redis_worker.conf", heartbeat_value=uuid4().hex, log_dir="/tmp/")
-print(r_work.queue_key)
-r_work.run()
+# r_work = FirstWorker(conf_path="conf/redis_worker.conf", heartbeat_value=uuid4().hex, log_dir="/tmp/")
+# r_work.run()
 
 """
 """
-# r_queue = RedisQueue(conf_path="conf/redis_worker.conf")
-# for i in range(133, 144):
-#     r_queue.push(i, {"a": "j"})
+r_queue = RedisQueue(conf_path="conf/redis_worker.conf")
+for i in range(133, 144):
+    r_queue.push(i, {"a": "j"})

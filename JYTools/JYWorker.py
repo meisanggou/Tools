@@ -13,6 +13,13 @@ __author__ = 'meisanggou'
 
 
 class _WorkerConfig(object):
+    """
+        [Worker]
+        heartbeat_prefix_key: jy_work_heartbeat
+        queue_prefix_key: jy_task_queue
+        work_tag: jy_task
+        pop_time_out: 60
+    """
     def __init__(self, conf_path=None, section_name="Worker", **kwargs):
         self.heartbeat_prefix_key = "jy_work_heartbeat"
         self.work_tag = "jy_task"
@@ -82,6 +89,13 @@ class _Worker(_WorkerConfig):
 
 
 class _RedisWorkerConfig(object):
+    """
+        [Redis]
+        redis_host: localhost
+        redis_port: 6379
+        redis_password:
+        redis_db: 13
+    """
     def __init__(self, conf_path=None, section_name="Redis"):
         self.redis_host = "localhost"
         self.redis_port = 6379
