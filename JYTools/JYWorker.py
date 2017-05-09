@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import os
+import types
 import ConfigParser
 from datetime import datetime
 import json
@@ -127,7 +128,6 @@ class RedisQueue(_RedisWorkerConfig, _WorkerConfig):
     def __init__(self, conf_path, **kwargs):
         _RedisWorkerConfig.__init__(self, conf_path)
         _WorkerConfig.__init__(self, conf_path, **kwargs)
-        print(self.queue_key)
 
     def package_task_info(self, key, args):
         """
@@ -160,6 +160,7 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
         _Worker.__init__(self, conf_path, **kwargs)
         self.heartbeat_value = heartbeat_value
         self.redis_man.set(self.heartbeat_key, heartbeat_value)
+        self._msg_manager = None
 
     def has_heartbeat(self):
         current_value = self.redis_man.get(self.heartbeat_key)
@@ -180,6 +181,8 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
     def worker_log(self, msg, level="INFO"):
         if self.log_dir is None:
             return
+        if level != "INFO":
+            self.publish_message(msg)
         log_file = os.path.join(self.log_dir, "%s.log" % self.work_tag)
         now_time = datetime.now().strftime(TIME_FORMAT)
         with open(log_file, "a", 0) as wl:
@@ -188,10 +191,34 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
     def task_log(self, msg, level="INFO"):
         if self.current_task is None:
             return
+        if level != "INFO":
+            self.publish_message("%s\n%s" % (self.current_task, msg))
         log_file = os.path.join(self.log_dir, "%s_%s.log" % (self.work_tag, self.current_task))
         now_time = datetime.now().strftime(TIME_FORMAT)
         with open(log_file, "a", 0) as wl:
             wl.write("%s: %s %s\n" % (now_time, level, msg))
+
+    @property
+    def msg_manager(self):
+        return self._msg_manager
+
+    @msg_manager.setter
+    def msg_manager(self, msg_manager):
+        if msg_manager is None:
+            return
+        if hasattr(msg_manager, "publish_message") is False:
+            return
+        if isinstance(msg_manager.publish_message, types.MethodType) is False:
+            return
+        self._msg_manager = msg_manager
+
+    def publish_message(self, message):
+        if self.msg_manager is None:
+            return
+        try:
+            self.msg_manager.publish_message(message, self.work_tag)
+        except Exception as e:
+            print(e)
 
     def handler_invalid_task(self, task_info, error_info):
         self.worker_log(error_info, level="WARING")

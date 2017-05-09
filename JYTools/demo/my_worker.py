@@ -17,8 +17,18 @@ class FirstWorker(RedisWorker):
             self.task_log(key + i)
 
 
-# r_work = FirstWorker(conf_path="conf/redis_worker.conf", heartbeat_value=uuid4().hex, log_dir="/tmp/")
-# r_work.run()
+class MSGManager(object):
+    publish_message2 = ""
+
+    def publish_message(self, message, key):
+        print(message)
+        print(key)
+
+
+r_work = FirstWorker(conf_path="conf/redis_worker.conf", heartbeat_value=uuid4().hex, log_dir="/tmp/")
+msg_man = MSGManager()
+r_work.msg_manager = msg_man
+r_work.run()
 
 """
 """
