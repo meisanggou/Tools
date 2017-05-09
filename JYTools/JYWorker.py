@@ -213,6 +213,10 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
         self._msg_manager = msg_manager
 
     def publish_message(self, message):
+        """
+
+        add in version 0.1.4
+        """
         if self.msg_manager is None:
             return
         try:
