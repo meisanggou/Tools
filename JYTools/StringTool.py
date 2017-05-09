@@ -1,6 +1,8 @@
 #! /usr/bin/env python
 # coding: utf-8
 
+# add in version 0.1.7
+
 __author__ = 'meisanggou'
 
 encoding = "utf-8"
