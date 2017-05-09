@@ -32,6 +32,8 @@ class _WorkerConfig(object):
             self.work_tag = kwargs["work_tag"]
         self.heartbeat_key = self.heartbeat_prefix_key + "_" + self.work_tag
         self.queue_key = self.queue_prefix_key + "_" + self.work_tag
+        if self.heartbeat_key == self.queue_key:
+            self.heartbeat_key = "heartbeat_" + self.heartbeat_key
         self.current_task = None
         self.log_dir = None
         if "log_dir" in kwargs:
@@ -148,6 +150,8 @@ class RedisQueue(_RedisWorkerConfig, _WorkerConfig):
 
     def push_tail(self, key, args):
         v = self.package_task_info(key, args)
+        print(self.queue_key)
+        print(v)
         self.redis_man.rpush(self.queue_key, v)
 
     def push(self, key, args):
