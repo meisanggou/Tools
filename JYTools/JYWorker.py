@@ -8,7 +8,8 @@ from datetime import datetime
 import json
 import traceback
 from redis import Redis
-from JYTools import TIME_FORMAT
+from JYTools import TIME_FORMAT, DEFAULT_ENCODING
+from JYTools import StringTool
 
 __author__ = 'meisanggou'
 
@@ -150,8 +151,6 @@ class RedisQueue(_RedisWorkerConfig, _WorkerConfig):
 
     def push_tail(self, key, args):
         v = self.package_task_info(key, args)
-        print(self.queue_key)
-        print(v)
         self.redis_man.rpush(self.queue_key, v)
 
     def push(self, key, args):
@@ -190,7 +189,9 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
         log_file = os.path.join(self.log_dir, "%s.log" % self.work_tag)
         now_time = datetime.now().strftime(TIME_FORMAT)
         with open(log_file, "a", 0) as wl:
-            wl.write("%s: %s %s\n" % (now_time, level, msg))
+            s = StringTool.join([now_time, ": ", level, " ", msg, "\n"], join_str="")
+            s = StringTool.encode(s)
+            wl.write(s)
 
     def task_log(self, msg, level="INFO"):
         if self.current_task is None:
@@ -200,7 +201,9 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
         log_file = os.path.join(self.log_dir, "%s_%s.log" % (self.work_tag, self.current_task))
         now_time = datetime.now().strftime(TIME_FORMAT)
         with open(log_file, "a", 0) as wl:
-            wl.write("%s: %s %s\n" % (now_time, level, msg))
+            s = StringTool.join([now_time, ": ", level, " ", msg, "\n"], join_str="")
+            s = StringTool.encode(s)
+            wl.write(s)
 
     @property
     def msg_manager(self):
