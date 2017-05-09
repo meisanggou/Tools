@@ -17,9 +17,12 @@ class DB(object):
     cursor = None
     _sock_file = ''
 
-    def __init__(self, conf_dir, readonly=False):
+    def __init__(self, conf_path=None, conf_dir=None, readonly=False):
         self.readonly = readonly
-        conf_path = os.path.join(conf_dir, "mysql_app.conf")
+        if conf_path is None:
+            conf_path = os.path.join(conf_dir, "mysql_app.conf")
+        else:
+            conf_path = "mysql_app.conf"
         self._int_app(conf_path, readonly)
 
     def _int_app(self, conf_path, readonly):
