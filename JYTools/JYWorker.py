@@ -63,11 +63,11 @@ class _WorkerLogConfig(object):
 
 
 class _WorkerLog(_WorkerLogConfig):
-    def worker_log(self, msg, level="INFO"):
-        print(msg)
+    def worker_log(self, *args, **kwargs):
+        print(args)
 
-    def task_log(self, msg, level="INFO"):
-        print(msg)
+    def task_log(self, *args, **kwargs):
+        print(args)
 
 
 class _Worker(_WorkerConfig, _WorkerLog):
@@ -208,9 +208,11 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
             s = StringTool.encode(s)
             wl.write(s)
 
-    def task_log(self, msg, level="INFO"):
+    def task_log(self, *args, **kwargs):
         if self.current_task is None:
             return
+        msg = StringTool.join(args, " ")
+        level = kwargs.pop("level", "INFO")
         if level != "INFO":
             self.publish_message("%s\n%s" % (self.current_task, msg))
         log_file = os.path.join(self.log_dir, "%s_%s.log" % (self.work_tag, self.current_task))
@@ -283,9 +285,9 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
                 self.handler_invalid_task(next_task, task_args)
                 continue
             self.current_task = task_args[0]
-            self.worker_log("Start Execute %s" % self.current_task)
+            self.worker_log("Start Execute", self.current_task)
             self.execute(task_args[0], task_args[1])
-            self.worker_log("Completed Task %s" % self.current_task)
+            self.worker_log("Completed Task", self.current_task)
 
     def work(self, daemon=False):
         if daemon is True:
