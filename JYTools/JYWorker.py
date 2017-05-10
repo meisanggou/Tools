@@ -8,7 +8,7 @@ from datetime import datetime
 import json
 import traceback
 from redis import Redis
-from JYTools import TIME_FORMAT, DEFAULT_ENCODING
+from JYTools import TIME_FORMAT
 from JYTools import StringTool
 
 __author__ = 'meisanggou'
@@ -17,8 +17,8 @@ __author__ = 'meisanggou'
 class _WorkerConfig(object):
     """
         [Worker]
-        heartbeat_prefix_key: jy_work_heartbeat
-        queue_prefix_key: jy_task_queue
+        heartbeat_prefix_key: worker_heartbeat
+        queue_prefix_key: task_queue
         work_tag: jy_task
         pop_time_out: 60
     """
@@ -36,9 +36,6 @@ class _WorkerConfig(object):
         if self.heartbeat_key == self.queue_key:
             self.heartbeat_key = "heartbeat_" + self.heartbeat_key
         self.current_task = None
-        self.log_dir = None
-        if "log_dir" in kwargs:
-            self.log_dir = kwargs["log_dir"]
 
     def load_work_config(self, conf_path, section_name):
         config = ConfigParser.ConfigParser()
@@ -54,16 +51,28 @@ class _WorkerConfig(object):
                 self.pop_time_out = config.getint(section_name, "pop_time_out")
 
 
-class _Worker(_WorkerConfig):
+class _WorkerLogConfig(object):
+    def __init__(self, **kwargs):
+        self.log_dir = None
+        if "log_dir" in kwargs:
+            self.log_dir = kwargs["log_dir"]
 
-    def has_heartbeat(self):
-        return True
 
+class _WorkerLog(_WorkerLogConfig):
     def worker_log(self, msg, level="INFO"):
         print(msg)
 
     def task_log(self, msg, level="INFO"):
         print(msg)
+
+
+class _Worker(_WorkerConfig, _WorkerLog):
+    def __init__(self, **kwargs):
+        _WorkerConfig.__init__(self, **kwargs)
+        _WorkerLog.__init__(self, **kwargs)
+
+    def has_heartbeat(self):
+        return True
 
     def execute(self, key, args):
         try:
@@ -160,7 +169,7 @@ class RedisQueue(_RedisWorkerConfig, _WorkerConfig):
 class RedisWorker(_RedisWorkerConfig, _Worker):
     def __init__(self, conf_path=None, heartbeat_value=0, **kwargs):
         _RedisWorkerConfig.__init__(self, conf_path)
-        _Worker.__init__(self, conf_path, **kwargs)
+        _Worker.__init__(self, conf_path=conf_path, **kwargs)
         self.heartbeat_value = heartbeat_value
         self.redis_man.set(self.heartbeat_key, heartbeat_value)
         self._msg_manager = None
@@ -273,5 +282,5 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
 
 
 if __name__ == "__main__":
-    r_worker = RedisWorker()
-    r_worker.run()
+    r_worker = RedisWorker(log_dir="/tmp")
+    print(r_worker.log_dir)
