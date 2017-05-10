@@ -290,6 +290,9 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
             self.worker_log("Completed Task", self.current_task)
 
     def work(self, daemon=False):
+        """
+        add in version 0.1.8
+        """
         if daemon is True:
             try:
                 pid = os.fork()
