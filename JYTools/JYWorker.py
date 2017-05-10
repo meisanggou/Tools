@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import os
+import sys
 import types
 import ConfigParser
 from datetime import datetime
@@ -25,12 +26,15 @@ class _WorkerConfig(object):
     def __init__(self, conf_path=None, section_name="Worker", **kwargs):
         self.heartbeat_prefix_key = "worker_heartbeat"
         self.work_tag = "jy_task"
+        self.worker_index = None
         self.queue_prefix_key = "task_queue"
         self.pop_time_out = 60
         if conf_path is not None:
             self.load_work_config(conf_path, section_name)
         if "work_tag" in kwargs:
             self.work_tag = kwargs["work_tag"]
+        if "worker_index" in kwargs:
+            self.worker_index = kwargs["worker_index"]
         self.heartbeat_key = self.heartbeat_prefix_key + "_" + self.work_tag
         self.queue_key = self.queue_prefix_key + "_" + self.work_tag
         if self.heartbeat_key == self.queue_key:
@@ -167,17 +171,17 @@ class RedisQueue(_RedisWorkerConfig, _WorkerConfig):
 
 
 class RedisWorker(_RedisWorkerConfig, _Worker):
-    def __init__(self, conf_path=None, heartbeat_value=0, **kwargs):
+    def __init__(self, conf_path=None, heartbeat_value="0", **kwargs):
         _RedisWorkerConfig.__init__(self, conf_path)
         _Worker.__init__(self, conf_path=conf_path, **kwargs)
-        self.heartbeat_value = heartbeat_value
+        self.heartbeat_value = StringTool.decode(heartbeat_value)
         self.redis_man.set(self.heartbeat_key, heartbeat_value)
         self._msg_manager = None
 
     def has_heartbeat(self):
-        current_value = self.redis_man.get(self.heartbeat_key)
+        current_value = StringTool.decode(self.redis_man.get(self.heartbeat_key))
         if current_value != self.heartbeat_value:
-            self.worker_log("heartbeat is %s, now is %s" % (self.heartbeat_value, current_value))
+            self.worker_log("heartbeat is", self.heartbeat_value, "now is", current_value)
             return False
         return True
 
@@ -190,9 +194,11 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
     def push_task(self, task_info):
         self.redis_man.rpush(self.queue_key, task_info)
 
-    def worker_log(self, msg, level="INFO"):
+    def worker_log(self, *args, **kwargs):
         if self.log_dir is None:
             return
+        msg = StringTool.join(args, " ")
+        level = kwargs.pop("level", "INFO")
         if level != "INFO":
             self.publish_message(msg)
         log_file = os.path.join(self.log_dir, "%s.log" % self.work_tag)
@@ -265,6 +271,7 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
         return True, [key, args]
 
     def run(self):
+        self.worker_log("Start Run Worker")
         while True:
             if self.has_heartbeat() is False:
                 self.close()
@@ -280,7 +287,18 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
             self.execute(task_args[0], task_args[1])
             self.worker_log("Completed Task %s" % self.current_task)
 
+    def work(self, daemon=False):
+        if daemon is True:
+            try:
+                pid = os.fork()
+                if pid > 0:  # pid大于0代表是父进程 返回的是子进程的pid
+                    sys.exit(0)
+            except OSError as e:
+                sys.exit(1)
+        self.run()
 
 if __name__ == "__main__":
     r_worker = RedisWorker(log_dir="/tmp")
     print(r_worker.log_dir)
+    print(r_worker.work_tag)
+    r_worker.work()
