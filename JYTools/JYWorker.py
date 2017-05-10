@@ -23,9 +23,9 @@ class _WorkerConfig(object):
         pop_time_out: 60
     """
     def __init__(self, conf_path=None, section_name="Worker", **kwargs):
-        self.heartbeat_prefix_key = "jy_work_heartbeat"
+        self.heartbeat_prefix_key = "worker_heartbeat"
         self.work_tag = "jy_task"
-        self.queue_prefix_key = "jy_task_queue"
+        self.queue_prefix_key = "task_queue"
         self.pop_time_out = 60
         if conf_path is not None:
             self.load_work_config(conf_path, section_name)
