@@ -203,8 +203,12 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
             self.publish_message(msg)
         log_file = os.path.join(self.log_dir, "%s.log" % self.work_tag)
         now_time = datetime.now().strftime(TIME_FORMAT)
+        write_a = ["[", self.heartbeat_value]
+        if self.worker_index is not None:
+            write_a.extend([":", self.worker_index])
+        write_a.extend(["] ", now_time, ": ", level, " ", msg, "\n"])
         with open(log_file, "a", 0) as wl:
-            s = StringTool.join([now_time, ": ", level, " ", msg, "\n"], join_str="")
+            s = StringTool.join(write_a, join_str="")
             s = StringTool.encode(s)
             wl.write(s)
 
@@ -217,8 +221,12 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
             self.publish_message("%s\n%s" % (self.current_task, msg))
         log_file = os.path.join(self.log_dir, "%s_%s.log" % (self.work_tag, self.current_task))
         now_time = datetime.now().strftime(TIME_FORMAT)
+        write_a = ["[", self.heartbeat_value]
+        if self.worker_index is not None:
+            write_a.extend([":", self.worker_index])
+        write_a.extend(["] ", now_time, ": ", level, " ", msg, "\n"])
         with open(log_file, "a", 0) as wl:
-            s = StringTool.join([now_time, ": ", level, " ", msg, "\n"], join_str="")
+            s = StringTool.join(write_a, join_str="")
             s = StringTool.encode(s)
             wl.write(s)
 
@@ -303,7 +311,7 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
         self.run()
 
 if __name__ == "__main__":
-    r_worker = RedisWorker(log_dir="/tmp")
+    r_worker = RedisWorker(log_dir="/tmp", heartbeat_value="中文", worker_index=1)
     print(r_worker.log_dir)
     print(r_worker.work_tag)
     r_worker.work()
