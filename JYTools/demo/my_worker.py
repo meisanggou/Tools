@@ -25,13 +25,14 @@ class MSGManager(object):
         print(key)
 
 
-r_work = FirstWorker(conf_path="conf/redis_worker.conf", heartbeat_value=uuid4().hex, log_dir="/tmp/", worker_index=1)
+r_work = FirstWorker(conf_path="conf/redis_worker.conf", heartbeat_value=uuid4().hex, log_dir="/tmp/", worker_index=2)
 msg_man = MSGManager()
 r_work.msg_manager = msg_man
-r_work.run()
+r_work.work(daemon=True)
 
 """
 """
+
 r_queue = RedisQueue(conf_path="conf/redis_worker.conf")
 for i in range(133, 144):
     r_queue.push(i, {"a": "j"})

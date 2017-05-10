@@ -304,11 +304,12 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
         if daemon is True:
             try:
                 pid = os.fork()
-                if pid > 0:  # pid大于0代表是父进程 返回的是子进程的pid
-                    sys.exit(0)
+                if pid == 0:  # pid大于0代表是父进程 返回的是子进程的pid pid==0为子进程
+                    self.run()
             except OSError as e:
                 sys.exit(1)
-        self.run()
+        else:
+            self.run()
 
 if __name__ == "__main__":
     r_worker = RedisWorker(log_dir="/tmp", heartbeat_value="中文", worker_index=1)
