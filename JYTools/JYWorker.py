@@ -159,16 +159,16 @@ class RedisQueue(_RedisWorkerConfig, _WorkerConfig):
             v += "string," + args
         return v
 
-    def push_head(self, key, args):
-        v = self.package_task_info(key, args)
+    def push_head(self, key, params, work_tag=None):
+        v = self.package_task_info(key, params)
         self.redis_man.lpush(self.queue_key, v)
 
-    def push_tail(self, key, args):
-        v = self.package_task_info(key, args)
+    def push_tail(self, key, params, work_tag=None):
+        v = self.package_task_info(key, params)
         self.redis_man.rpush(self.queue_key, v)
 
-    def push(self, key, args):
-        self.push_tail(key, args)
+    def push(self, key, params, work_tag=None):
+        self.push_tail(key, params, work_tag)
 
 
 class RedisWorker(_RedisWorkerConfig, _Worker):
