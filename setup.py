@@ -16,14 +16,14 @@ if sys.version_info <= (2, 7):
     sys.exit(1)
 
 name = "JYTools"
-version = "0.1.9"
+version = "0.1.10"
 url = "https://github.com/meisanggou/Tools"
 license = "MIT"
 author = "meisanggou"
 short_description = "Jing Yun Tools Library"
 long_description = """Jing Yun Tools Library."""
 keywords = "JYTools"
-install_requires = ["MySQL-python >= 1.2.4", "redis >= 2.10.5", "requests >= 2.10.0"]
+install_requires = ["MySQL-python", "redis >= 2.10.5", "requests >= 2.10.0"]
 
 setup(name=name,
       version=version,
