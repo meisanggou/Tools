@@ -260,7 +260,7 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
         self.worker_log(error_info, level="WARING")
 
     def parse_task_info(self, task_info):
-        partition_task = task_info.split(",", 4)
+        partition_task = task_info.split(",", 3)
         if len(partition_task) != 4:
             error_msg = "Invalid task %s, task partition length is not 3" % task_info
             return False, error_msg
