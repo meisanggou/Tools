@@ -91,7 +91,7 @@ class _Worker(_WorkerConfig, _WorkerLog):
             self.handler_task_exception(e)
 
     # 子类需重载的方法
-    def handler_task(self, key, args):
+    def handler_task(self, key, params):
         pass
 
     # 子类需重载的方法
@@ -172,6 +172,12 @@ class RedisQueue(_RedisWorkerConfig, _WorkerConfig):
 
 
 class RedisWorker(_RedisWorkerConfig, _Worker):
+    """
+        expect_params_type
+        add in version 0.1.8
+    """
+    expect_params_type = None
+
     def __init__(self, conf_path=None, heartbeat_value="0", **kwargs):
         _RedisWorkerConfig.__init__(self, conf_path)
         _Worker.__init__(self, conf_path=conf_path, **kwargs)
@@ -272,14 +278,17 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
             error_msg = "Invalid task %s, task args type invalid" % task_info
             return False, error_msg
         key = partition_task[1]
-        args = partition_task[3]
+        params = partition_task[3]
         if partition_task[2] == "json":
             try:
-                args = json.loads(args)
+                params = json.loads(params)
             except ValueError:
                 error_msg = "Invalid task %s, task args type and args not uniform" % task_info
                 return False, error_msg
-        return True, [key, args]
+        if self.expect_params_type is not None:
+            if not isinstance(params, self.expect_params_type):
+                return False, "Invalid task, not expect param type"
+        return True, [key, params]
 
     def run(self):
         self.worker_log("Start Run Worker")

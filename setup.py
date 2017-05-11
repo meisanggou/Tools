@@ -16,7 +16,7 @@ if sys.version_info <= (2, 7):
     sys.exit(1)
 
 name = "JYTools"
-version = "0.1.12"
+version = "0.1.13"
 url = "https://github.com/meisanggou/Tools"
 license = "MIT"
 author = "meisanggou"
