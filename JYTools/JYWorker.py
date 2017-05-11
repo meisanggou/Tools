@@ -40,6 +40,7 @@ class _WorkerConfig(object):
         if self.heartbeat_key == self.queue_key:
             self.heartbeat_key = "heartbeat_" + self.heartbeat_key
         self.current_task = None
+        self.current_key = None
 
     def load_work_config(self, conf_path, section_name):
         config = ConfigParser.ConfigParser()
@@ -218,8 +219,8 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
         msg = StringTool.join(args, " ")
         level = kwargs.pop("level", "INFO")
         if level != "INFO":
-            self.publish_message("%s\n%s" % (self.current_task, msg))
-        log_file = os.path.join(self.log_dir, "%s_%s.log" % (self.work_tag, self.current_task))
+            self.publish_message("%s\n%s" % (self.current_key, msg))
+        log_file = os.path.join(self.log_dir, "%s_%s.log" % (self.work_tag, self.current_key))
         now_time = datetime.now().strftime(TIME_FORMAT)
         write_a = ["[", self.heartbeat_value]
         if self.worker_index is not None:
@@ -292,10 +293,11 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
             if parse_r is False:
                 self.handler_invalid_task(next_task, task_args)
                 continue
-            self.current_task = task_args[0]
-            self.worker_log("Start Execute", self.current_task)
+            self.current_task = next_task
+            self.current_key = task_args[0]
+            self.worker_log("Start Execute", self.current_key)
             self.execute(task_args[0], task_args[1])
-            self.worker_log("Completed Task", self.current_task)
+            self.worker_log("Completed Task", self.current_key)
 
     def work(self, daemon=False):
         """
