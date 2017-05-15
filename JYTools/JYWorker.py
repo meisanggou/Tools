@@ -154,13 +154,14 @@ class RedisQueue(_RedisWorkerConfig, _WorkerConfig):
         _RedisWorkerConfig.__init__(self, conf_path)
         _WorkerConfig.__init__(self, conf_path, **kwargs)
 
-    def package_task_info(self, key, args):
+    @staticmethod
+    def package_task_info(work_tag, key, args):
         """
         info format: wor_tag,key,args_type,args
         args_type: json
         example: jy_task,key_1,json,{"v":1}
         """
-        v = "%s,%s," % (self.work_tag, key)
+        v = "%s,%s," % (work_tag, key)
         if isinstance(args, dict):
             v += "json," + json.dumps(args)
         else:
@@ -168,11 +169,11 @@ class RedisQueue(_RedisWorkerConfig, _WorkerConfig):
         return v
 
     def push_head(self, key, params, work_tag=None):
-        v = self.package_task_info(key, params)
+        v = self.package_task_info(self.work_tag, key, params)
         self.redis_man.lpush(self.queue_key, v)
 
     def push_tail(self, key, params, work_tag=None):
-        v = self.package_task_info(key, params)
+        v = self.package_task_info(self.work_tag, key, params)
         self.redis_man.rpush(self.queue_key, v)
 
     def push(self, key, params, work_tag=None):
@@ -206,11 +207,12 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
             return next_task[1]
         return next_task
 
-    def push_task(self, task_info, work_tag=None):
+    def push_task(self, key, params, work_tag=None):
         if work_tag is None:
             queue_key = self.queue_key
         else:
             queue_key = self.queue_prefix_key + "_" + work_tag
+        task_info = RedisQueue.package_task_info(work_tag, key, params)
         self.redis_man.rpush(queue_key, task_info)
 
     def worker_log(self, *args, **kwargs):
