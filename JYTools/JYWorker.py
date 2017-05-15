@@ -29,10 +29,7 @@ class _WorkerConfig(object):
         self.worker_index = None
         self.queue_prefix_key = "task_queue"
         self.pop_time_out = 60
-        copy_r = False
-        if "from_obj" in kwargs:
-            copy_r = self.copy_work_config(kwargs["from_obj"])
-        if copy_r is False and conf_path is not None:
+        if conf_path is not None:
             self.load_work_config(conf_path, section_name)
         if "work_tag" in kwargs:
             self.work_tag = kwargs["work_tag"]
@@ -65,19 +62,6 @@ class _WorkerConfig(object):
         self.work_tag = work_tag
         self.heartbeat_key = self.heartbeat_prefix_key + "_" + self.work_tag
         self.queue_key = self.queue_prefix_key + "_" + self.work_tag
-
-    def copy_work_config(self, from_obj):
-        """
-            add in version 0.1.14
-        """
-        if isinstance(from_obj, _WorkerConfig):
-            self.work_tag = from_obj.work_tag
-            self.heartbeat_prefix_key = from_obj.heartbeat_prefix_key
-            self.worker_index = from_obj.worker_index
-            self.queue_prefix_key = from_obj.queue_prefix_key
-            self.pop_time_out = from_obj.pop_time_out
-            return True
-        return False
 
 
 class _WorkerLogConfig(object):
@@ -139,15 +123,12 @@ class _RedisWorkerConfig(object):
         redis_db: 13
     """
 
-    def __init__(self, conf_path=None, section_name="Redis", from_obj=None, **kwargs):
+    def __init__(self, conf_path=None, section_name="Redis"):
         self.redis_host = "localhost"
         self.redis_port = 6379
         self.redis_password = None
         self.redis_db = 13
-        copy_r = False
-        if from_obj is not None:
-            copy_r = self.copy_redis_config(from_obj)
-        if copy_r is False and conf_path is not None:
+        if conf_path is not None:
             self.load_redis_config(conf_path, section_name)
         if self.redis_password == "":
             self.redis_password = None
@@ -167,22 +148,10 @@ class _RedisWorkerConfig(object):
             if config.has_option(section_name, "redis_db"):
                 self.redis_db = config.getint(section_name, "redis_db")
 
-    def copy_redis_config(self, from_obj):
-        """
-            add in version 0.1.14
-        """
-        if isinstance(from_obj, _RedisWorkerConfig):
-            self.redis_host = from_obj.redis_host
-            self.redis_port = from_obj.redis_port
-            self.redis_password = from_obj.redis_password
-            self.redis_db = from_obj.redis_db
-            return True
-        return False
-
 
 class RedisQueue(_RedisWorkerConfig, _WorkerConfig):
     def __init__(self, conf_path, **kwargs):
-        _RedisWorkerConfig.__init__(self, conf_path, **kwargs)
+        _RedisWorkerConfig.__init__(self, conf_path)
         _WorkerConfig.__init__(self, conf_path, **kwargs)
 
     def package_task_info(self, key, args):
@@ -237,8 +206,12 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
             return next_task[1]
         return next_task
 
-    def push_task(self, task_info):
-        self.redis_man.rpush(self.queue_key, task_info)
+    def push_task(self, task_info, work_tag=None):
+        if work_tag is None:
+            queue_key = self.queue_key
+        else:
+            queue_key = self.queue_prefix_key + "_" + work_tag
+        self.redis_man.rpush(queue_key, task_info)
 
     def worker_log(self, *args, **kwargs):
         if self.log_dir is None:
