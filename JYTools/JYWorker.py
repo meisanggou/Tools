@@ -11,6 +11,7 @@ import traceback
 from redis import Redis
 from JYTools import TIME_FORMAT
 from JYTools import StringTool
+from _Exception import TaskErrorException, InvalidTaskException
 
 __author__ = 'meisanggou'
 
@@ -41,6 +42,7 @@ class _WorkerConfig(object):
             self.heartbeat_key = "heartbeat_" + self.heartbeat_key
         self.current_task = None
         self.current_key = None
+        self.current_params = None
 
     def load_work_config(self, conf_path, section_name):
         config = ConfigParser.ConfigParser()
@@ -90,6 +92,11 @@ class _Worker(_WorkerConfig, _WorkerLog):
     def execute(self, key, args):
         try:
             self.handler_task(key, args)
+        except TaskErrorException as te:
+            self.worker_log("Task: ", te.key, "Params: ", te.params, " Error Info: ", te.error_message, level="ERROR")
+            self.task_log(te.error_message, level="ERROR")
+        except InvalidTaskException as it:
+            self.worker_log("Invalid Task ", it.task_info, " Error Info: ", it.invalid_message, level="WARING")
         except Exception as e:
             self.task_log(traceback.format_exc(), level="ERROR")
             self.execute_error(e)
@@ -188,6 +195,7 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
     expect_params_type = None
 
     def __init__(self, conf_path=None, heartbeat_value="0", **kwargs):
+        self.conf_path = conf_path
         _RedisWorkerConfig.__init__(self, conf_path)
         _Worker.__init__(self, conf_path=conf_path, **kwargs)
         self.heartbeat_value = StringTool.decode(heartbeat_value)
@@ -285,7 +293,14 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
             add in version 0.1.14
         """
         if self.current_task is not None:
-            self.worker_log("Invalid Task ", self.current_task, " Error Info: ", *args, level="WARING")
+            raise InvalidTaskException(key=self.current_key, params=self.current_params, task_info=self.current_task)
+
+    def set_current_task_error(self, *args):
+        """
+            add in version 0.1.18
+        """
+        if self.current_task is not None:
+            raise InvalidTaskException(key=self.current_key, params=self.current_params, task_info=self.current_task)
 
     def parse_task_info(self, task_info):
         partition_task = task_info.split(",", 3)
@@ -313,6 +328,12 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
 
     def run(self):
         self.worker_log("Start Run Worker")
+        self.worker_log("Worker Conf Path Is ", self.conf_path)
+        self.worker_log("Worker Heartbeat Value Is", self.heartbeat_value)
+        self.worker_log("Worker Work Tag Is ", self.work_tag)
+        self.worker_log("Worker QueHeartbeat Key Is", self.heartbeat_key)
+        self.worker_log("Worker Queue Key Is", self.queue_key)
+
         while True:
             if self.has_heartbeat() is False:
                 self.close()
@@ -325,8 +346,9 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
                 continue
             self.current_task = next_task
             self.current_key = task_args[0]
+            self.current_params = task_args[1]
             self.worker_log("Start Execute", self.current_key)
-            self.execute(task_args[0], task_args[1])
+            self.execute(self.current_key, self.current_params)
             self.worker_log("Completed Task", self.current_key)
 
     def work(self, daemon=False):
