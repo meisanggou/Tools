@@ -5,6 +5,7 @@ import os
 import sys
 import types
 import ConfigParser
+from time import time
 from datetime import datetime
 import json
 import traceback
@@ -90,6 +91,7 @@ class _Worker(_WorkerConfig, _WorkerLog):
         return True
 
     def execute(self, key, args):
+        execute_time = time()
         try:
             self.handler_task(key, args)
         except TaskErrorException as te:
@@ -100,6 +102,8 @@ class _Worker(_WorkerConfig, _WorkerLog):
         except Exception as e:
             self.task_log(traceback.format_exc(), level="ERROR")
             self.execute_error(e)
+        use_time = time() - execute_time
+        self.task_log("Use ", use_time, " Seconds")
 
     def execute_error(self, e):
         if self.handler_task_exception is not None:
