@@ -96,7 +96,7 @@ class _Worker(_WorkerConfig, _WorkerLog):
             self.worker_log("Task: ", te.key, "Params: ", te.params, " Error Info: ", te.error_message, level="ERROR")
             self.task_log(te.error_message, level="ERROR")
         except InvalidTaskException as it:
-            self.worker_log("Invalid Task ", it.task_info, " Error Info: ", it.invalid_message, level="WARING")
+            self.worker_log("Invalid Task ", it.task_info, " Invalid Info: ", it.invalid_message, level="WARING")
         except Exception as e:
             self.task_log(traceback.format_exc(), level="ERROR")
             self.execute_error(e)
@@ -293,14 +293,14 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
             add in version 0.1.14
         """
         if self.current_task is not None:
-            raise InvalidTaskException(key=self.current_key, params=self.current_params, task_info=self.current_task)
+            raise InvalidTaskException(self.current_key, self.current_params, self.current_task, *args)
 
     def set_current_task_error(self, *args):
         """
             add in version 0.1.18
         """
         if self.current_task is not None:
-            raise InvalidTaskException(key=self.current_key, params=self.current_params, task_info=self.current_task)
+            raise TaskErrorException(self.current_key, self.current_params, *args)
 
     def parse_task_info(self, task_info):
         partition_task = task_info.split(",", 3)
