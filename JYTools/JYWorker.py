@@ -5,7 +5,7 @@ import os
 import sys
 import types
 import ConfigParser
-from time import time
+from time import time, sleep
 from datetime import datetime
 import json
 import traceback
@@ -227,8 +227,15 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
             return False
         return True
 
-    def pop_task(self):
-        next_task = self.redis_man.blpop(self.queue_key, self.pop_time_out)
+    def pop_task(self, freq=0):
+        try:
+            next_task = self.redis_man.blpop(self.queue_key, self.pop_time_out)
+        except Exception as e:
+            if freq > 5:
+                raise e
+            freq += 1
+            sleep(10)
+            return self.pop_task(freq)
         if next_task is not None:
             return next_task[1]
         return next_task
