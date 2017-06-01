@@ -120,6 +120,20 @@ class _Worker(_WorkerConfig, _WorkerLog):
     def handler_invalid_task(self, task_info, error_info):
         pass
 
+    def set_current_task_invalid(self, *args):
+        """
+            add in version 0.1.14
+        """
+        if self.current_task is not None:
+            raise InvalidTaskException(self.current_key, self.current_params, self.current_task, *args)
+
+    def set_current_task_error(self, *args):
+        """
+            add in version 0.1.18
+        """
+        if self.current_task is not None:
+            raise TaskErrorException(self.current_key, self.current_params, *args)
+
     def close(self, exit_code=0):
         self.worker_log("start close. exit code: %s" % exit_code)
         exit(exit_code)
@@ -291,20 +305,6 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
 
     def handler_invalid_task(self, task_info, error_info):
         self.worker_log(error_info, level="WARING")
-
-    def set_current_task_invalid(self, *args):
-        """
-            add in version 0.1.14
-        """
-        if self.current_task is not None:
-            raise InvalidTaskException(self.current_key, self.current_params, self.current_task, *args)
-
-    def set_current_task_error(self, *args):
-        """
-            add in version 0.1.18
-        """
-        if self.current_task is not None:
-            raise TaskErrorException(self.current_key, self.current_params, *args)
 
     def parse_task_info(self, task_info):
         partition_task = task_info.split(",", 3)
