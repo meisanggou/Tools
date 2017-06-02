@@ -23,7 +23,7 @@ author = "meisanggou"
 short_description = "Jing Yun Tools Library"
 long_description = """Jing Yun Tools Library."""
 keywords = "JYTools"
-install_requires = ["MySQL-python", "redis >= 2.10.5", "requests >= 2.10.0"]
+install_requires = ["MySQL-python", "redis >= 2.10.5", "requests"]
 
 setup(name=name,
       version=version,
