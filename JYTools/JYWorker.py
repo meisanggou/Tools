@@ -18,6 +18,9 @@ __author__ = 'meisanggou'
 
 
 class TaskStatus(object):
+    """
+        add in version 0.1.19
+    """
     NONE = "None"
     SUCCESS = "Success"
     FAIL = "Fail"
@@ -26,6 +29,10 @@ class TaskStatus(object):
 
 
 class WorkerTask(object):
+    """
+        add in version 0.1.19
+    """
+
     def __init__(self, **kwargs):
         self.task_key = None
         self.task_sub_key = None
@@ -33,6 +40,7 @@ class WorkerTask(object):
         self.task_params = None
         self.task_status = TaskStatus.NONE
         self.task_report_tag = None  # 任务结束后汇报的的work_tag
+        self.is_report_task = False
         self.set(**kwargs)
 
     def set(self, **kwargs):
@@ -46,6 +54,8 @@ class WorkerTask(object):
             self.task_params = kwargs["task_params"]
         if "task_report_tag" in kwargs:
             self.task_report_tag = kwargs["task_report_tag"]
+        if "is_report_task" in kwargs:
+            self.is_report_task = kwargs["is_report_task"]
 
 
 class _WorkerConfig(object):
@@ -125,7 +135,7 @@ class _Worker(_WorkerConfig, _WorkerLog):
     def write(self, *args, **kwargs):
         self.task_log(*args, **kwargs)
 
-    def execute(self, key, args):
+    def execute(self):
         execute_time = time()
         standard_out = None
         try:
@@ -133,7 +143,10 @@ class _Worker(_WorkerConfig, _WorkerLog):
                 standard_out = sys.stdout
                 sys.stdout = self
             self.current_task.task_status = TaskStatus.RUNNING
-            self.handler_task(key, args)
+            if self.current_task.is_report_task is False:
+                self.handler_task(self.current_task.task_key, self.current_task.task_params)
+            else:
+                self.handler_report_task()
             self.current_task.task_status = TaskStatus.SUCCESS
             if standard_out is not None:
                 sys.stdout = standard_out
@@ -160,6 +173,12 @@ class _Worker(_WorkerConfig, _WorkerLog):
 
     # 子类需重载的方法
     def handler_task(self, key, params):
+        pass
+
+    def handler_report_task(self):
+        """
+            add in version 0.1.19
+        """
         pass
 
     # 子类需重载的方法
@@ -412,7 +431,7 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
             error_msg = "Invalid task %s, task args type invalid" % task_info
             return False, error_msg
         params = partition_task[3]
-        if partition_task[2] == "json":
+        if partition_task[2] in ("json", "report"):
             try:
                 params = json.loads(params)
             except ValueError:
@@ -421,6 +440,9 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
         if self.expect_params_type is not None:
             if not isinstance(params, self.expect_params_type):
                 return False, "Invalid task, not expect param type"
+        task_item.set(task_params=params)
+        if partition_task[2] == "report":
+            task_item.set(is_report_task=True)
         return True, task_item
 
     def run(self):
@@ -443,7 +465,7 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
                 continue
             self.current_task = task_item
             self.worker_log("Start Execute", self.current_task.task_key)
-            self.execute(self.current_task.task_key, self.current_task.task_params)
+            self.execute()
             self.worker_log("Completed Task", self.current_task.task_key)
 
     def work(self, daemon=False):
