@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # coding: utf-8
 
+import os
 import sys
 from time import time
 import traceback
@@ -104,6 +105,23 @@ class Worker(WorkerConfig, _WorkerLog):
         """
         if self.current_task is not None:
             raise TaskErrorException(self.current_task.task_key, self.current_task.task_params, *args)
+
+    def run(self):
+        pass
+
+    def work(self, daemon=False):
+        """
+        add in version 0.1.8
+        """
+        if daemon is True:
+            try:
+                pid = os.fork()
+                if pid == 0:  # pid大于0代表是父进程 返回的是子进程的pid pid==0为子进程
+                    self.run()
+            except OSError as e:
+                sys.exit(1)
+        else:
+            self.run()
 
     def close(self, exit_code=0):
         self.worker_log("start close. exit code: %s" % exit_code)

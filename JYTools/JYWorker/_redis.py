@@ -2,7 +2,6 @@
 # coding: utf-8
 
 import os
-import sys
 import json
 import types
 from time import sleep
@@ -243,20 +242,6 @@ class RedisWorker(RedisWorkerConfig, Worker):
             self.worker_log("Start Execute", self.current_task.task_key)
             self.execute()
             self.worker_log("Completed Task", self.current_task.task_key)
-
-    def work(self, daemon=False):
-        """
-        add in version 0.1.8
-        """
-        if daemon is True:
-            try:
-                pid = os.fork()
-                if pid == 0:  # pid大于0代表是父进程 返回的是子进程的pid pid==0为子进程
-                    self.run()
-            except OSError as e:
-                sys.exit(1)
-        else:
-            self.run()
 
 
 if __name__ == "__main__":
