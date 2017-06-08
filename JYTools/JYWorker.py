@@ -31,12 +31,15 @@ class _WorkerConfig(object):
         self.worker_index = None
         self.queue_prefix_key = "task_queue"
         self.pop_time_out = 60
+        self.redirect_stdout = False
         if conf_path is not None:
             self.load_work_config(conf_path, section_name)
         if "work_tag" in kwargs:
             self.work_tag = kwargs["work_tag"]
         if "worker_index" in kwargs:
             self.worker_index = kwargs["worker_index"]
+        if "redirect_stdout" in kwargs:
+            self.redirect_stdout = kwargs["redirect_stdout"]
         self.heartbeat_key = self.heartbeat_prefix_key + "_" + self.work_tag
         self.queue_key = self.queue_prefix_key + "_" + self.work_tag
         if self.heartbeat_key == self.queue_key:
@@ -76,10 +79,10 @@ class _WorkerLogConfig(object):
 
 class _WorkerLog(_WorkerLogConfig):
     def worker_log(self, *args, **kwargs):
-        print(args)
+        pass
 
     def task_log(self, *args, **kwargs):
-        print(args)
+        pass
 
 
 class _Worker(_WorkerConfig, _WorkerLog):
@@ -90,10 +93,19 @@ class _Worker(_WorkerConfig, _WorkerLog):
     def has_heartbeat(self):
         return True
 
+    def write(self, *args, **kwargs):
+        self.task_log(*args, **kwargs)
+
     def execute(self, key, args):
         execute_time = time()
+        standard_out = None
         try:
+            if self.redirect_stdout is True:
+                standard_out = sys.stdout
+                sys.stdout = self
             self.handler_task(key, args)
+            if standard_out is not None:
+                sys.stdout = standard_out
         except TaskErrorException as te:
             self.worker_log("Task: ", te.key, "Params: ", te.params, " Error Info: ", te.error_message, level="ERROR")
             self.task_log(te.error_message, level="ERROR")
@@ -102,6 +114,9 @@ class _Worker(_WorkerConfig, _WorkerLog):
         except Exception as e:
             self.task_log(traceback.format_exc(), level="ERROR")
             self.execute_error(e)
+        finally:
+            if standard_out is not None:
+                sys.stdout = standard_out
         use_time = time() - execute_time
         self.task_log("Use ", use_time, " Seconds")
 
