@@ -3,7 +3,6 @@
 
 import os
 import json
-import types
 from time import sleep
 from datetime import datetime
 from JYTools import TIME_FORMAT
@@ -67,7 +66,6 @@ class RedisWorker(RedisWorkerConfig, Worker):
         Worker.__init__(self, conf_path=conf_path, **kwargs)
         self.heartbeat_value = StringTool.decode(heartbeat_value)
         self.redis_man.set(self.heartbeat_key, heartbeat_value)
-        self._msg_manager = None
 
     def has_heartbeat(self):
         current_value = StringTool.decode(self.redis_man.get(self.heartbeat_key))
@@ -152,32 +150,6 @@ class RedisWorker(RedisWorkerConfig, Worker):
             s = StringTool.join(write_a, join_str="")
             s = StringTool.encode(s)
             wl.write(s)
-
-    @property
-    def msg_manager(self):
-        return self._msg_manager
-
-    @msg_manager.setter
-    def msg_manager(self, msg_manager):
-        if msg_manager is None:
-            return
-        if hasattr(msg_manager, "publish_message") is False:
-            return
-        if isinstance(msg_manager.publish_message, types.MethodType) is False:
-            return
-        self._msg_manager = msg_manager
-
-    def publish_message(self, message):
-        """
-
-        add in version 0.1.4
-        """
-        if self.msg_manager is None:
-            return
-        try:
-            self.msg_manager.publish_message(message, self.work_tag)
-        except Exception as e:
-            print(e)
 
     def handler_invalid_task(self, task_info, error_info):
         self.worker_log(error_info, level="WARING")

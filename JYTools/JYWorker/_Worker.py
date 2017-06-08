@@ -3,9 +3,10 @@
 
 import os
 import sys
+import types
 from time import time
 import traceback
-from _Exception import TaskErrorException, InvalidTaskException
+from _exception import TaskErrorException, InvalidTaskException
 from _Task import TaskStatus
 from _config import WorkerConfig, WorkerLogConfig
 
@@ -24,6 +25,7 @@ class Worker(WorkerConfig, _WorkerLog):
     def __init__(self, **kwargs):
         WorkerConfig.__init__(self, **kwargs)
         _WorkerLog.__init__(self, **kwargs)
+        self._msg_manager = None
 
     def has_heartbeat(self):
         return True
@@ -105,6 +107,32 @@ class Worker(WorkerConfig, _WorkerLog):
         """
         if self.current_task is not None:
             raise TaskErrorException(self.current_task.task_key, self.current_task.task_params, *args)
+
+    @property
+    def msg_manager(self):
+        return self._msg_manager
+
+    @msg_manager.setter
+    def msg_manager(self, msg_manager):
+        if msg_manager is None:
+            return
+        if hasattr(msg_manager, "publish_message") is False:
+            return
+        if isinstance(msg_manager.publish_message, types.MethodType) is False:
+            return
+        self._msg_manager = msg_manager
+
+    def publish_message(self, message):
+        """
+
+        add in version 0.1.4
+        """
+        if self.msg_manager is None:
+            return
+        try:
+            self.msg_manager.publish_message(message, self.work_tag)
+        except Exception as e:
+            print(e)
 
     def run(self):
         pass
