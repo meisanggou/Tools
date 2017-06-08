@@ -28,18 +28,24 @@ class TaskStatus(object):
 class WorkerTask(object):
     def __init__(self, **kwargs):
         self.task_key = None
+        self.task_sub_key = None
         self.task_info = None
         self.task_params = None
         self.task_status = TaskStatus.NONE
+        self.task_report_tag = None  # 任务结束后汇报的的work_tag
         self.set(**kwargs)
 
     def set(self, **kwargs):
         if "task_key" in kwargs:
             self.task_key = kwargs["task_key"]
+        if "task_sub_key" in kwargs:
+            self.task_sub_key = kwargs["task_sub_key"]
         if "task_info" in kwargs:
             self.task_info = kwargs["task_info"]
         if "task_params" in kwargs:
             self.task_params = kwargs["task_params"]
+        if "task_report_tag" in kwargs:
+            self.task_report_tag = kwargs["task_report_tag"]
 
 
 class _WorkerConfig(object):
@@ -378,17 +384,28 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
         self.worker_log(error_info, level="WARING")
 
     def parse_task_info(self, task_info):
+        task_item = WorkerTask(task_info=task_info)
+
         partition_task = task_info.split(",", 3)
         if len(partition_task) != 4:
             error_msg = "Invalid task %s, task partition length is not 3" % task_info
             return False, error_msg
-        if partition_task[0] != self.work_tag:
+
+        work_tags = partition_task[0].split("|")  # 0 work tag 1 return tag
+        if work_tags[0] != self.work_tag:
             error_msg = "Invalid task %s, task not match work tag %s" % (task_info, self.work_tag)
             return False, error_msg
-        if partition_task[2] not in ("string", "json"):
+        if len(work_tags) > 1:
+            task_item.set(task_report_tag=work_tags[1])
+
+        keys = partition_task[1].split("|")
+        task_item.set(task_key=keys[0])
+        if len(keys) > 1:
+            task_item.set(task_sub_key=keys[1])
+
+        if partition_task[2] not in ("string", "json", "report"):
             error_msg = "Invalid task %s, task args type invalid" % task_info
             return False, error_msg
-        key = partition_task[1]
         params = partition_task[3]
         if partition_task[2] == "json":
             try:
@@ -399,7 +416,7 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
         if self.expect_params_type is not None:
             if not isinstance(params, self.expect_params_type):
                 return False, "Invalid task, not expect param type"
-        return True, [key, params]
+        return True, task_item
 
     def run(self):
         self.worker_log("Start Run Worker")
