@@ -25,6 +25,23 @@ class TaskStatus(object):
     RUNNING = "Running"
 
 
+class WorkerTask(object):
+    def __init__(self, **kwargs):
+        self.task_key = None
+        self.task_info = None
+        self.task_params = None
+        self.task_status = TaskStatus.NONE
+        self.set(**kwargs)
+
+    def set(self, **kwargs):
+        if "task_key" in kwargs:
+            self.task_key = kwargs["task_key"]
+        if "task_info" in kwargs:
+            self.task_info = kwargs["task_info"]
+        if "task_params" in kwargs:
+            self.task_params = kwargs["task_params"]
+
+
 class _WorkerConfig(object):
     """
         [Worker]
@@ -53,9 +70,6 @@ class _WorkerConfig(object):
         if self.heartbeat_key == self.queue_key:
             self.heartbeat_key = "heartbeat_" + self.heartbeat_key
         self.current_task = None
-        self.current_key = None
-        self.current_params = None
-        self.current_status = TaskStatus.NONE
 
     def load_work_config(self, conf_path, section_name):
         config = ConfigParser.ConfigParser()
@@ -112,20 +126,20 @@ class _Worker(_WorkerConfig, _WorkerLog):
             if self.redirect_stdout is True:
                 standard_out = sys.stdout
                 sys.stdout = self
-            self.current_status = TaskStatus.RUNNING
+            self.current_task.task_status = TaskStatus.RUNNING
             self.handler_task(key, args)
-            self.current_status = TaskStatus.SUCCESS
+            self.current_task.task_status = TaskStatus.SUCCESS
             if standard_out is not None:
                 sys.stdout = standard_out
         except TaskErrorException as te:
-            self.current_status = TaskStatus.FAIL
+            self.current_task.task_status = TaskStatus.FAIL
             self.worker_log("Task: ", te.key, "Params: ", te.params, " Error Info: ", te.error_message, level="ERROR")
             self.task_log(te.error_message, level="ERROR")
         except InvalidTaskException as it:
-            self.current_status = TaskStatus.INVALID
+            self.current_task.task_status = TaskStatus.INVALID
             self.worker_log("Invalid Task ", it.task_info, " Invalid Info: ", it.invalid_message, level="WARING")
         except Exception as e:
-            self.current_status = TaskStatus.FAIL
+            self.current_task.task_status = TaskStatus.FAIL
             self.task_log(traceback.format_exc(), level="ERROR")
             self.execute_error(e)
         finally:
@@ -154,14 +168,15 @@ class _Worker(_WorkerConfig, _WorkerLog):
             add in version 0.1.14
         """
         if self.current_task is not None:
-            raise InvalidTaskException(self.current_key, self.current_params, self.current_task, *args)
+            raise InvalidTaskException(self.current_task.task_key, self.current_task.task_params, self.current_task,
+                                       *args)
 
     def set_current_task_error(self, *args):
         """
             add in version 0.1.18
         """
         if self.current_task is not None:
-            raise TaskErrorException(self.current_key, self.current_params, *args)
+            raise TaskErrorException(self.current_task.task_key, self.current_task.task_params, *args)
 
     def close(self, exit_code=0):
         self.worker_log("start close. exit code: %s" % exit_code)
@@ -271,7 +286,7 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
 
     def pop_task_detail(self, key=None, sub_key=None):
         if key is None:
-            key = self.current_key
+            key = self.current_task.task_key
         if key is None:
             return None
         detail_key = "%s" % key
@@ -289,7 +304,7 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
 
     def push_task_detail(self, task_detail, key=None, sub_key=None):
         if key is None:
-            key = self.current_key
+            key = self.current_task.task_key
         if key is None:
             return None
         detail_key = "%s" % key
@@ -321,8 +336,8 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
         msg = StringTool.join(args, " ")
         level = kwargs.pop("level", "INFO")
         if level != "INFO":
-            self.publish_message("%s\n%s" % (self.current_key, msg))
-        log_file = os.path.join(self.log_dir, "%s_%s.log" % (self.work_tag, self.current_key))
+            self.publish_message("%s\n%s" % (self.current_task.task_key, msg))
+        log_file = os.path.join(self.log_dir, "%s_%s.log" % (self.work_tag, self.current_task.task_key))
         now_time = datetime.now().strftime(TIME_FORMAT)
         write_a = ["[", self.heartbeat_value]
         if self.worker_index is not None:
@@ -404,12 +419,10 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
             if parse_r is False:
                 self.handler_invalid_task(next_task, task_args)
                 continue
-            self.current_task = next_task
-            self.current_key = task_args[0]
-            self.current_params = task_args[1]
-            self.worker_log("Start Execute", self.current_key)
-            self.execute(self.current_key, self.current_params)
-            self.worker_log("Completed Task", self.current_key)
+            self.current_task = WorkerTask(task_key=task_args[0], task_params=task_args[1], task_info=next_task)
+            self.worker_log("Start Execute", self.current_task.task_key)
+            self.execute(self.current_task.task_key, self.current_task.task_params)
+            self.worker_log("Completed Task", self.current_task.task_key)
 
     def work(self, daemon=False):
         """
