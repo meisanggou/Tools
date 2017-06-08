@@ -17,6 +17,14 @@ from _Exception import TaskErrorException, InvalidTaskException
 __author__ = 'meisanggou'
 
 
+class TaskStatus(object):
+    NONE = "None"
+    SUCCESS = "Success"
+    FAIL = "Fail"
+    INVALID = "Invalid"
+    RUNNING = "Running"
+
+
 class _WorkerConfig(object):
     """
         [Worker]
@@ -47,6 +55,7 @@ class _WorkerConfig(object):
         self.current_task = None
         self.current_key = None
         self.current_params = None
+        self.current_status = TaskStatus.NONE
 
     def load_work_config(self, conf_path, section_name):
         config = ConfigParser.ConfigParser()
@@ -103,15 +112,20 @@ class _Worker(_WorkerConfig, _WorkerLog):
             if self.redirect_stdout is True:
                 standard_out = sys.stdout
                 sys.stdout = self
+            self.current_status = TaskStatus.RUNNING
             self.handler_task(key, args)
+            self.current_status = TaskStatus.SUCCESS
             if standard_out is not None:
                 sys.stdout = standard_out
         except TaskErrorException as te:
+            self.current_status = TaskStatus.FAIL
             self.worker_log("Task: ", te.key, "Params: ", te.params, " Error Info: ", te.error_message, level="ERROR")
             self.task_log(te.error_message, level="ERROR")
         except InvalidTaskException as it:
+            self.current_status = TaskStatus.INVALID
             self.worker_log("Invalid Task ", it.task_info, " Invalid Info: ", it.invalid_message, level="WARING")
         except Exception as e:
+            self.current_status = TaskStatus.FAIL
             self.task_log(traceback.format_exc(), level="ERROR")
             self.execute_error(e)
         finally:
@@ -255,6 +269,16 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
             return next_task[1]
         return next_task
 
+    def pop_task_detail(self, key=None, sub_key=None):
+        if key is None:
+            key = self.current_key
+        if key is None:
+            return None
+        detail_key = "%s" % key
+        if sub_key is not None:
+            detail_key += "_%s" % sub_key
+        return self.redis_man.get(detail_key)
+
     def push_task(self, key, params, work_tag=None):
         if work_tag is None:
             queue_key = self.queue_key
@@ -262,6 +286,16 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
             queue_key = self.queue_prefix_key + "_" + work_tag
         task_info = RedisQueue.package_task_info(work_tag, key, params)
         self.redis_man.rpush(queue_key, task_info)
+
+    def push_task_detail(self, task_detail, key=None, sub_key=None):
+        if key is None:
+            key = self.current_key
+        if key is None:
+            return None
+        detail_key = "%s" % key
+        if sub_key is not None:
+            detail_key += "_%s" % sub_key
+        self.redis_man.set(detail_key, task_detail)
 
     def worker_log(self, *args, **kwargs):
         if self.log_dir is None:
