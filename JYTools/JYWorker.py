@@ -164,6 +164,8 @@ class _Worker(_WorkerConfig, _WorkerLog):
         finally:
             if standard_out is not None:
                 sys.stdout = standard_out
+            if self.current_task.is_report_task is False and self.current_task.task_report_tag is not None:
+                self.task_log("Start Report Task Status")
         use_time = time() - execute_time
         self.task_log("Use ", use_time, " Seconds")
 
