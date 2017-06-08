@@ -9,10 +9,12 @@ from time import time, sleep
 from datetime import datetime
 import json
 import traceback
+
 from redis import Redis
+
 from JYTools import TIME_FORMAT
 from JYTools import StringTool
-from _Exception import TaskErrorException, InvalidTaskException
+from JYTools.JYWorker._Exception import TaskErrorException, InvalidTaskException
 
 __author__ = 'meisanggou'
 
@@ -41,6 +43,7 @@ class WorkerTask(object):
         self.task_status = TaskStatus.NONE
         self.task_report_tag = None  # 任务结束后汇报的的work_tag
         self.is_report_task = False
+        self.task_output = dict()
         self.set(**kwargs)
 
     def set(self, **kwargs):
@@ -56,6 +59,15 @@ class WorkerTask(object):
             self.task_report_tag = kwargs["task_report_tag"]
         if "is_report_task" in kwargs:
             self.is_report_task = kwargs["is_report_task"]
+
+    def to_dict(self):
+        d = dict()
+        d["task_key"] = self.task_key
+        d["task_sub_key"] = self.task_sub_key
+        d["task_info"] = self.task_info
+        d["task_params"] = self.task_params
+        d["task_status"] = self.task_status
+        d["task_output"] = self.task_output
 
 
 class _WorkerConfig(object):
@@ -135,6 +147,9 @@ class _Worker(_WorkerConfig, _WorkerLog):
     def write(self, *args, **kwargs):
         self.task_log(*args, **kwargs)
 
+    def push_task(self, key, params, work_tag=None, is_report=False):
+        pass
+
     def execute(self):
         execute_time = time()
         standard_out = None
@@ -166,6 +181,8 @@ class _Worker(_WorkerConfig, _WorkerLog):
                 sys.stdout = standard_out
             if self.current_task.is_report_task is False and self.current_task.task_report_tag is not None:
                 self.task_log("Start Report Task Status")
+                self.push_task(self.current_task.task_key, self.current_task,
+                               work_tag=self.current_task.task_report_tag, is_report=True)
         use_time = time() - execute_time
         self.task_log("Use ", use_time, " Seconds")
 
@@ -251,7 +268,7 @@ class RedisQueue(_RedisWorkerConfig, _WorkerConfig):
         _WorkerConfig.__init__(self, conf_path, **kwargs)
 
     @staticmethod
-    def package_task_info(work_tag, key, args, sub_key=None, report_tag=None):
+    def package_task_info(work_tag, key, args, sub_key=None, report_tag=None, is_report=False):
         """
         info format: work_tag[|report_tag],key[|sub_key],args_type,args
         args_type: json
@@ -264,7 +281,10 @@ class RedisQueue(_RedisWorkerConfig, _WorkerConfig):
             work_tag = "%s|%s" % (work_tag, report_tag)
         v = "%s,%s," % (work_tag, key)
         if isinstance(args, dict):
-            v += "json," + json.dumps(args)
+            if is_report is False:
+                v += "json," + json.dumps(args)
+            else:
+                v += "json," + json.dumps(args)
         else:
             v += "string," + args
         return v
@@ -326,12 +346,12 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
             detail_key += "_%s" % sub_key
         return self.redis_man.get(detail_key)
 
-    def push_task(self, key, params, work_tag=None):
+    def push_task(self, key, params, work_tag=None, is_report=False):
         if work_tag is None:
             queue_key = self.queue_key
         else:
             queue_key = self.queue_prefix_key + "_" + work_tag
-        task_info = RedisQueue.package_task_info(work_tag, key, params)
+        task_info = RedisQueue.package_task_info(work_tag, key, params, is_report=is_report)
         self.redis_man.rpush(queue_key, task_info)
 
     def push_task_detail(self, task_detail, key=None, sub_key=None):
