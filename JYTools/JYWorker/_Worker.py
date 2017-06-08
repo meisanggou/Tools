@@ -19,7 +19,7 @@ class _WorkerLog(WorkerLogConfig):
         pass
 
 
-class _Worker(WorkerConfig, _WorkerLog):
+class Worker(WorkerConfig, _WorkerLog):
     def __init__(self, **kwargs):
         WorkerConfig.__init__(self, **kwargs)
         _WorkerLog.__init__(self, **kwargs)
@@ -64,7 +64,7 @@ class _Worker(WorkerConfig, _WorkerLog):
                 sys.stdout = standard_out
             if self.current_task.is_report_task is False and self.current_task.task_report_tag is not None:
                 self.task_log("Start Report Task Status")
-                self.push_task(self.current_task.task_key, self.current_task,
+                self.push_task(self.current_task.task_key, self.current_task.to_dict(),
                                work_tag=self.current_task.task_report_tag, is_report=True)
         use_time = time() - execute_time
         self.task_log("Use ", use_time, " Seconds")

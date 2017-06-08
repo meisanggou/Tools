@@ -34,7 +34,7 @@ class MSGManager(object):
 
 r_queue = RedisQueue(conf_path="conf/redis_worker.conf")
 for i in range(133, 134):
-    r_queue.push(i, {"a": "j"}, sub_key="ddd2", report_tag="One")
+    r_queue.push(i, {"a": "j"}, sub_key="ddd2", report_tag="jy_redis_task")
 
 
 r_work = FirstWorker(conf_path="conf/redis_worker.conf", heartbeat_value=uuid4().hex, log_dir="/tmp/", worker_index=2)

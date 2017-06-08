@@ -9,16 +9,17 @@ from time import sleep
 from datetime import datetime
 from JYTools import TIME_FORMAT
 from JYTools import StringTool
-from _Worker import _RedisWorkerConfig, _WorkerConfig, _Worker
+from _config import RedisWorkerConfig, WorkerConfig
+from _Worker import Worker
 from _Task import WorkerTask
 
 __author__ = 'meisanggou'
 
 
-class RedisQueue(_RedisWorkerConfig, _WorkerConfig):
+class RedisQueue(RedisWorkerConfig, WorkerConfig):
     def __init__(self, conf_path, **kwargs):
-        _RedisWorkerConfig.__init__(self, conf_path)
-        _WorkerConfig.__init__(self, conf_path, **kwargs)
+        RedisWorkerConfig.__init__(self, conf_path)
+        WorkerConfig.__init__(self, conf_path, **kwargs)
 
     @staticmethod
     def package_task_info(work_tag, key, args, sub_key=None, report_tag=None, is_report=False):
@@ -37,7 +38,7 @@ class RedisQueue(_RedisWorkerConfig, _WorkerConfig):
             if is_report is False:
                 v += "json," + json.dumps(args)
             else:
-                v += "json," + json.dumps(args)
+                v += "report," + json.dumps(args)
         else:
             v += "string," + args
         return v
@@ -54,7 +55,7 @@ class RedisQueue(_RedisWorkerConfig, _WorkerConfig):
         self.push_tail(key, params, work_tag, sub_key=sub_key, report_tag=report_tag)
 
 
-class RedisWorker(_RedisWorkerConfig, _Worker):
+class RedisWorker(RedisWorkerConfig, Worker):
     """
         expect_params_type
         add in version 0.1.8
@@ -63,8 +64,8 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
 
     def __init__(self, conf_path=None, heartbeat_value="0", **kwargs):
         self.conf_path = conf_path
-        _RedisWorkerConfig.__init__(self, conf_path)
-        _Worker.__init__(self, conf_path=conf_path, **kwargs)
+        RedisWorkerConfig.__init__(self, conf_path)
+        Worker.__init__(self, conf_path=conf_path, **kwargs)
         self.heartbeat_value = StringTool.decode(heartbeat_value)
         self.redis_man.set(self.heartbeat_key, heartbeat_value)
         self._msg_manager = None

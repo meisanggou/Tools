@@ -52,3 +52,4 @@ class WorkerTask(object):
         d["task_params"] = self.task_params
         d["task_status"] = self.task_status
         d["task_output"] = self.task_output
+        return d
