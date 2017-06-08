@@ -230,12 +230,17 @@ class RedisQueue(_RedisWorkerConfig, _WorkerConfig):
         _WorkerConfig.__init__(self, conf_path, **kwargs)
 
     @staticmethod
-    def package_task_info(work_tag, key, args):
+    def package_task_info(work_tag, key, args, sub_key=None, report_tag=None):
         """
-        info format: wor_tag,key,args_type,args
+        info format: work_tag[|report_tag],key[|sub_key],args_type,args
         args_type: json
         example: jy_task,key_1,json,{"v":1}
+        example: jy_task|ping,key_1|first,json,{"v":1}
         """
+        if sub_key is not None:
+            key = "%s|%s" % (key, sub_key)
+        if report_tag is not None:
+            work_tag = "%s|%s" % (work_tag, report_tag)
         v = "%s,%s," % (work_tag, key)
         if isinstance(args, dict):
             v += "json," + json.dumps(args)
@@ -247,12 +252,12 @@ class RedisQueue(_RedisWorkerConfig, _WorkerConfig):
         v = self.package_task_info(self.work_tag, key, params)
         self.redis_man.lpush(self.queue_key, v)
 
-    def push_tail(self, key, params, work_tag=None):
-        v = self.package_task_info(self.work_tag, key, params)
+    def push_tail(self, key, params, work_tag=None, sub_key=None, report_tag=None):
+        v = self.package_task_info(self.work_tag, key, params, sub_key=sub_key, report_tag=report_tag)
         self.redis_man.rpush(self.queue_key, v)
 
-    def push(self, key, params, work_tag=None):
-        self.push_tail(key, params, work_tag)
+    def push(self, key, params, work_tag=None, sub_key=None, report_tag=None):
+        self.push_tail(key, params, work_tag, sub_key=sub_key, report_tag=report_tag)
 
 
 class RedisWorker(_RedisWorkerConfig, _Worker):
@@ -432,11 +437,11 @@ class RedisWorker(_RedisWorkerConfig, _Worker):
             next_task = self.pop_task()
             if next_task is None:
                 continue
-            parse_r, task_args = self.parse_task_info(next_task)
+            parse_r, task_item = self.parse_task_info(next_task)
             if parse_r is False:
-                self.handler_invalid_task(next_task, task_args)
+                self.handler_invalid_task(next_task, task_item)
                 continue
-            self.current_task = WorkerTask(task_key=task_args[0], task_params=task_args[1], task_info=next_task)
+            self.current_task = task_item
             self.worker_log("Start Execute", self.current_task.task_key)
             self.execute(self.current_task.task_key, self.current_task.task_params)
             self.worker_log("Completed Task", self.current_task.task_key)
