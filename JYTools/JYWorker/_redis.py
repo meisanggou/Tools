@@ -53,6 +53,37 @@ class RedisQueue(RedisWorkerConfig, WorkerConfig):
         self.push_tail(key, params, work_tag, sub_key=sub_key, report_tag=report_tag)
 
 
+class RedisData(object):
+    @staticmethod
+    def package_data(data):
+        if isinstance(data, dict):
+            return "d_" + json.dumps(data)
+        if isinstance(data, int):
+            return "i_%s" % data
+        if isinstance(data, float):
+            return "f_%s" % float
+        else:
+            return "s_%s" % data
+
+    @staticmethod
+    def unpack_data(p_data):
+        if isinstance(p_data, unicode) is False:
+            return p_data
+        sp_data = p_data.split("_", 1)
+        if len(sp_data) != 2:
+            return p_data
+        sign = sp_data[0]
+        if sign == "s_":
+            return sp_data[1]
+        if sign == "d":
+            return json.loads(sp_data[1])
+        elif sign == "i":
+            return int(sp_data[1])
+        elif sign == "f":
+            return float(sp_data[1])
+        return p_data
+
+
 class RedisWorker(RedisWorkerConfig, Worker):
     """
         expect_params_type
@@ -87,16 +118,6 @@ class RedisWorker(RedisWorkerConfig, Worker):
             return next_task[1]
         return next_task
 
-    def pop_task_detail(self, key=None, sub_key=None):
-        if key is None:
-            key = self.current_task.task_key
-        if key is None:
-            return None
-        detail_key = "%s" % key
-        if sub_key is not None:
-            detail_key += "_%s" % sub_key
-        return self.redis_man.get(detail_key)
-
     def push_task(self, key, params, work_tag=None, sub_key=None, is_report=False):
         if work_tag is None:
             queue_key = self.queue_key
@@ -105,15 +126,33 @@ class RedisWorker(RedisWorkerConfig, Worker):
         task_info = RedisQueue.package_task_info(work_tag, key, params, sub_key=sub_key, is_report=is_report)
         self.redis_man.rpush(queue_key, task_info)
 
-    def push_task_detail(self, task_detail, key=None, sub_key=None):
+    def set_task_item(self, item_index, hash_key, hash_value, key=None, sub_key=None):
         if key is None:
             key = self.current_task.task_key
         if key is None:
             return None
-        detail_key = "%s" % key
+        item_key = "%s" % key
+        if sub_key is None:
+            sub_key = self.current_task.task_sub_key
         if sub_key is not None:
-            detail_key += "_%s" % sub_key
-        self.redis_man.set(detail_key, task_detail)
+            item_key += "_%s" % sub_key
+        item_key += "_%s" % item_index
+        self.redis_man.hset(item_key, hash_key, RedisData.package_data(hash_value))
+
+    def get_task_item(self, item_index, hash_key=None, key=None, sub_key=None):
+        if key is None:
+            key = self.current_task.task_key
+        if key is None:
+            return None
+        item_key = "%s" % key
+        if sub_key is None:
+            sub_key = self.current_task.task_sub_key
+        if sub_key is not None:
+            item_key += "_%s" % sub_key
+        item_key += "_%s" % item_index
+        if hash_key is None:
+            return self.redis_man.hgetall(item_key)
+        return self.redis_man.hget(item_key, hash_key)
 
     def worker_log(self, *args, **kwargs):
         if self.log_dir is None:
