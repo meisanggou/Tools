@@ -20,7 +20,7 @@ class RedisQueue(RedisWorkerConfig, WorkerConfig):
         WorkerConfig.__init__(self, conf_path, **kwargs)
 
     @staticmethod
-    def package_task_info(work_tag, key, args, sub_key=None, report_tag=None, is_report=False):
+    def package_task_info(work_tag, key, params, sub_key=None, report_tag=None, is_report=False):
         """
         info format: work_tag[|report_tag],key[|sub_key],args_type,args
         args_type: json
@@ -32,13 +32,13 @@ class RedisQueue(RedisWorkerConfig, WorkerConfig):
         if report_tag is not None:
             work_tag = "%s|%s" % (work_tag, report_tag)
         v = "%s,%s," % (work_tag, key)
-        if isinstance(args, dict):
+        if isinstance(params, dict):
             if is_report is False:
-                v += "json," + json.dumps(args)
+                v += "json," + json.dumps(params)
             else:
-                v += "report," + json.dumps(args)
+                v += "report," + json.dumps(params)
         else:
-            v += "string," + args
+            v += "string," + params
         return v
 
     def push_head(self, key, params, work_tag=None):
