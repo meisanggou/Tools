@@ -28,6 +28,7 @@ class WorkerTask(object):
         self.task_report_tag = None  # 任务结束后汇报的的work_tag
         self.is_report_task = False
         self.task_output = dict()
+        self.task_message = None
         self.work_tag = None
         self.set(**kwargs)
 
@@ -49,11 +50,12 @@ class WorkerTask(object):
 
     def to_dict(self):
         d = dict()
-        d["task_key"] = self.task_key
-        d["task_sub_key"] = self.task_sub_key
-        d["task_info"] = self.task_info
-        d["task_params"] = self.task_params
+        # d["task_key"] = self.task_key
+        # d["task_sub_key"] = self.task_sub_key
+        # d["task_info"] = self.task_info
+        # d["task_params"] = self.task_params
         d["task_status"] = self.task_status
         d["task_output"] = self.task_output
         d["work_tag"] = self.work_tag
+        d["task_message"] = self.task_message
         return d

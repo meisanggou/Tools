@@ -122,11 +122,9 @@ class RedisWorker(RedisWorkerConfig, Worker):
         if work_tag is None:
             queue_key = self.queue_key
         else:
-            print(self.queue_prefix_key)
             queue_key = self.queue_prefix_key + "_" + work_tag
         task_info = RedisQueue.package_task_info(work_tag, key, params, sub_key=sub_key, report_tag=report_tag,
                                                  is_report=is_report)
-        print(queue_key)
         self.redis_man.rpush(queue_key, task_info)
 
     def set_task_item(self, item_index, hash_key, hash_value, key=None, sub_key=None, nx=False):
@@ -159,7 +157,6 @@ class RedisWorker(RedisWorkerConfig, Worker):
             item = self.redis_man.hgetall(item_key)
             for key in item.keys():
                 item[key] = RedisData.unpack_data(item[key])
-            print(item)
             return item
         return RedisData.unpack_data(self.redis_man.hget(item_key, hash_key))
 
@@ -277,9 +274,3 @@ class RedisWorker(RedisWorkerConfig, Worker):
             self.execute()
             self.worker_log("Completed Task", self.current_task.task_key)
 
-
-if __name__ == "__main__":
-    r_worker = RedisWorker(log_dir="/tmp", heartbeat_value="中文", worker_index=1)
-    print(r_worker.log_dir)
-    print(r_worker.work_tag)
-    r_worker.work()
