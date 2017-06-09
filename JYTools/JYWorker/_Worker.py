@@ -7,7 +7,7 @@ import types
 from time import time
 import traceback
 from _exception import TaskErrorException, InvalidTaskException
-from _Task import TaskStatus
+from _Task import TaskStatus, WorkerTask
 from _config import WorkerConfig, WorkerLogConfig
 
 __author__ = 'meisanggou'
@@ -108,6 +108,11 @@ class Worker(WorkerConfig, _WorkerLog):
         """
         if self.current_task is not None:
             raise TaskErrorException(self.current_task.task_key, self.current_task.task_params, *args)
+
+    def set_output(self, key, value):
+        self.task_log("Task Out ", key, ": ", value)
+        if isinstance(self.current_task, WorkerTask):
+            self.current_task.task_output[key] = value
 
     @property
     def msg_manager(self):
