@@ -67,7 +67,7 @@ class RedisData(object):
 
     @staticmethod
     def unpack_data(p_data):
-        if isinstance(p_data, unicode) is False:
+        if isinstance(p_data, (unicode, str)) is False:
             return p_data
         sp_data = p_data.split("_", 1)
         if len(sp_data) != 2:
@@ -137,6 +137,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
         if sub_key is not None:
             item_key += "_%s" % sub_key
         item_key += "_%s" % item_index
+        # self.redis_man.hsetnx(item_key, hash_key, RedisData.package_data(hash_value))
         self.redis_man.hset(item_key, hash_key, RedisData.package_data(hash_value))
 
     def get_task_item(self, item_index, hash_key=None, key=None, sub_key=None):
@@ -151,8 +152,11 @@ class RedisWorker(RedisWorkerConfig, Worker):
             item_key += "_%s" % sub_key
         item_key += "_%s" % item_index
         if hash_key is None:
-            return self.redis_man.hgetall(item_key)
-        return self.redis_man.hget(item_key, hash_key)
+            item = self.redis_man.hgetall(item_key)
+            for key in item.keys():
+                item[key] = RedisData.unpack_data(item[key])
+            return item
+        return RedisData.unpack_data(self.redis_man.hget(item_key, hash_key))
 
     def worker_log(self, *args, **kwargs):
         if self.log_dir is None:
