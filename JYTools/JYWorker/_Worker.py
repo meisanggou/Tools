@@ -33,7 +33,7 @@ class Worker(WorkerConfig, _WorkerLog):
     def write(self, *args, **kwargs):
         self.task_log(*args, **kwargs)
 
-    def push_task(self, key, params, work_tag=None, is_report=False):
+    def push_task(self, key, params, work_tag=None, sub_key=None, is_report=False):
         pass
 
     def execute(self):
@@ -68,7 +68,8 @@ class Worker(WorkerConfig, _WorkerLog):
             if self.current_task.is_report_task is False and self.current_task.task_report_tag is not None:
                 self.task_log("Start Report Task Status")
                 self.push_task(self.current_task.task_key, self.current_task.to_dict(),
-                               work_tag=self.current_task.task_report_tag, is_report=True)
+                               work_tag=self.current_task.task_report_tag, sub_key=self.current_task.task_sub_key,
+                               is_report=True)
         use_time = time() - execute_time
         self.task_log("Use ", use_time, " Seconds")
 

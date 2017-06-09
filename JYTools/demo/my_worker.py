@@ -12,8 +12,10 @@ __author__ = 'meisanggou'
 
 class FirstWorker(RedisWorker):
     def handler_report_task(self):
+        print("____________start_report______________")
         print(self.current_task.task_sub_key)
         print(self.current_task.task_key)
+        print("____________end_report______________")
 
     def handler_task(self, key, params):
         print(key)

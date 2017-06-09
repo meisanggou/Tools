@@ -97,12 +97,12 @@ class RedisWorker(RedisWorkerConfig, Worker):
             detail_key += "_%s" % sub_key
         return self.redis_man.get(detail_key)
 
-    def push_task(self, key, params, work_tag=None, is_report=False):
+    def push_task(self, key, params, work_tag=None, sub_key=None, is_report=False):
         if work_tag is None:
             queue_key = self.queue_key
         else:
             queue_key = self.queue_prefix_key + "_" + work_tag
-        task_info = RedisQueue.package_task_info(work_tag, key, params, is_report=is_report)
+        task_info = RedisQueue.package_task_info(work_tag, key, params, sub_key=sub_key, is_report=is_report)
         self.redis_man.rpush(queue_key, task_info)
 
     def push_task_detail(self, task_detail, key=None, sub_key=None):
@@ -166,6 +166,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
         if work_tags[0] != self.work_tag:
             error_msg = "Invalid task %s, task not match work tag %s" % (task_info, self.work_tag)
             return False, error_msg
+        task_item.set(work_tag=work_tags[0])
         if len(work_tags) > 1:
             task_item.set(task_report_tag=work_tags[1])
 
