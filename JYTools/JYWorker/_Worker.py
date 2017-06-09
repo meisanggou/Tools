@@ -53,10 +53,12 @@ class Worker(WorkerConfig, _WorkerLog):
                 sys.stdout = standard_out
         except TaskErrorException as te:
             self.current_task.task_status = TaskStatus.FAIL
+            self.current_task.task_message = te.error_message
             self.worker_log("Task: ", te.key, "Params: ", te.params, " Error Info: ", te.error_message, level="ERROR")
             self.task_log(te.error_message, level="ERROR")
         except InvalidTaskException as it:
             self.current_task.task_status = TaskStatus.INVALID
+            self.current_task.task_message = it.invalid_message
             self.worker_log("Invalid Task ", it.task_info, " Invalid Info: ", it.invalid_message, level="WARING")
         except Exception as e:
             self.current_task.task_status = TaskStatus.FAIL
