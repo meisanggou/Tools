@@ -73,7 +73,7 @@ class RedisData(object):
         if len(sp_data) != 2:
             return p_data
         sign = sp_data[0]
-        if sign == "s_":
+        if sign == "s":
             return sp_data[1]
         if sign == "d":
             return json.loads(sp_data[1])
@@ -118,15 +118,18 @@ class RedisWorker(RedisWorkerConfig, Worker):
             return next_task[1]
         return next_task
 
-    def push_task(self, key, params, work_tag=None, sub_key=None, is_report=False):
+    def push_task(self, key, params, work_tag=None, sub_key=None, report_tag=None, is_report=False):
         if work_tag is None:
             queue_key = self.queue_key
         else:
+            print(self.queue_prefix_key)
             queue_key = self.queue_prefix_key + "_" + work_tag
-        task_info = RedisQueue.package_task_info(work_tag, key, params, sub_key=sub_key, is_report=is_report)
+        task_info = RedisQueue.package_task_info(work_tag, key, params, sub_key=sub_key, report_tag=report_tag,
+                                                 is_report=is_report)
+        print(queue_key)
         self.redis_man.rpush(queue_key, task_info)
 
-    def set_task_item(self, item_index, hash_key, hash_value, key=None, sub_key=None):
+    def set_task_item(self, item_index, hash_key, hash_value, key=None, sub_key=None, nx=False):
         if key is None:
             key = self.current_task.task_key
         if key is None:
@@ -137,7 +140,8 @@ class RedisWorker(RedisWorkerConfig, Worker):
         if sub_key is not None:
             item_key += "_%s" % sub_key
         item_key += "_%s" % item_index
-        # self.redis_man.hsetnx(item_key, hash_key, RedisData.package_data(hash_value))
+        if nx is True:
+            return self.redis_man.hsetnx(item_key, hash_key, RedisData.package_data(hash_value))
         self.redis_man.hset(item_key, hash_key, RedisData.package_data(hash_value))
 
     def get_task_item(self, item_index, hash_key=None, key=None, sub_key=None):
@@ -155,8 +159,22 @@ class RedisWorker(RedisWorkerConfig, Worker):
             item = self.redis_man.hgetall(item_key)
             for key in item.keys():
                 item[key] = RedisData.unpack_data(item[key])
+            print(item)
             return item
         return RedisData.unpack_data(self.redis_man.hget(item_key, hash_key))
+
+    def del_task_item(self, item_index, key=None, sub_key=None):
+        if key is None:
+            key = self.current_task.task_key
+        if key is None:
+            return None
+        item_key = "%s" % key
+        if sub_key is None:
+            sub_key = self.current_task.task_sub_key
+        if sub_key is not None:
+            item_key += "_%s" % sub_key
+        item_key += "_%s" % item_index
+        return self.redis_man.delete(item_key)
 
     def worker_log(self, *args, **kwargs):
         if self.log_dir is None:
