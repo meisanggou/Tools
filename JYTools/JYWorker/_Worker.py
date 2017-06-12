@@ -37,7 +37,7 @@ class Worker(WorkerConfig, _WorkerLog):
         pass
 
     def execute(self):
-        execute_time = time()
+        self.current_task.start_time = time()
         standard_out = None
         try:
             if self.redirect_stdout is True:
@@ -73,7 +73,8 @@ class Worker(WorkerConfig, _WorkerLog):
                 self.push_task(self.current_task.task_key, self.current_task.to_dict(),
                                work_tag=self.current_task.task_report_tag, sub_key=self.current_task.task_sub_key,
                                is_report=True)
-        use_time = time() - execute_time
+        self.current_task.end_time = time()
+        use_time = self.current_task.end_time - self.current_task.start_time
         self.task_log("Use ", use_time, " Seconds")
 
     def execute_error(self, e):
