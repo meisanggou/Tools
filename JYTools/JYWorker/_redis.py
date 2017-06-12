@@ -137,7 +137,8 @@ class RedisWorker(RedisWorkerConfig, Worker):
             sub_key = self.current_task.task_sub_key
         if sub_key is not None:
             item_key += "_%s" % sub_key
-        item_key += "_%s" % item_index
+        if item_index is not None:
+            item_key += "_%s" % item_index
         if nx is True:
             return self.redis_man.hsetnx(item_key, hash_key, RedisData.package_data(hash_value))
         self.redis_man.hset(item_key, hash_key, RedisData.package_data(hash_value))
@@ -203,6 +204,8 @@ class RedisWorker(RedisWorkerConfig, Worker):
         write_a = ["[", self.heartbeat_value]
         if self.worker_index is not None:
             write_a.extend([":", self.worker_index])
+        if self.current_task.task_sub_key is not None:
+            write_a.extend(["][", self.current_task.task_sub_key])
         write_a.extend(["] ", now_time, ": ", level, " ", msg, "\n"])
         with open(log_file, "a", 0) as wl:
             s = StringTool.join(write_a, join_str="")

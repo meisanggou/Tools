@@ -59,6 +59,7 @@ class Worker(WorkerConfig, _WorkerLog):
         except InvalidTaskException as it:
             self.current_task.task_status = TaskStatus.INVALID
             self.current_task.task_message = it.invalid_message
+            self.task_log(it.invalid_message, level="WARING")
             self.worker_log("Invalid Task ", it.task_info, " Invalid Info: ", it.invalid_message, level="WARING")
         except Exception as e:
             self.current_task.task_status = TaskStatus.FAIL
