@@ -63,7 +63,7 @@ class RedisData(object):
         if isinstance(data, int):
             return "i_%s" % data
         if isinstance(data, float):
-            return "f_%s" % float
+            return "f_%s" % data
         else:
             return "s_%s" % data
 
