@@ -117,6 +117,10 @@ class Worker(WorkerConfig, _WorkerLog):
         if isinstance(self.current_task, WorkerTask):
             self.current_task.task_output[key] = value
 
+    def set_multi_output(self, **kwargs):
+        for key, value in kwargs.items():
+            self.set_output(key, value)
+
     @property
     def msg_manager(self):
         return self._msg_manager

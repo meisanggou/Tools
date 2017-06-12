@@ -58,6 +58,8 @@ class RedisData(object):
     def package_data(data):
         if isinstance(data, dict):
             return "d_" + json.dumps(data)
+        if isinstance(data, list):
+            return "l_" + json.dumps(data)
         if isinstance(data, int):
             return "i_%s" % data
         if isinstance(data, float):
@@ -76,6 +78,8 @@ class RedisData(object):
         if sign == "s":
             return sp_data[1]
         if sign == "d":
+            return json.loads(sp_data[1])
+        elif sign == "l":
             return json.loads(sp_data[1])
         elif sign == "i":
             return int(sp_data[1])
