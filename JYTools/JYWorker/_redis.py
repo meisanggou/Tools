@@ -185,7 +185,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
             wl.write(s)
 
     def task_log(self, *args, **kwargs):
-        if self.current_task is None:
+        if self.current_task is None or self.current_task.task_key is None:
             return
         msg = StringTool.join(args, " ")
         level = kwargs.pop("level", "INFO")

@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import ConfigParser
+from _Task import WorkerTask
 from redis import Redis
 
 __author__ = 'meisanggou'
@@ -35,7 +36,7 @@ class WorkerConfig(object):
         self.queue_key = self.queue_prefix_key + "_" + self.work_tag
         if self.heartbeat_key == self.queue_key:
             self.heartbeat_key = "heartbeat_" + self.heartbeat_key
-        self.current_task = None
+        self.current_task = WorkerTask()
 
     def load_work_config(self, conf_path, section_name):
         config = ConfigParser.ConfigParser()

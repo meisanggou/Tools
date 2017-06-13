@@ -102,7 +102,7 @@ class Worker(WorkerConfig, _WorkerLog):
         """
             add in version 0.1.14
         """
-        if self.current_task is not None:
+        if self.current_task.task_key is not None:
             raise InvalidTaskException(self.current_task.task_key, self.current_task.task_params, self.current_task,
                                        *args)
 
@@ -110,7 +110,7 @@ class Worker(WorkerConfig, _WorkerLog):
         """
             add in version 0.1.18
         """
-        if self.current_task is not None:
+        if self.current_task.task_key is not None:
             raise TaskErrorException(self.current_task.task_key, self.current_task.task_params, *args)
 
     def set_output(self, key, value):
