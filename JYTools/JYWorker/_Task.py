@@ -32,6 +32,7 @@ class WorkerTask(object):
         self.work_tag = None
         self.start_time = None
         self.end_time = None
+        self.sub_task_detail = None
         self.set(**kwargs)
 
     def set(self, **kwargs):
@@ -62,4 +63,5 @@ class WorkerTask(object):
         d["task_message"] = self.task_message
         d["start_time"] = self.start_time
         d["end_time"] = self.end_time
+        d["sub_task_detail"] = self.sub_task_detail
         return d
