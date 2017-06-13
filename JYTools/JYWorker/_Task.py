@@ -10,6 +10,7 @@ class TaskStatus(object):
     NONE = "None"
     SUCCESS = "Success"
     FAIL = "Fail"
+    ERROR = "Fail"
     INVALID = "Invalid"
     RUNNING = "Running"
 
