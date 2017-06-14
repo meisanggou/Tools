@@ -138,7 +138,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
             key = self.current_task.task_key
         if key is None:
             return None
-        item_key = "%s" % key
+        item_key = "%s_%s" % (self.queue_key, key)
         if sub_key is None:
             sub_key = self.current_task.task_sub_key
         if sub_key is not None:
