@@ -97,7 +97,7 @@ class DB(object):
             return self.execute(sql_query=sql_query, freq=freq + 1)
         return handled_item
 
-    def execute_multi_select(self, table_name, where_value={"1": 1}, cols=None, package=True, **kwargs):
+    def execute_multi_select(self, table_name, where_value=None, cols=None, package=True, **kwargs):
         kwargs = dict(kwargs)
         if cols is None:
             select_item = "*"
@@ -105,10 +105,13 @@ class DB(object):
             select_item = ",".join(tuple(cols))
         select_sql = "SELECT %s FROM %s" % (select_item, table_name)
         sql_query = ""
-        for item in where_value:
-            value_list = where_value[item]
-            for value in value_list:
-                sql_query += "%s WHERE %s=%s union " % (select_sql, item, value)
+        args = []
+        if isinstance(where_value, dict):
+            for item in where_value:
+                value_list = where_value[item]
+                for value in value_list:
+                    sql_query += "{0} WHERE {1}=%s union ".format(select_sql, item)
+                    args.append(value)
         sql_query = sql_query[:-7]
         order_by = kwargs.pop("order_by", None)
         order_desc = kwargs.pop("order_desc", False)
@@ -120,7 +123,7 @@ class DB(object):
             if order_desc is True:
                 sql_query += " DESC"
         sql_query += ";"
-        exec_result = self.execute(sql_query)
+        exec_result = self.execute(sql_query, args)
         if cols is not None and package is True:
             db_items = self.fetchall()
             select_items = []
