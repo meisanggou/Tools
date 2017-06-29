@@ -6,11 +6,15 @@
 __author__ = 'meisanggou'
 
 encoding = "utf-8"
+second_encoding = "gbk"
 
 
 def decode(s):
     if isinstance(s, str):
-        return s.decode(encoding)
+        try:
+            return s.decode(encoding)
+        except UnicodeError:
+            return s.decode(second_encoding, "replace")
     if isinstance(s, (int, long)):
         return "%s" % s
     return s
@@ -32,3 +36,4 @@ def join(a, join_str):
     else:
         r_a += decode(str(a)) + join_str
     return r_a
+
