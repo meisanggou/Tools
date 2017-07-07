@@ -99,6 +99,8 @@ class RedisWorker(RedisWorkerConfig, Worker):
 
     def __init__(self, conf_path=None, heartbeat_value="0", **kwargs):
         self.conf_path = conf_path
+        if os.path.exists(self.conf_path) is False:
+            self.worker_log("Conf Path Not Exist ", self.conf_path)
         RedisWorkerConfig.__init__(self, conf_path)
         Worker.__init__(self, conf_path=conf_path, **kwargs)
         self.heartbeat_value = StringTool.decode(heartbeat_value)
