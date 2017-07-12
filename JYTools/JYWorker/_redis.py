@@ -54,6 +54,8 @@ class RedisQueue(RedisWorkerConfig, WorkerConfig):
 
 
 class RedisData(object):
+    BOOL_VALUE = [False, True]
+
     @staticmethod
     def package_data(data):
         if data is None:
@@ -62,6 +64,8 @@ class RedisData(object):
             return "d_" + json.dumps(data)
         if isinstance(data, list):
             return "l_" + json.dumps(data)
+        if isinstance(data, bool):
+            return "b_%s" % RedisData.BOOL_VALUE.index(data)
         if isinstance(data, int):
             return "i_%s" % data
         if isinstance(data, float):
@@ -87,6 +91,8 @@ class RedisData(object):
             return int(sp_data[1])
         elif sign == "f":
             return float(sp_data[1])
+        elif sign == "b":
+            return RedisData.BOOL_VALUE[int(sp_data[1])]
         return p_data
 
 
