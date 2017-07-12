@@ -15,9 +15,27 @@ __author__ = 'meisanggou'
 
 
 class RedisQueue(RedisWorkerConfig, WorkerConfig):
+    """
+        conf_path_environ_key
+        add in version 0.1.25
+    """
+    conf_path_environ_key = "REDIS_WORKER_CONF_PATH"
+
     def __init__(self, conf_path, **kwargs):
-        RedisWorkerConfig.__init__(self, conf_path)
-        WorkerConfig.__init__(self, conf_path, **kwargs)
+        self.conf_path = conf_path
+        if os.path.exists(self.conf_path) is False:
+            print("Conf Path Not Exist ", self.conf_path)
+            print("Read os environ :", self.conf_path_environ_key, " ")
+            env_conf_path = os.environ.get(self.conf_path_environ_key)
+            print("os environ ", self.conf_path_environ_key, " is ", env_conf_path)
+            if env_conf_path is not None:
+                if os.path.exists(env_conf_path) is True:
+                    self.conf_path = env_conf_path
+                    print("Use ", env_conf_path, " As conf path")
+                else:
+                    print("Path ", env_conf_path, " Not Exist")
+        RedisWorkerConfig.__init__(self, self.conf_path)
+        WorkerConfig.__init__(self, self.conf_path, **kwargs)
 
     @staticmethod
     def package_task_info(work_tag, key, params, sub_key=None, report_tag=None, is_report=False):
@@ -102,13 +120,23 @@ class RedisWorker(RedisWorkerConfig, Worker):
         add in version 0.1.8
     """
     expect_params_type = None
+    conf_path_environ_key = "REDIS_WORKER_CONF_PATH"
 
     def __init__(self, conf_path=None, heartbeat_value="0", **kwargs):
         self.conf_path = conf_path
         if os.path.exists(self.conf_path) is False:
-            self.worker_log("Conf Path Not Exist ", self.conf_path)
-        RedisWorkerConfig.__init__(self, conf_path)
-        Worker.__init__(self, conf_path=conf_path, **kwargs)
+            print("Conf Path Not Exist ", self.conf_path)
+            print("Read os environ :", self.conf_path_environ_key, " ")
+            env_conf_path = os.environ.get(self.conf_path_environ_key)
+            print("os environ ", self.conf_path_environ_key, " is ", env_conf_path)
+            if env_conf_path is not None:
+                if os.path.exists(env_conf_path) is True:
+                    self.conf_path = env_conf_path
+                    print("Use ", env_conf_path, " As conf path")
+                else:
+                    print("Path ", env_conf_path, " Not Exist")
+        RedisWorkerConfig.__init__(self, self.conf_path)
+        Worker.__init__(self, conf_path=self.conf_path, **kwargs)
         self.heartbeat_value = StringTool.decode(heartbeat_value)
         self.redis_man.set(self.heartbeat_key, heartbeat_value)
 
