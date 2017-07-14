@@ -152,9 +152,10 @@ class RedisWorker(RedisWorkerConfig, Worker):
             next_task = self.redis_man.blpop(self.queue_key, self.pop_time_out)
         except Exception as e:
             if freq > 5:
+                self.worker_log(e, level="ERROR")
                 raise e
             freq += 1
-            sleep(10)
+            sleep(10 * freq)
             return self.pop_task(freq)
         if next_task is not None:
             return next_task[1]
