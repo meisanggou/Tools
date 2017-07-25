@@ -65,6 +65,9 @@ class Worker(WorkerConfig, _WorkerLog):
             self.current_task.task_status = TaskStatus.FAIL
             self.task_log(traceback.format_exc(), level="ERROR")
             self.execute_error(e)
+        except SystemExit as se:
+            self.current_task.task_status = TaskStatus.FAIL
+            self.task_log(traceback.format_exc(), level="ERROR")
         finally:
             if standard_out is not None:
                 sys.stdout = standard_out
