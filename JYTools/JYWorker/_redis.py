@@ -205,7 +205,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
         return self.redis_man.delete(item_key)
 
     def worker_log(self, *args, **kwargs):
-        if self.log_dir is None:
+        if self.log_dir is None or isinstance(self.log_dir, (unicode, str)) is False:
             return
         msg = StringTool.join(args, " ")
         level = kwargs.pop("level", "INFO")
@@ -223,12 +223,15 @@ class RedisWorker(RedisWorkerConfig, Worker):
             wl.write(s)
 
     def task_log(self, *args, **kwargs):
+        if self.log_dir is None or isinstance(self.log_dir, (unicode, str)) is False:
+            return
         if self.current_task is None or self.current_task.task_key is None:
             return
         msg = StringTool.join(args, " ")
         level = kwargs.pop("level", "INFO")
         if level != "INFO":
             self.publish_message("%s\n%s" % (self.current_task.task_key, msg))
+        print(self.log_dir)
         log_file = os.path.join(self.log_dir, "%s_%s.log" % (self.work_tag, self.current_task.task_key))
         now_time = datetime.now().strftime(TIME_FORMAT)
         write_a = ["[", self.heartbeat_value]
