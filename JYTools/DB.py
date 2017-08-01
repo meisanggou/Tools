@@ -16,12 +16,15 @@ class DB(object):
     conn = None
     cursor = None
     _sock_file = ''
+    conf_path_environ_key = "JY_DB_CONF_PATH"
 
     def __init__(self, conf_path=None, conf_dir=None, readonly=False):
         self.readonly = readonly
         if conf_path is None:
             if conf_dir is not None:
                 conf_path = os.path.join(conf_dir, "mysql_app.conf")
+            elif os.environ.get(self.conf_path_environ_key) is not None:
+                conf_path = os.environ.get(self.conf_path_environ_key)
             else:
                 conf_path = "mysql_app.conf"
         self._int_app(conf_path, readonly)
