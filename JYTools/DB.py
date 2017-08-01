@@ -150,7 +150,7 @@ class DB(object):
             return select_items
         return exec_result
 
-    def execute_select(self, table_name, where_value={"1": 1}, where_cond=None, cols=None, package=True, **kwargs):
+    def execute_select(self, table_name, where_value=None, where_cond=None, cols=None, package=True, **kwargs):
         kwargs = dict(kwargs)
         where_is_none = kwargs.pop("where_is_none", None)
         where_cond_args = kwargs.pop("where_cond_args", None)
