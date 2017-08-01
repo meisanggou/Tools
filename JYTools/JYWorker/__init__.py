@@ -8,14 +8,24 @@ from _Task import TaskStatus
 __author__ = 'meisanggou'
 
 
-def receive_argv(d, short_opt, long_opt, default_value=None):
+def _print():
+    print()
+
+
+def receive_argv(d, short_opt, long_opt, default_value="", **kwargs):
     short_opt_key = "-" + short_opt
     long_opt_key = "--" + long_opt
     if short_opt_key in d:
+        print("use %s %s" % (short_opt_key, d[short_opt_key]))
         return d[short_opt_key]
     if long_opt_key in d:
+        print("use %s %s" % (long_opt_key, d[long_opt_key]))
         return d[long_opt_key]
-    default_value = os.environ.get(long_opt.replace("-", "_").upper(), default_value)
-    if default_value is None:
+    env_key = long_opt.replace("-", "_").upper()
+    env_value = os.environ.get(long_opt.replace("-", "_").upper())
+    if env_value is not None:
+        print("use env value %s: %s" % (env_key, env_value))
+        return env_value
+    if default_value == "":
         exit("please use %s or %s" % (short_opt_key, long_opt_key))
     return default_value

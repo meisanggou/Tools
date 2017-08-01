@@ -124,7 +124,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
 
     def __init__(self, conf_path=None, heartbeat_value="0", **kwargs):
         self.conf_path = conf_path
-        if self.conf_path is None or isinstance(self.conf_path, unicode) is False or os.path.exists(
+        if self.conf_path is None or isinstance(self.conf_path, (unicode, str)) is False or os.path.exists(
                 self.conf_path) is False:
             print("Conf Path Not Exist ", self.conf_path)
             print("Read os environ :", self.conf_path_environ_key, " ")
