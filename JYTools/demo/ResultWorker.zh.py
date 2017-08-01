@@ -3,7 +3,7 @@
 
 import uuid
 import json
-from time import sleep
+from time import sleep, time
 from JYTools.JYWorker import RedisWorker
 
 __author__ = 'meisanggou'
@@ -22,6 +22,7 @@ class ResultWorker(RedisWorker):
         print("start time ", start_time)
         print("end time ", end_time)
         print("use ", end_time - start_time)
+        print(task_params["task_output"])
         print(json.dumps(task_params["sub_task_detail"]))
 
 

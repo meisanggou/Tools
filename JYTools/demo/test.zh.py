@@ -5,7 +5,7 @@ from JYTools.JYWorker import RedisQueue
 
 __author__ = 'meisanggou'
 
-r_queue = RedisQueue("/home/msg/Tools/JYTools/demo/redis_worker.conf", work_tag="Pipeline")
+r_queue = RedisQueue("/mnt/data/Tools/JYTools/demo/redis_worker.conf", work_tag="Merge")
 print(r_queue.queue_key)
 
 plus_task = {"work_tag": "Plus", "input_a": "&0a", "input_b": "&0b"}
@@ -53,5 +53,24 @@ for i in range(10):
     repeat_plus_task["input_a"].append(i)
 
 merge_task = {"work_tag": "Merge", "input_v": "&1lc"}
-pipeline_detail3 = {"task_list": [repeat_pipeline_detail2, merge_task], "task_output": {"y": "&2m"}}
-r_queue.push("cccc", pipeline_detail3, report_tag="Result")
+pipeline_detail3 = {"task_list": [repeat_pipeline_detail2, merge_task], "task_output": {"y": "&2m", "y2": "&2r"}}
+# r_queue.push("cccc", pipeline_detail3, report_tag="Result")
+
+
+
+split_vcf = {"work_tag": "SplitVCF", "input_chrome": "&0chrome", "input_vcf_path": ["a.vcf", "b.vcf", "c.vcf"],
+             "task_type": "repeat-app",
+             "task_output": {"o": "&out_path"}}
+combine = {"input_vcfs": "&1o", "input_chrome": "&0chrome", "work_tag": "Combine", "task_type": "app"}
+pipeline_split = {"input_chrome": "&0chr", "task_list": [split_vcf, combine], "task_type": "repeat-pipeline",
+                  "task_output": {"o": "&1o", "m": "&2m"}}
+
+pipeline_detail4 = {"task_list": [pipeline_split], "task_output": {"m": "&1m"}, "input_chr": ["chr1", "chr2", "chr3"]}
+# r_queue.push("vs2d", pipeline_detail4, report_tag="Result")
+
+
+for i in range(1, 10000):
+    v = []
+    for j in range(1, 10000000):
+        v.append(i + j)
+    r_queue.push(i, {"v": v})
