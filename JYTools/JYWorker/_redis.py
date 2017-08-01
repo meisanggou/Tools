@@ -23,7 +23,7 @@ class RedisQueue(RedisWorkerConfig, WorkerConfig):
 
     def __init__(self, conf_path, **kwargs):
         self.conf_path = conf_path
-        if os.path.exists(self.conf_path) is False:
+        if self.conf_path is None or os.path.exists(self.conf_path) is False:
             print("Conf Path Not Exist ", self.conf_path)
             print("Read os environ :", self.conf_path_environ_key, " ")
             env_conf_path = os.environ.get(self.conf_path_environ_key)
@@ -124,7 +124,8 @@ class RedisWorker(RedisWorkerConfig, Worker):
 
     def __init__(self, conf_path=None, heartbeat_value="0", **kwargs):
         self.conf_path = conf_path
-        if os.path.exists(self.conf_path) is False:
+        if self.conf_path is None or isinstance(self.conf_path, unicode) is False or os.path.exists(
+                self.conf_path) is False:
             print("Conf Path Not Exist ", self.conf_path)
             print("Read os environ :", self.conf_path_environ_key, " ")
             env_conf_path = os.environ.get(self.conf_path_environ_key)
