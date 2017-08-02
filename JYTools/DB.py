@@ -263,6 +263,12 @@ class DB(object):
         sql_query = "DELETE FROM %s WHERE %s=%%s;" % (table_name, "=%s AND ".join(dict(where_value).keys()))
         return self.execute(sql_query, args)
 
+    def execute_call(self, p_name, *args):
+        sql_query = "CALL %s(" % p_name
+        sql_query += ",".join(map(self.literal, args))
+        sql_query += ");"
+        return self.execute(sql_query)
+
     def source_file(self, file_path):
         cmd = "mysql -u%s -p%s %s < %s" % (self._db_user, self._db_password, self._db_name, file_path)
         os.system(cmd)

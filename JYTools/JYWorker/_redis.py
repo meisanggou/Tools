@@ -231,7 +231,6 @@ class RedisWorker(RedisWorkerConfig, Worker):
         level = kwargs.pop("level", "INFO")
         if level != "INFO":
             self.publish_message("%s\n%s" % (self.current_task.task_key, msg))
-        print(self.log_dir)
         log_file = os.path.join(self.log_dir, "%s_%s.log" % (self.work_tag, self.current_task.task_key))
         now_time = datetime.now().strftime(TIME_FORMAT)
         write_a = ["[", self.heartbeat_value]
