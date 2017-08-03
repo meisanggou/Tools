@@ -94,7 +94,7 @@ class DB(object):
             handled_item = self.cursor.execute(sql_query)
         except MySQLdb.Error as error:
             print(error)
-            if freq >= 3 or error.args[0] in [1054, 1064, 1146]:  # 列不存在 sql错误 表不存在
+            if freq >= 3 or error.args[0] in [1054, 1064, 1146, 1065]:  # 列不存在 sql错误 表不存在 empty_query
                 raise MySQLdb.Error(error)
             self.connect()
             return self.execute(sql_query=sql_query, freq=freq + 1)
