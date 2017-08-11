@@ -204,11 +204,29 @@ class DB(object):
     def execute_insert(self, table_name, kwargs, ignore=False):
         keys = dict(kwargs).keys()
         if ignore is True:
-            sql_query = "INSERT IGNORE INTO %s (%s) VALUES (%%(%s)s);" % (
-            table_name, ",".join(keys), ")s,%(".join(keys))
+            sql_query = "INSERT IGNORE INTO %s (%s) VALUES (%%(%s)s);" % (table_name, ",".join(keys),
+                                                                          ")s,%(".join(keys))
         else:
             sql_query = "INSERT INTO %s (%s) VALUES (%%(%s)s);" % (table_name, ",".join(keys), ")s,%(".join(keys))
         return self.execute(sql_query, args=kwargs)
+
+    def execute_duplicate_insert(self, t_name, kwargs, u_keys=None, p1_keys=None, u_v=None):
+        if isinstance(kwargs, dict) is False:
+            raise TypeError()
+        if u_v is None:
+            u_v = []
+        if isinstance(u_v, list) is False:
+            raise TypeError()
+        keys = kwargs.keys()
+        if isinstance(u_keys, (tuple, list)) is True:
+            u_v.extend(map(lambda x: "{0}=VALUES({0})".format(x), u_keys))
+        if isinstance(p1_keys, (tuple, list)) is True:
+            u_v.extend(map(lambda x: "{0}={0}+1".format(x), p1_keys))
+        if len(u_v) <= 0:
+            return self.execute_insert(t_name, kwargs)
+        sql = "INSERT INTO %s (%s) VALUES (%%(%s)s) ON DUPLICATE KEY UPDATE %s;" \
+              % (t_name, ",".join(keys), ")s,%(".join(keys), ",".join(u_v))
+        return self.execute(sql, args=kwargs)
 
     def execute_insert_mul(self, table_name, cols, value_list, ignore=False):
         keys = cols
@@ -225,6 +243,28 @@ class DB(object):
             sql_query += "(" + ("%s," * len(value_item)).rstrip(",") + "),"
             args.extend(value_item)
         sql_query = sql_query.rstrip(",") + ";"
+        return self.execute(sql_query, args=args)
+
+    def execute_duplicate_insert_mul(self, t_name, cols, values, u_keys=None, p1_keys=None, concat_keys=None, u_v=None):
+        if u_v is None:
+            u_v = []
+        if isinstance(u_keys, (tuple, list)) is True:
+            u_v.extend(map(lambda x: "{0}=VALUES({0})".format(x), u_keys))
+        if isinstance(p1_keys, (tuple, list)) is True:
+            u_v.extend(map(lambda x: "{0}={0}+1".format(x), p1_keys))
+        if isinstance(concat_keys, (tuple, list)) is True:
+            u_v.extend(map(lambda x: "{0}=concat({0}, ',', VALUES({0}))".format(x), concat_keys))
+        if len(u_v) <= 0:
+            return self.execute_insert_mul(t_name, cols, values)
+        keys = cols
+        sql_query = "INSERT INTO %s (%s) VALUES " % (t_name, ",".join(keys))
+        if isinstance(values, (list, tuple)) is False:
+            raise TypeError()
+        args = []
+        for value_item in values:
+            sql_query += "(" + ("%s," * len(value_item)).rstrip(",") + "),"
+            args.extend(value_item)
+        sql_query = sql_query.rstrip(",") + " ON DUPLICATE KEY UPDATE %s;" % ",".join(u_v)
         return self.execute(sql_query, args=args)
 
     def execute_update(self, table_name, update_value=None, update_value_list=None, where_value=None, where_is_none=[],
