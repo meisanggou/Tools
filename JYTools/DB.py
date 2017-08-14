@@ -94,6 +94,7 @@ class DB(object):
             handled_item = self.cursor.execute(sql_query)
         except MySQLdb.Error as error:
             print(error)
+            print(sql_query)
             if freq >= 3 or error.args[0] in [1054, 1064, 1146, 1065]:  # 列不存在 sql错误 表不存在 empty_query
                 raise MySQLdb.Error(error)
             self.connect()
@@ -260,6 +261,8 @@ class DB(object):
         sql_query = "INSERT INTO %s (%s) VALUES " % (t_name, ",".join(keys))
         if isinstance(values, (list, tuple)) is False:
             raise TypeError()
+        if len(values) <= 0:
+            return 0
         args = []
         for value_item in values:
             sql_query += "(" + ("%s," * len(value_item)).rstrip(",") + "),"
