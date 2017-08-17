@@ -4,6 +4,7 @@
 import os
 from _redis import RedisWorker, RedisQueue
 from _Task import TaskStatus
+from _du import DAGWorker
 
 __author__ = 'meisanggou'
 
