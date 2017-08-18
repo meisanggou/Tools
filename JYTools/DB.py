@@ -251,7 +251,7 @@ class DB(object):
     def execute_duplicate_insert_mul(self, t_name, cols, values, u_keys=None, p1_keys=None, concat_keys=None, u_v=None,
                                      print_sql=False):
         u_l = list()
-        if isinstance(u_keys, (tuple, list)) is True:
+        if isinstance(u_v, (tuple, list)) is True:
             u_l.extend(u_v)
         if isinstance(u_keys, (tuple, list)) is True:
             u_l.extend(map(lambda x: "{0}=VALUES({0})".format(x), u_keys))
