@@ -122,7 +122,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
     expect_params_type = None
     conf_path_environ_key = "REDIS_WORKER_CONF_PATH"
 
-    def __init__(self, conf_path=None, heartbeat_value="0", **kwargs):
+    def __init__(self, conf_path=None, heartbeat_value="0", log_dir=None, **kwargs):
         self.conf_path = conf_path
         if self.conf_path is None or isinstance(self.conf_path, (unicode, str)) is False or os.path.exists(
                 self.conf_path) is False:
@@ -137,7 +137,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
                 else:
                     print("Path ", env_conf_path, " Not Exist")
         RedisWorkerConfig.__init__(self, self.conf_path)
-        Worker.__init__(self, conf_path=self.conf_path, **kwargs)
+        Worker.__init__(self, conf_path=self.conf_path, log_dir=log_dir, **kwargs)
         self.heartbeat_value = StringTool.decode(heartbeat_value)
         self.redis_man.set(self.heartbeat_key, heartbeat_value)
 

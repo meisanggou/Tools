@@ -61,10 +61,10 @@ class WorkerConfig(object):
 
 
 class WorkerLogConfig(object):
-    def __init__(self, **kwargs):
+    def __init__(self, log_dir=None, **kwargs):
         self.log_dir = None
-        if "log_dir" in kwargs:
-            self.log_dir = kwargs["log_dir"]
+        if log_dir is not None:
+            self.log_dir = log_dir
 
 
 class RedisWorkerConfig(object):

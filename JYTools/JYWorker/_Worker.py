@@ -22,9 +22,9 @@ class _WorkerLog(WorkerLogConfig):
 
 
 class Worker(WorkerConfig, _WorkerLog):
-    def __init__(self, **kwargs):
+    def __init__(self, log_dir=None, **kwargs):
         WorkerConfig.__init__(self, **kwargs)
-        _WorkerLog.__init__(self, **kwargs)
+        _WorkerLog.__init__(self, log_dir=log_dir, **kwargs)
         self._msg_manager = None
 
     def has_heartbeat(self):
