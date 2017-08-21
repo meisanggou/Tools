@@ -159,7 +159,7 @@ class DAGWorker(RedisWorker):
             self.del_task_item(index)
 
     def analysis_ref(self, ref_str, current_index, task_len):
-        match_r = re.match("^(\\d{1,10})([a-z]\\w{0,20})$", ref_str)
+        match_r = re.match("^(\\d{1,10})([a-z]\\w{0,20})$", ref_str, re.I)
         if match_r is None:
             return False, "Input Not Standard Ref Result Format %s" % ref_str
         ref_index = int(match_r.groups()[0])
