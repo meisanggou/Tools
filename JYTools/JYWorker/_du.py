@@ -13,7 +13,7 @@ class DAGWorker(RedisWorker):
     expect_params_type = dict
 
     def handler_report_task(self):
-        task_params = self.current_task.task_params
+        r_task = self.current_task.task_params
         sp_keys = self.current_task.task_sub_key.rsplit("_", 1)
         if len(sp_keys) == 2:
             self.current_task.task_sub_key = sp_keys[0]
@@ -21,23 +21,24 @@ class DAGWorker(RedisWorker):
             self.current_task.task_sub_key = None
         reporter_sub_key = int(sp_keys[-1])  # 子任务在父任务中的位置 位置从1开始
         self.task_log("Task ", reporter_sub_key, " Report")
-        task_status = task_params["task_status"]
-        task_message = task_params["task_message"]
+        task_status = r_task.task_status
+        task_message = r_task.task_message
         self.task_log("Task ", reporter_sub_key, " Status Is ", task_status)
         self.set_task_item(reporter_sub_key, "task_status", task_status)
         self.set_task_item(reporter_sub_key, "task_message", task_message)
-        if task_params["sub_task_detail"] is not None:
-            self.set_task_item(reporter_sub_key, "task_list", task_params["sub_task_detail"])
+        if r_task["sub_task_detail"] is not None:
+            self.set_task_item(reporter_sub_key, "task_list", r_task.sub_task_detail)
         if task_status != TaskStatus.SUCCESS:
             self.set_task_item(0, "task_status", TaskStatus.FAIL)
             self.set_task_item(0, "task_message", task_message)
+            self.set_task_item(0, "task_fail_index", reporter_sub_key)
             self.fail_pipeline("Task ", reporter_sub_key, " Not Success Is ", task_status, "\nMessage Is ",
-                               task_params["task_message"], "\nReport Tag ", task_params["work_tag"])
-        if "task_output" in task_params:
-            for output_key in task_params["task_output"].keys():
-                self.set_task_item(reporter_sub_key, "output_%s" % output_key, task_params["task_output"][output_key])
-        self.set_task_item(reporter_sub_key, "start_time", task_params["start_time"])
-        self.set_task_item(reporter_sub_key, "end_time", task_params["end_time"])
+                               r_task.task_message, "\nReport Tag ", r_task.work_tag)
+        if isinstance(r_task.task_output, dict):
+            for output_key in r_task.task_output.keys():
+                self.set_task_item(reporter_sub_key, "output_%s" % output_key, r_task.task_output[output_key])
+        self.set_task_item(reporter_sub_key, "start_time", r_task.start_time)
+        self.set_task_item(reporter_sub_key, "end_time", r_task.end_time)
         self.set_task_item(reporter_sub_key, "finished_time", time())
         self.handler_task(self.current_task.task_key, None)
 
@@ -53,6 +54,7 @@ class DAGWorker(RedisWorker):
         if task_len <= 0:
             self.set_current_task_invalid("At Least One Task")
         for index in range(task_len):
+            self.del_task_item(index + 1)
             task_item = task_list[index]
             if isinstance(task_item, dict) is False:
                 self.set_current_task_invalid("Task ", index + 1, " Desc Not Dict")

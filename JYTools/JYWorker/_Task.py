@@ -59,11 +59,17 @@ class WorkerTask(object):
             self.is_report_task = kwargs["is_report_task"]
         if "work_tag" in kwargs:
             self.work_tag = kwargs["work_tag"]
+        if "task_message" in kwargs:
+            self.task_message = kwargs["task_message"]
+        if "start_time" in kwargs:
+            self.start_time = kwargs["start_time"]
+        if "end_time" in kwargs:
+            self.end_time = kwargs["end_time"]
 
     def to_dict(self):
         d = dict()
-        # d["task_key"] = self.task_key
-        # d["task_sub_key"] = self.task_sub_key
+        d["task_key"] = self.task_key
+        d["task_sub_key"] = self.task_sub_key
         # d["task_info"] = self.task_info
         # d["task_params"] = self.task_params
         d["task_name"] = self.task_name
@@ -75,3 +81,6 @@ class WorkerTask(object):
         d["end_time"] = self.end_time
         d["sub_task_detail"] = self.sub_task_detail
         return d
+
+    def __getitem__(self, item):
+        return self.to_dict()[item]
