@@ -65,6 +65,8 @@ class WorkerTask(object):
             self.start_time = kwargs["start_time"]
         if "end_time" in kwargs:
             self.end_time = kwargs["end_time"]
+        if "task_output" in kwargs:
+            self.task_output = kwargs["task_output"]
 
     def to_dict(self):
         d = dict()
