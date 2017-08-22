@@ -18,10 +18,12 @@ class TaskStatus(object):
 class WorkerTask(object):
     """
         add in version 0.1.19
+        task_name add in version 0.2.6
     """
 
     def __init__(self, **kwargs):
         self.task_key = None
+        self.task_name = None
         self.task_sub_key = None
         self.task_info = None
         self.task_params = None
@@ -58,6 +60,7 @@ class WorkerTask(object):
         # d["task_sub_key"] = self.task_sub_key
         # d["task_info"] = self.task_info
         # d["task_params"] = self.task_params
+        d["task_name"] = self.task_name
         d["task_status"] = self.task_status
         d["task_output"] = self.task_output
         d["work_tag"] = self.work_tag

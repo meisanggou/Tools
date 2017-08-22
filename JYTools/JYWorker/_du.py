@@ -44,6 +44,8 @@ class DAGWorker(RedisWorker):
     def format_pipeline(self, key, params):
         if "task_list" not in params:
             self.set_current_task_invalid("Need task_list")
+        if "name" in params:
+            self.set_task_item(0, "task_name", params["name"])
         task_list = params["task_list"]
         if isinstance(task_list, list) is False:
             self.set_current_task_invalid("Need tuple task_list. Now Is ", type(task_list))
@@ -151,6 +153,7 @@ class DAGWorker(RedisWorker):
         pipeline_task.update(self.get_task_item(0))
         for index in range(task_len):
             pipeline_task["task_list"].append(self.get_task_item(index + 1))
+        self.current_task.task_name = self.get_task_item(0, hash_key="task_name")
         self.current_task.start_time = pipeline_task["start_time"]
         self.current_task.sub_task_detail = pipeline_task["task_list"]
 
