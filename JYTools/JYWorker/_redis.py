@@ -278,12 +278,14 @@ class RedisWorker(RedisWorkerConfig, Worker):
             except ValueError:
                 error_msg = "Invalid task %s, task args type and args not uniform" % task_info
                 return False, error_msg
-        if self.expect_params_type is not None:
-            if not isinstance(params, self.expect_params_type):
-                return False, "Invalid task, not expect param type"
-        task_item.set(task_params=params)
         if partition_task[2] == "report":
             task_item.set(is_report_task=True)
+            task_item.set(task_params=WorkerTask(**params))
+        else:
+            task_item.set(task_params=params)
+            if self.expect_params_type is not None:
+                if not isinstance(params, self.expect_params_type):
+                    return False, "Invalid task, not expect param type"
         return True, task_item
 
     def run(self):
@@ -304,7 +306,10 @@ class RedisWorker(RedisWorkerConfig, Worker):
             if parse_r is False:
                 self.handler_invalid_task(next_task, task_item)
                 continue
-            self.current_task = task_item
+            if isinstance(task_item, WorkerTask):
+                self.current_task = task_item
+            else:
+                continue
             self.worker_log("Start Execute", self.current_task.task_key)
             self.execute()
             self.worker_log("Completed Task", self.current_task.task_key)

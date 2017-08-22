@@ -41,6 +41,12 @@ class WorkerTask(object):
     def set(self, **kwargs):
         if "task_key" in kwargs:
             self.task_key = kwargs["task_key"]
+        if "task_status" in kwargs:
+            self.task_status = kwargs["task_status"]
+        if "task_name" in kwargs:
+            self.task_name = kwargs["task_name"]
+        if "sub_task_detail" in kwargs:
+            self.sub_task_detail = kwargs["sub_task_detail"]
         if "task_sub_key" in kwargs:
             self.task_sub_key = kwargs["task_sub_key"]
         if "task_info" in kwargs:
