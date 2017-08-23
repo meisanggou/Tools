@@ -77,7 +77,7 @@ class RedisData(object):
     @staticmethod
     def package_data(data):
         if data is None:
-            return ""
+            return "n_"
         if isinstance(data, dict):
             return "d_" + json.dumps(data)
         if isinstance(data, list):
@@ -111,6 +111,8 @@ class RedisData(object):
             return float(sp_data[1])
         elif sign == "b":
             return RedisData.BOOL_VALUE[int(sp_data[1])]
+        elif sign == "n":
+            return None
         return p_data
 
 
