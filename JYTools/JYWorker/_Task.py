@@ -86,3 +86,10 @@ class WorkerTask(object):
 
     def __getitem__(self, item):
         return self.to_dict()[item]
+
+    def __contains__(self, item):
+        return item in self.to_dict()
+
+    def __setitem__(self, key, value):
+        kwargs = {key: value}
+        self.set(**kwargs)
