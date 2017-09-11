@@ -160,7 +160,7 @@ class Worker(WorkerConfig, _WorkerLog):
         """
         add in version 0.1.8
         """
-        if daemon is True:
+        if daemon is not False:
             try:
                 pid = os.fork()
                 if pid == 0:  # pid大于0代表是父进程 返回的是子进程的pid pid==0为子进程
