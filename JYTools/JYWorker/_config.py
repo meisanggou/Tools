@@ -17,17 +17,24 @@ class WorkerConfig(object):
         pop_time_out: 60
     """
 
-    def __init__(self, conf_path=None, section_name="Worker", **kwargs):
+    DEFAULT_WORK_TAG = None
+
+    def __init__(self, conf_path=None, section_name="Worker", work_tag=None, **kwargs):
         self.heartbeat_prefix_key = "worker_heartbeat"
-        self.work_tag = "jy_task"
         self.worker_index = None
         self.queue_prefix_key = "task_queue"
         self.pop_time_out = 60
         self.redirect_stdout = False
         if conf_path is not None:
             self.load_work_config(conf_path, section_name)
-        if "work_tag" in kwargs:
-            self.work_tag = kwargs["work_tag"]
+        if work_tag is not None:
+            self.work_tag = work_tag
+        else:
+            self.work_tag = self.DEFAULT_WORK_TAG
+        if isinstance(self.work_tag, (unicode, str)) is False:
+            class_name = self.__class__.__name__
+            msg = "Need String work_tag. Please Set {0}.DEFAULT_WORK_TAG=yourWorkTag Or {0}(work_tag=yourWorkTag)"
+            raise TypeError(msg.format(class_name))
         if "worker_index" in kwargs:
             self.worker_index = kwargs["worker_index"]
         if "redirect_stdout" in kwargs:
@@ -44,8 +51,6 @@ class WorkerConfig(object):
         if config.has_section(section_name):
             if config.has_option(section_name, "heartbeat_prefix_key"):
                 self.heartbeat_prefix_key = config.get(section_name, "heartbeat_prefix_key")
-            if config.has_option(section_name, "work_tag"):
-                self.work_tag = config.get(section_name, "work_tag")
             if config.has_option(section_name, "queue_prefix_key"):
                 self.queue_prefix_key = config.get(section_name, "queue_prefix_key")
             if config.has_option(section_name, "pop_time_out"):
