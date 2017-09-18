@@ -291,6 +291,10 @@ class RedisWorker(RedisWorkerConfig, Worker):
         return True, task_item
 
     def run(self):
+        if self.is_running is True:
+            self.worker_log("Is Running")
+            return False
+        self.is_running = True
         self.worker_log("Start Run Worker")
         self.worker_log("Worker Conf Path Is ", self.conf_path)
         self.worker_log("Worker Heartbeat Value Is", self.heartbeat_value)
