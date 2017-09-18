@@ -32,10 +32,12 @@ class AsyncStatRedisWorker(RedisWorker):
                              log_dir=log_dir, **kwargs)
         self.top_queue = None
         self.before_handler_funcs.append(self.before_handler)
+        self.sleep_time = 10
 
     def before_handler(self):
         if self.current_task == self.top_queue:
-            sleep(10)
+            self.task_log("start sleep", self.sleep_time, "seconds")
+            sleep(self.sleep_time)
             self.top_queue = None
 
     def whether_completed(self, key, params):
