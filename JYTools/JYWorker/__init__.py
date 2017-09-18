@@ -3,6 +3,7 @@
 
 import os
 from _redis import RedisWorker, RedisQueue
+from _async import AsyncRedisWorker, AsyncStatRedisWorker
 from _Task import TaskStatus
 from _du import DAGWorker
 
