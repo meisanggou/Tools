@@ -5,7 +5,7 @@ from JYTools.JYWorker import RedisQueue
 
 __author__ = 'meisanggou'
 
-r_queue = RedisQueue("/mnt/data/Tools/JYTools/demo/redis_worker.conf", work_tag="Merge")
+r_queue = RedisQueue("/mnt/data/Tools/JYTools/demo/redis_worker.conf", work_tag="Pipeline")
 print(r_queue.queue_key)
 
 plus_task = {"work_tag": "Plus", "input_a": "&0a", "input_b": "&0b"}
@@ -69,8 +69,12 @@ pipeline_detail4 = {"task_list": [pipeline_split], "task_output": {"m": "&1m"}, 
 # r_queue.push("vs2d", pipeline_detail4, report_tag="Result")
 
 
-for i in range(1, 10000):
-    v = []
-    for j in range(1, 10000000):
-        v.append(i + j)
-    r_queue.push(i, {"v": v})
+# for i in range(1, 10000):
+#     v = []
+#     for j in range(1, 10000000):
+#         v.append(i + j)
+#     r_queue.push(i, {"v": v})
+
+
+pipeline_detail5 = {"task_list": [plus_task], "input_a": 3, "input_b": 6}
+r_queue.push(123, pipeline_detail5)

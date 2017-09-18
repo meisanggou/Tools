@@ -3,12 +3,12 @@
 
 import uuid
 from time import sleep
-from JYTools.JYWorker import RedisWorker
+from JYTools.JYWorker import RedisWorker, AsyncRedisWorker
 
 __author__ = 'meisanggou'
 
 
-class PlusWorker(RedisWorker):
+class PlusWorker(AsyncRedisWorker):
     def handler_task(self, key, params):
         print("Enter Plus Worker")
         if "a" not in params:
@@ -28,5 +28,6 @@ class PlusWorker(RedisWorker):
         print("End Plus Task")
 
 
-p_w = PlusWorker(conf_path="redis_worker.conf", heartbeat_value="FFFFFF", log_dir="/tmp", work_tag="Plus")
+p_w = PlusWorker(conf_path="redis_worker.conf", heartbeat_value="FFFFFF", log_dir="/tmp", work_tag="Plus",
+                 stat_work_tag="STAT")
 p_w.work()

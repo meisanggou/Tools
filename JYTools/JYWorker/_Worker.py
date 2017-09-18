@@ -43,6 +43,8 @@ class Worker(WorkerConfig, _WorkerLog):
         self.current_task.start_time = time()
         standard_out = None
         try:
+            for func in self.before_handler_funcs:
+                func()
             if self.redirect_stdout is True:
                 standard_out = sys.stdout
                 sys.stdout = self
@@ -54,7 +56,7 @@ class Worker(WorkerConfig, _WorkerLog):
             self.current_task.task_status = TaskStatus.SUCCESS
             if standard_out is not None:
                 sys.stdout = standard_out
-            for func in reversed(self.after_handler_func):
+            for func in reversed(self.after_handler_funcs):
                 func()
         except TaskErrorException as te:
             self.current_task.task_status = TaskStatus.FAIL

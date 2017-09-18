@@ -169,6 +169,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
     def push_task(self, key, params, work_tag=None, sub_key=None, report_tag=None, is_report=False):
         if work_tag is None:
             queue_key = self.queue_key
+            work_tag = self.work_tag
         else:
             queue_key = self.queue_prefix_key + "_" + work_tag
         task_info = RedisQueue.package_task_info(work_tag, key, params, sub_key=sub_key, report_tag=report_tag,
