@@ -43,11 +43,12 @@ class AsyncStatRedisWorker(RedisWorker):
 
     def handler_task(self, key, params):
         completed = self.whether_completed(key, params)
+        self.task_log("Async Task Stat Is", completed)
         if completed is True:
             return
         r_tag = self.current_task.task_report_tag
         self.current_task.task_report_tag = None
-        self.push_task(self.current_task.task_key, self.current_task.task_output, report_tag=r_tag,
+        self.push_task(self.current_task.task_key, params, report_tag=r_tag,
                        sub_key=self.current_task.task_sub_key)
         if self.top_queue is None:
             self.top_queue = self.current_task

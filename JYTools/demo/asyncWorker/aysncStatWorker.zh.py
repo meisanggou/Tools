@@ -10,7 +10,12 @@ __author__ = 'meisanggou'
 class T(AsyncStatRedisWorker):
 
     def whether_completed(self, key, params):
-        if os.path.exists("1.txt"):
+        print(params)
+        path = os.path.join(".", "%s.txt" % params["c"])
+        print(path)
+        print(os.path.abspath(path))
+        print(os.path.exists(path))
+        if os.path.exists(path):
             return True
         return False
 
