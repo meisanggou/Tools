@@ -93,3 +93,12 @@ class WorkerTask(object):
     def __setitem__(self, key, value):
         kwargs = {key: value}
         self.set(**kwargs)
+
+    def __eq__(self, other):
+        if isinstance(other, WorkerTask) is False:
+            return False
+        if other.task_key != self.task_key:
+            return False
+        if other.task_sub_key != self.task_sub_key:
+            return False
+        return True

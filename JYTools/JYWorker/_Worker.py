@@ -27,7 +27,8 @@ class Worker(WorkerConfig, _WorkerLog):
         _WorkerLog.__init__(self, log_dir=log_dir, **kwargs)
         self._msg_manager = None
         self.is_running = False
-        self.after_handler_func = []
+        self.before_handler_funcs = []
+        self.after_handler_funcs = []
 
     def has_heartbeat(self):
         return True
