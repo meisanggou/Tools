@@ -27,6 +27,7 @@ class Worker(WorkerConfig, _WorkerLog):
         _WorkerLog.__init__(self, log_dir=log_dir, **kwargs)
         self._msg_manager = None
         self.is_running = False
+        self.after_handler_func = []
 
     def has_heartbeat(self):
         return True
@@ -52,6 +53,8 @@ class Worker(WorkerConfig, _WorkerLog):
             self.current_task.task_status = TaskStatus.SUCCESS
             if standard_out is not None:
                 sys.stdout = standard_out
+            for func in reversed(self.after_handler_func):
+                func()
         except TaskErrorException as te:
             self.current_task.task_status = TaskStatus.FAIL
             self.current_task.task_message = te.error_message
