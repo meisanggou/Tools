@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # coding: utf-8
 
+import os
 import ConfigParser
 from _Task import WorkerTask
 from redis import Redis
@@ -66,10 +67,15 @@ class WorkerConfig(object):
 
 
 class WorkerLogConfig(object):
+
+    log_dir_environ_key = "JY_WORKER_LOG_DIR"
+
     def __init__(self, log_dir=None, **kwargs):
         self.log_dir = None
         if log_dir is not None:
             self.log_dir = log_dir
+        else:
+            self.log_dir = os.environ.get(self.log_dir_environ_key)
 
 
 class RedisWorkerConfig(object):
