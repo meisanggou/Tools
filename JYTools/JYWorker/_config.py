@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import os
+import tempfile
 import ConfigParser
 from _Task import WorkerTask
 from redis import Redis
@@ -70,12 +71,16 @@ class WorkerLogConfig(object):
 
     log_dir_environ_key = "JY_WORKER_LOG_DIR"
 
-    def __init__(self, log_dir=None, **kwargs):
+    def __init__(self, log_dir=None, no_logging=False, **kwargs):
         self.log_dir = None
         if log_dir is not None:
             self.log_dir = log_dir
-        else:
+        elif os.environ.get(self.log_dir_environ_key) is not None:
             self.log_dir = os.environ.get(self.log_dir_environ_key)
+        else:
+            self.log_dir = tempfile.gettempdir()
+        if no_logging is True:
+            self.log_dir = None
 
 
 class RedisWorkerConfig(object):
