@@ -22,6 +22,6 @@ class PlusWorker(AsyncRedisWorker):
         print("End Plus Task")
 
 
-p_w = PlusWorker(conf_path="redis_worker.conf", heartbeat_value="FFFFFF", log_dir="/tmp", work_tag="Plus",
+p_w = PlusWorker(conf_path="redis_worker.conf", heartbeat_value="FFFFFF", work_tag="Plus",
                  stat_work_tag="STAT")
 p_w.work()
