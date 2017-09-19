@@ -21,7 +21,7 @@ class RedisQueue(RedisWorkerConfig, WorkerConfig):
     """
     conf_path_environ_key = "REDIS_WORKER_CONF_PATH"
 
-    def __init__(self, conf_path, **kwargs):
+    def __init__(self, conf_path=None, **kwargs):
         self.conf_path = conf_path
         if self.conf_path is None or os.path.exists(self.conf_path) is False:
             print("Conf Path Not Exist ", self.conf_path)
@@ -60,11 +60,15 @@ class RedisQueue(RedisWorkerConfig, WorkerConfig):
         return v
 
     def push_head(self, key, params, work_tag=None):
-        v = self.package_task_info(self.work_tag, key, params)
+        if work_tag is None:
+            work_tag = self.work_tag
+        v = self.package_task_info(work_tag, key, params)
         self.redis_man.lpush(self.queue_key, v)
 
     def push_tail(self, key, params, work_tag=None, sub_key=None, report_tag=None):
-        v = self.package_task_info(self.work_tag, key, params, sub_key=sub_key, report_tag=report_tag)
+        if work_tag is None:
+            work_tag = self.work_tag
+        v = self.package_task_info(work_tag, key, params, sub_key=sub_key, report_tag=report_tag)
         self.redis_man.rpush(self.queue_key, v)
 
     def push(self, key, params, work_tag=None, sub_key=None, report_tag=None):
