@@ -15,7 +15,6 @@ class DB(object):
     DATE_FORMAT = '%Y-%m-%d'
     conn = None
     cursor = None
-    _sock_file = ''
     conf_path_environ_key = "JY_DB_CONF_PATH"
 
     def __init__(self, conf_path=None, conf_dir=None, readonly=False):
