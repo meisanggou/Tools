@@ -35,6 +35,9 @@ class _JYFlask(Flask):
 
     def run(self, host=None, port=None, debug=None, **options):
         self.run_time = datetime.now().strftime(self.TIME_FORMAT)
+        if port is not None and port <= 0:
+            sys.stderr.write("Not run. port must greater than 0.\n")
+            return None
         super(_JYFlask, self).run(host=host, port=port, debug=debug, **options)
 
     def add_url_rule(self, rule, endpoint=None, view_func=None, **options):
