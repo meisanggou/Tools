@@ -1,7 +1,9 @@
 #! /usr/bin/env python
 # coding: utf-8
 
+import sys
 from datetime import datetime
+import re
 from flask import Flask, jsonify
 
 __author__ = 'meisanggou'
@@ -16,15 +18,40 @@ class _JYFlask(Flask):
         self.run_time = datetime.now().strftime(self.TIME_FORMAT)
         super(_JYFlask, self).__init__(import_name, **kwargs)
         self.register_error_handler(500, self._handle_500)
+        self._broken_rules = set()
+
+    def add_broken_rule(self, rule):
+        if isinstance(rule, (str, unicode)):
+            self._broken_rules.add(rule)
+
+    def clear_broken_rules(self):
+        self._broken_rules.clear()
+
+    def remove_broken_rule(self, rule):
+        self._broken_rules.remove(rule)
+
+    def list_broken_rules(self):
+        return list(self._broken_rules)
 
     def run(self, host=None, port=None, debug=None, **options):
         self.run_time = datetime.now().strftime(self.TIME_FORMAT)
         super(_JYFlask, self).run(host=host, port=port, debug=debug, **options)
 
     def add_url_rule(self, rule, endpoint=None, view_func=None, **options):
+        for item in self._broken_rules:
+            if re.match(item, rule) is not None:
+                sys.stderr.write("Not add %s, is broken rule" % rule)
+                return None
         rule = self.app_url_prefix + rule
         super(_JYFlask, self).add_url_rule(rule=rule, endpoint=endpoint, view_func=view_func, **options)
 
     def _handle_500(self, e):
         resp = jsonify({"status": self.config.get("ERROR_STATUS", 99), "message": str(e)})
         return resp
+
+
+class MFlask(_JYFlask):
+
+    @staticmethod
+    def help():
+        print("----------MFlask HELP----------")
