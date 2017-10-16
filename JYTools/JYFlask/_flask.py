@@ -16,9 +16,9 @@ class _JYFlask(Flask):
     def __init__(self, import_name, **kwargs):
         self.app_url_prefix = kwargs.pop('url_prefix', "").rstrip("/")
         self.run_time = datetime.now().strftime(self.TIME_FORMAT)
+        self._broken_rules = set()
         super(_JYFlask, self).__init__(import_name, **kwargs)
         self.register_error_handler(500, self._handle_500)
-        self._broken_rules = set()
 
     def add_broken_rule(self, rule):
         if isinstance(rule, (str, unicode)):
@@ -39,8 +39,8 @@ class _JYFlask(Flask):
 
     def add_url_rule(self, rule, endpoint=None, view_func=None, **options):
         for item in self._broken_rules:
-            if re.match(item, rule) is not None:
-                sys.stderr.write("Not add %s, is broken rule" % rule)
+            if re.search(item, rule) is not None:
+                sys.stderr.write("Not add %s, is broken rule\n" % rule)
                 return None
         rule = self.app_url_prefix + rule
         super(_JYFlask, self).add_url_rule(rule=rule, endpoint=endpoint, view_func=view_func, **options)
