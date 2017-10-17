@@ -17,7 +17,7 @@ class DB(object):
     cursor = None
     conf_path_environ_key = "JY_DB_CONF_PATH"
 
-    def __init__(self, conf_path=None, conf_dir=None, readonly=False):
+    def __init__(self, conf_path=None, conf_dir=None, readonly=False, user=None, password=None):
         self.readonly = readonly
         if conf_path is None:
             if conf_dir is not None:
@@ -26,27 +26,45 @@ class DB(object):
                 conf_path = os.environ.get(self.conf_path_environ_key)
             else:
                 conf_path = "mysql_app.conf"
+        self.conf_path = conf_path
         self._int_app(conf_path, readonly)
+        if user is not None and password is not None:
+            self._db_user = user
+            self._db_password = password
 
-    def _int_app(self, conf_path, readonly):
+    @staticmethod
+    def _read_conf(conf_path, readonly):
         config = ConfigParser.ConfigParser()
         config.read(conf_path)
         basic_section = "db_basic"
-        self.host = config.get(basic_section, "host")
-        self._db_name = config.get(basic_section, "name")
-        self._db_port = config.getint(basic_section, "port")
+        host = config.get(basic_section, "host")
+        db_name = config.get(basic_section, "name")
+        db_port = config.getint(basic_section, "port")
         if readonly is True:
             user_section = "%s_read_user" % basic_section
         else:
             user_section = "%s_user" % basic_section
-        self._db_user = config.get(user_section, "user")
-        self._db_password = config.get(user_section, "password")
+        db_user = config.get(user_section, "user")
+        db_password = config.get(user_section, "password")
+        return dict(host=host, db_name=db_name, db_port=db_port, db_user=db_user, db_password=db_password)
+
+    def _int_app(self, conf_path, readonly):
+        o = self._read_conf(conf_path, readonly)
+        self.host = o["host"]
+        self._db_name = o["db_name"]
+        self._db_port = o["db_port"]
+        self._db_user = o["db_user"]
+        self._db_password = o["db_password"]
+
+    @staticmethod
+    def _connect(host, port, user, password, db_name):
+        conn = MySQLdb.connect(host=host, port=port, user=user, passwd=password, db=db_name, charset='utf8')
+        cursor = conn.cursor()
+        conn.autocommit(True)
+        return conn, cursor
 
     def connect(self):
-        self.conn = MySQLdb.connect(host=self.host, port=self._db_port, user=self._db_user, passwd=self._db_password,
-                                    db=self._db_name, charset='utf8')
-        self.cursor = self.conn.cursor()
-        self.conn.autocommit(True)
+        self.conn, self.cursor = self._connect(self.host, self._db_port, self._db_user, self._db_password, self._db_name)
 
     def literal(self, s):
         if not self.conn:
@@ -313,6 +331,22 @@ class DB(object):
         sql_query += ",".join(map(self.literal, args))
         sql_query += ");"
         return self.execute(sql_query)
+
+    def create_user(self, user, password, host='localhost', db=None, readonly=False):
+        c_sql = "CREATE USER %s@%s IDENTIFIED BY %s;"
+        self.execute(c_sql, args=(user, host, password))
+        if db is not None:
+            if readonly is False:
+                g_sql = "GRANT ALL ON {db}.* TO %s@%s;"
+            else:
+                g_sql = "GRANT SELECT ON {db}.* TO %s@%s;"
+            self.execute(g_sql.format(db=db), args=(user, host))
+
+    def root_init_conf(self):
+        o = self._read_conf(self.conf_path, False)
+        self.create_user(o["db_user"], o["db_password"], db=o["db_name"], readonly=False)
+        o = self._read_conf(self.conf_path, True)
+        self.create_user(o["db_user"], o["db_password"], db=o["db_name"], readonly=True)
 
     def source_file(self, file_path):
         cmd = "mysql -u%s -p%s %s < %s" % (self._db_user, self._db_password, self._db_name, file_path)
