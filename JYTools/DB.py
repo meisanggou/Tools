@@ -333,6 +333,9 @@ class DB(object):
         return self.execute(sql_query)
 
     def create_user(self, user, password, host='localhost', db=None, readonly=False):
+        l = self.execute_select("mysql.user", where_value=dict(user=user, host=host))
+        if l > 0:
+            return False
         c_sql = "CREATE USER %s@%s IDENTIFIED BY %s;"
         self.execute(c_sql, args=(user, host, password))
         if db is not None:
@@ -341,6 +344,7 @@ class DB(object):
             else:
                 g_sql = "GRANT SELECT ON {db}.* TO %s@%s;"
             self.execute(g_sql.format(db=db), args=(user, host))
+        return True
 
     def root_init_conf(self, host='localhost'):
         o = self._read_conf(self.conf_path, False)
