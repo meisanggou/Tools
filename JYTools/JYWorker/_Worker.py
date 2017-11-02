@@ -29,6 +29,21 @@ class Worker(WorkerConfig, _WorkerLog):
         self.is_running = False
         self.before_handler_funcs = []
         self.after_handler_funcs = []
+        self.init_log_dir()
+
+    """
+    add in 0.4.0
+    """
+    def init_log_dir(self):
+        if self.log_dir is not None:
+            exclusive_log_dir = os.path.join(self.log_dir, self.work_tag.lower())
+            if os.path.isdir(exclusive_log_dir):
+                self.log_dir = exclusive_log_dir
+            else:
+                try:
+                    os.mkdir(exclusive_log_dir)
+                except OSError as e:
+                    pass
 
     def has_heartbeat(self):
         return True
