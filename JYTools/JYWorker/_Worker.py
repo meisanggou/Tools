@@ -42,6 +42,7 @@ class Worker(WorkerConfig, _WorkerLog):
             else:
                 try:
                     os.mkdir(exclusive_log_dir)
+                    self.log_dir = exclusive_log_dir
                 except OSError as e:
                     pass
 
