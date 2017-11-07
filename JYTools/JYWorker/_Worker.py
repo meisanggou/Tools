@@ -61,12 +61,19 @@ class Worker(WorkerConfig, _WorkerLog):
         if stdout is None:
             stdout = subprocess.PIPE
         if stderr is None:
-            stderr = subprocess.STDOUT
+            if stdout == subprocess.PIPE:
+                stderr = subprocess.STDOUT
+            else:
+                stderr = subprocess.PIPE
         child = subprocess.Popen(cmd, stderr=stderr, stdout=stdout)
-        while True:
-            if child.stdout is None:
-                break
-            out_line = child.stdout.readline()
+        if child.stdout is not None:
+            std_log = child.stdout
+        elif child.stderr is not None:
+            std_log = child.stderr
+        else:
+            std_log = None
+        while std_log:
+            out_line = std_log.readline()
             if out_line is None or len(out_line) <= 0:
                 break
             self.task_log(out_line)
