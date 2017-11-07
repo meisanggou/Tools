@@ -4,6 +4,7 @@
 import os
 import sys
 import types
+import subprocess
 from time import time
 import traceback
 from _exception import TaskErrorException, InvalidTaskException
@@ -54,6 +55,28 @@ class Worker(WorkerConfig, _WorkerLog):
 
     def push_task(self, key, params, work_tag=None, sub_key=None, is_report=False):
         pass
+
+    def execute_subprocess(self, cmd, stdout=None, stderr=None):
+        self.task_log(cmd)
+        if stdout is None:
+            stdout = subprocess.PIPE
+        if stderr is None:
+            stderr = subprocess.STDOUT
+        child = subprocess.Popen(cmd, stderr=stderr, stdout=stdout)
+        while True:
+            if child.stdout is None:
+                break
+            out_line = child.stdout.readline()
+            if out_line is None or len(out_line) <= 0:
+                break
+            self.task_log(out_line)
+        child.wait()
+        r_code = child.returncode
+        if r_code != 0:
+            self.task_log("%s exit code not 0, is " % cmd[0], r_code, level="ERROR")
+            return
+        else:
+            self.task_log("%s exit code 0" % cmd[0])
 
     def execute(self):
         self.current_task.start_time = time()
