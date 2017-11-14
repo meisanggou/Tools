@@ -8,7 +8,7 @@ import subprocess
 from time import time
 import traceback
 from _exception import TaskErrorException, InvalidTaskException
-from _Task import TaskStatus, WorkerTask
+from _Task import TaskStatus, WorkerTask, WorkerTaskParamsKeyNotFound
 from _config import WorkerConfig, WorkerLogConfig
 
 __author__ = 'meisanggou'
@@ -104,6 +104,10 @@ class Worker(WorkerConfig, _WorkerLog):
                 sys.stdout = standard_out
             for func in reversed(self.after_handler_funcs):
                 func()
+        except WorkerTaskParamsKeyNotFound as pk:
+            self.current_task.task_status = TaskStatus.FAIL
+            self.current_task.task_message = "Need Key %s, Not Found." % pk.missing_key
+            self.task_log(self.current_task.task_message, level="WARING")
         except TaskErrorException as te:
             self.current_task.task_status = TaskStatus.FAIL
             self.current_task.task_message = te.error_message

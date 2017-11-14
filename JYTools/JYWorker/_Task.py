@@ -15,6 +15,36 @@ class TaskStatus(object):
     RUNNING = "Running"
 
 
+class WorkerTaskParamsKeyNotFound(Exception):
+
+    def __init__(self, key):
+        self.missing_key = key
+
+
+class WorkerTaskParams(object):
+    """
+        add in version 0.5.0
+    """
+
+    def __init__(self, **kwargs):
+        self._params = dict()
+        self._params.update(kwargs)
+
+    def set(self, **kwargs):
+        self._params.update(kwargs)
+
+    def __getitem__(self, item):
+        if item not in self._params:
+            raise WorkerTaskParamsKeyNotFound(item)
+        return self._params[item]
+
+    def __contains__(self, item):
+        return item in self._params
+
+    def __setitem__(self, key, value):
+        self._params[key] = value
+
+
 class WorkerTask(object):
     """
         add in version 0.1.19

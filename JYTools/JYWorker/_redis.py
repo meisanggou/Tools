@@ -9,7 +9,7 @@ from JYTools import TIME_FORMAT
 from JYTools import StringTool
 from _config import RedisWorkerConfig, WorkerConfig
 from _Worker import Worker
-from _Task import WorkerTask
+from _Task import WorkerTask, WorkerTaskParams
 
 __author__ = 'meisanggou'
 
@@ -291,7 +291,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
             task_item.set(is_report_task=True)
             task_item.set(task_params=WorkerTask(**params))
         else:
-            task_item.set(task_params=params)
+            task_item.set(task_params=WorkerTaskParams(**params))
             if self.expect_params_type is not None:
                 if not isinstance(params, self.expect_params_type):
                     return False, "Invalid task, not expect param type"
