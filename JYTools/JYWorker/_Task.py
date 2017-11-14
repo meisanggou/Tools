@@ -18,31 +18,18 @@ class TaskStatus(object):
     RUNNING = "Running"
 
 
-class WorkerTaskParams(object):
+class WorkerTaskParams(dict):
     """
         add in version 0.5.0
     """
 
-    def __init__(self, **kwargs):
-        self._params = dict()
-        self._params.update(kwargs)
-
-    def set(self, **kwargs):
-        self._params.update(kwargs)
-
     def get(self, key, default=None):
-        self._params.get(key, default)
+        self.get(key, default)
 
     def __getitem__(self, item):
-        if item not in self._params:
+        if item not in self:
             raise WorkerTaskParamsKeyNotFound(item)
-        return self._params[item]
-
-    def __contains__(self, item):
-        return item in self._params
-
-    def __setitem__(self, key, value):
-        self._params[key] = value
+        return self[item]
 
 
 class WorkerTask(object):
@@ -132,3 +119,11 @@ class WorkerTask(object):
         if other.task_sub_key != self.task_sub_key:
             return False
         return True
+
+
+if __name__ == "__main__":
+    wp = WorkerTaskParams(a=1, b=2)
+    for key in wp:
+        print(key)
+    print wp.keys()
+    print(wp["c"])
