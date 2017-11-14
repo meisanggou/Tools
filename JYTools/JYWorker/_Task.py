@@ -1,5 +1,8 @@
 #! /usr/bin/env python
 # coding: utf-8
+
+from _exception import WorkerTaskParamsKeyNotFound
+
 __author__ = 'meisanggou'
 
 
@@ -13,12 +16,6 @@ class TaskStatus(object):
     ERROR = "Fail"
     INVALID = "Invalid"
     RUNNING = "Running"
-
-
-class WorkerTaskParamsKeyNotFound(Exception):
-
-    def __init__(self, key):
-        self.missing_key = key
 
 
 class WorkerTaskParams(object):

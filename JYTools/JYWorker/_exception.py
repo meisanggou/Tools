@@ -23,3 +23,12 @@ class TaskErrorException(Exception):
         self.key = key
         self.params = params
         self.error_message = StringTool.join(args, "")
+
+
+class WorkerTaskParamsKeyNotFound(Exception):
+
+    def __init__(self, key):
+        self.missing_key = key
+
+    def __str__(self):
+        return "Not Found Key %s" % self.missing_key

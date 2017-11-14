@@ -145,7 +145,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
         RedisWorkerConfig.__init__(self, self.conf_path)
         Worker.__init__(self, conf_path=self.conf_path, work_tag=work_tag, log_dir=log_dir, **kwargs)
         if heartbeat_value is None:
-            heartbeat_value = StringTool.random_str(upper_s=True)
+            heartbeat_value = StringTool.random_str(str_len=12, upper_s=True)
         self.heartbeat_value = StringTool.decode(heartbeat_value)
         self.redis_man.set(self.heartbeat_key, heartbeat_value)
 
