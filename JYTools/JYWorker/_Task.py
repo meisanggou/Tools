@@ -23,13 +23,10 @@ class WorkerTaskParams(dict):
         add in version 0.5.0
     """
 
-    def get(self, key, default=None):
-        self.get(key, default)
-
     def __getitem__(self, item):
         if item not in self:
             raise WorkerTaskParamsKeyNotFound(item)
-        return self[item]
+        return dict.__getitem__(self, item)
 
 
 class WorkerTask(object):
@@ -126,4 +123,5 @@ if __name__ == "__main__":
     for key in wp:
         print(key)
     print wp.keys()
+    print(wp["a"])
     print(wp["c"])
