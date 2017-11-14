@@ -30,6 +30,9 @@ class WorkerTaskParams(object):
     def set(self, **kwargs):
         self._params.update(kwargs)
 
+    def get(self, key, default=None):
+        self._params.get(key, default)
+
     def __getitem__(self, item):
         if item not in self._params:
             raise WorkerTaskParamsKeyNotFound(item)
