@@ -29,11 +29,12 @@ if __name__ == "__main__":
     try:
         from JYAliYun.AliYunAccount import RAMAccount
         from JYAliYun.AliYunMNS.AliMNSServer import MNSServerManager
-        mns_conf_path = receive_argv(opts_d, "m", "mns-conf-path")
-        mns_account = RAMAccount(conf_path=mns_conf_path)
-        mns_server = MNSServerManager(mns_account, conf_path=mns_conf_path)
-        mns_topic = mns_server.get_topic("JYWaring")
-        app.msg_manager = mns_topic
+        mns_conf_path = receive_argv(opts_d, "m", "mns-conf-path", None)
+        if mns_conf_path is not None:
+            mns_account = RAMAccount(conf_path=mns_conf_path)
+            mns_server = MNSServerManager(mns_account, conf_path=mns_conf_path)
+            mns_topic = mns_server.get_topic("JYWaring")
+            app.msg_manager = mns_topic
     except Exception as e:
         print(e)
     if daemon is not False:
