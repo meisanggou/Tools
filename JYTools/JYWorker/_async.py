@@ -47,6 +47,7 @@ class AsyncStatRedisWorker(RedisWorker):
         completed = self.whether_completed(key, params)
         self.task_log("Async Task Stat Is", completed)
         if completed is True:
+            self.set_multi_output(**params)
             return
         r_tag = self.current_task.task_report_tag
         self.current_task.task_report_tag = None
