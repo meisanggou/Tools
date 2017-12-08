@@ -291,10 +291,13 @@ class RedisWorker(RedisWorkerConfig, Worker):
             task_item.set(is_report_task=True)
             task_item.set(task_params=WorkerTask(**params))
         else:
-            task_item.set(task_params=WorkerTaskParams(**params))
             if self.expect_params_type is not None:
                 if not isinstance(params, self.expect_params_type):
                     return False, "Invalid task, not expect param type"
+            if self.expect_params_type == dict:
+                task_item.set(task_params=WorkerTaskParams(**params))
+            else:
+                task_item.set(task_params=params)
         return True, task_item
 
     def run(self):
