@@ -343,6 +343,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
                 self.handler_invalid_task(next_task, task_item)
                 continue
             elif task_item is None:
+                self.worker_log("Receive Null Package")
                 continue
             if isinstance(task_item, WorkerTask):
                 self.current_task = task_item
