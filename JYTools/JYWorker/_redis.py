@@ -81,6 +81,17 @@ class RedisQueue(RedisWorkerConfig, WorkerConfig):
     def push(self, key, params, work_tag=None, sub_key=None, report_tag=None):
         self.push_tail(key, params, work_tag, sub_key=sub_key, report_tag=report_tag)
 
+    def wash_worker(self, work_tag=None, num=1):
+        """
+            add in version 0.6.5
+        """
+        if work_tag is None:
+            work_tag = self.work_tag
+        v = RedisQueue.package_task_info(work_tag, "", "")
+        while num > 0:
+            self.redis_man.lpush(self.queue_key, v)
+            num -= 1
+
 
 class RedisData(object):
     BOOL_VALUE = [False, True]
