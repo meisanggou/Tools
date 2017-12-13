@@ -10,6 +10,7 @@ from JYTools import StringTool
 from _config import RedisWorkerConfig, WorkerConfig
 from _Worker import Worker
 from _Task import WorkerTask, WorkerTaskParams
+from _exception import InvalidTaskKey
 
 __author__ = 'meisanggou'
 
@@ -62,12 +63,18 @@ class RedisQueue(RedisWorkerConfig, WorkerConfig):
     def push_head(self, key, params, work_tag=None):
         if work_tag is None:
             work_tag = self.work_tag
+        key = "%s" % key
+        if len(key) <= 0:
+            raise InvalidTaskKey()
         v = self.package_task_info(work_tag, key, params)
         self.redis_man.lpush(self.queue_key, v)
 
     def push_tail(self, key, params, work_tag=None, sub_key=None, report_tag=None):
         if work_tag is None:
             work_tag = self.work_tag
+        key = "%s" % key
+        if len(key) <= 0:
+            raise InvalidTaskKey()
         v = self.package_task_info(work_tag, key, params, sub_key=sub_key, report_tag=report_tag)
         self.redis_man.rpush(self.queue_key, v)
 
@@ -273,6 +280,8 @@ class RedisWorker(RedisWorkerConfig, Worker):
             task_item.set(task_report_tag=work_tags[1])
 
         keys = partition_task[1].split("|")
+        if len(keys[0]) <= 0:
+            return True, None
         task_item.set(task_key=keys[0])
         if len(keys) > 1:
             task_item.set(task_sub_key=keys[1])
@@ -321,6 +330,8 @@ class RedisWorker(RedisWorkerConfig, Worker):
             parse_r, task_item = self.parse_task_info(next_task)
             if parse_r is False:
                 self.handler_invalid_task(next_task, task_item)
+                continue
+            elif task_item is None:
                 continue
             if isinstance(task_item, WorkerTask):
                 self.current_task = task_item

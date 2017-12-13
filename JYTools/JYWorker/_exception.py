@@ -25,6 +25,12 @@ class TaskErrorException(Exception):
         self.error_message = StringTool.join(args, "")
 
 
+class InvalidTaskKey(Exception):
+
+    def __str__(self):
+        return "Task Key Length Must Be Greater Than 0"
+
+
 class WorkerTaskParamsKeyNotFound(Exception):
 
     def __init__(self, key):
