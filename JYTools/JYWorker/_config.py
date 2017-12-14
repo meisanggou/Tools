@@ -41,10 +41,11 @@ class WorkerConfig(object):
             self.worker_index = kwargs["worker_index"]
         if "redirect_stdout" in kwargs:
             self.redirect_stdout = kwargs["redirect_stdout"]
-        self.heartbeat_key = self.heartbeat_prefix_key + "_" + self.work_tag
-        self.queue_key = self.queue_prefix_key + "_" + self.work_tag
-        if self.heartbeat_key == self.queue_key:
-            self.heartbeat_key = "heartbeat_" + self.heartbeat_key
+        if is_queue is False:
+            self.heartbeat_key = self.heartbeat_prefix_key + "_" + self.work_tag
+            self.queue_key = self.queue_prefix_key + "_" + self.work_tag
+            if self.heartbeat_key == self.queue_key:
+                self.heartbeat_key = "heartbeat_" + self.heartbeat_key
         self.current_task = WorkerTask()
 
     def load_work_config(self, conf_path, section_name):

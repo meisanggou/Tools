@@ -22,7 +22,7 @@ class RedisQueue(RedisWorkerConfig, WorkerConfig):
     """
     conf_path_environ_key = "REDIS_WORKER_CONF_PATH"
 
-    def __init__(self, conf_path=None, **kwargs):
+    def __init__(self, conf_path=None, work_tag=None, **kwargs):
         self.conf_path = conf_path
         if self.conf_path is None or os.path.exists(self.conf_path) is False:
             print("Conf Path Not Exist ", self.conf_path)
@@ -36,7 +36,7 @@ class RedisQueue(RedisWorkerConfig, WorkerConfig):
                 else:
                     print("Path ", env_conf_path, " Not Exist")
         RedisWorkerConfig.__init__(self, self.conf_path)
-        WorkerConfig.__init__(self, self.conf_path, is_queue=True, **kwargs)
+        WorkerConfig.__init__(self, self.conf_path, work_tag=work_tag, is_queue=True, **kwargs)
 
     @staticmethod
     def package_task_info(work_tag, key, params, sub_key=None, report_tag=None, is_report=False):
@@ -64,36 +64,34 @@ class RedisQueue(RedisWorkerConfig, WorkerConfig):
             v += "string," + params
         return v
 
-    def push_head(self, key, params, work_tag=None):
+    def _push(self, key, params, work_tag, sub_key=None, report_tag=None, is_head=False):
         if work_tag is None:
             work_tag = self.work_tag
+        v = self.package_task_info(work_tag, key, params, sub_key=sub_key, report_tag=report_tag)
+        queue_key = self.queue_prefix_key + "_" + work_tag
+        if is_head is True:
+            self.redis_man.lpush(queue_key, v)
+        else:
+            self.redis_man.rpush(queue_key, v)
+
+    def push(self, key, params, work_tag=None, sub_key=None, report_tag=None, is_head=False):
         key = "%s" % key
         if len(key) <= 0:
             raise InvalidTaskKey()
-        v = self.package_task_info(work_tag, key, params)
-        self.redis_man.lpush(self.queue_key, v)
+        self._push(key, params, work_tag, sub_key=sub_key, report_tag=report_tag, is_head=is_head)
+
+    def push_head(self, key, params, work_tag=None, sub_key=None, report_tag=None):
+        self.push(key, params, work_tag, sub_key=sub_key, report_tag=report_tag, is_head=True)
 
     def push_tail(self, key, params, work_tag=None, sub_key=None, report_tag=None):
-        if work_tag is None:
-            work_tag = self.work_tag
-        key = "%s" % key
-        if len(key) <= 0:
-            raise InvalidTaskKey()
-        v = self.package_task_info(work_tag, key, params, sub_key=sub_key, report_tag=report_tag)
-        self.redis_man.rpush(self.queue_key, v)
-
-    def push(self, key, params, work_tag=None, sub_key=None, report_tag=None):
-        self.push_tail(key, params, work_tag, sub_key=sub_key, report_tag=report_tag)
+        self.push(key, params, work_tag, sub_key=sub_key, report_tag=report_tag, is_head=False)
 
     def wash_worker(self, work_tag=None, num=1):
         """
             add in version 0.6.5
         """
-        if work_tag is None:
-            work_tag = self.work_tag
-        v = RedisQueue.package_task_info(work_tag, "", "")
         while num > 0:
-            self.redis_man.lpush(self.queue_key, v)
+            self._push("", "", work_tag, is_head=True)
             num -= 1
 
 
