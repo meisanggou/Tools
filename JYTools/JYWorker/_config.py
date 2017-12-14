@@ -21,7 +21,7 @@ class WorkerConfig(object):
 
     DEFAULT_WORK_TAG = None
 
-    def __init__(self, conf_path=None, section_name="Worker", work_tag=None, **kwargs):
+    def __init__(self, conf_path=None, section_name="Worker", work_tag=None, is_queue=False, **kwargs):
         self.heartbeat_prefix_key = "worker_heartbeat"
         self.worker_index = None
         self.queue_prefix_key = "task_queue"
@@ -33,7 +33,7 @@ class WorkerConfig(object):
             self.work_tag = work_tag
         else:
             self.work_tag = self.DEFAULT_WORK_TAG
-        if isinstance(self.work_tag, (unicode, str)) is False:
+        if isinstance(self.work_tag, (unicode, str)) is False and is_queue is False:
             class_name = self.__class__.__name__
             msg = "Need String work_tag. Please Set {0}.DEFAULT_WORK_TAG=yourWorkTag Or {0}(work_tag=yourWorkTag)"
             raise TypeError(msg.format(class_name))

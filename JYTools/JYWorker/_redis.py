@@ -10,7 +10,7 @@ from JYTools import StringTool
 from _config import RedisWorkerConfig, WorkerConfig
 from _Worker import Worker
 from _Task import WorkerTask, WorkerTaskParams
-from _exception import InvalidTaskKey
+from _exception import InvalidTaskKey, InvalidWorkerTag
 
 __author__ = 'meisanggou'
 
@@ -36,7 +36,7 @@ class RedisQueue(RedisWorkerConfig, WorkerConfig):
                 else:
                     print("Path ", env_conf_path, " Not Exist")
         RedisWorkerConfig.__init__(self, self.conf_path)
-        WorkerConfig.__init__(self, self.conf_path, **kwargs)
+        WorkerConfig.__init__(self, self.conf_path, is_queue=True, **kwargs)
 
     @staticmethod
     def package_task_info(work_tag, key, params, sub_key=None, report_tag=None, is_report=False):
@@ -48,6 +48,10 @@ class RedisQueue(RedisWorkerConfig, WorkerConfig):
         """
         if sub_key is not None:
             key = "%s|%s" % (key, sub_key)
+        if isinstance(work_tag, (unicode, str)) is False:
+            raise InvalidWorkerTag()
+        if len(work_tag) <= 0:
+            raise InvalidWorkerTag()
         if report_tag is not None:
             work_tag = "%s|%s" % (work_tag, report_tag)
         v = "%s,%s," % (work_tag, key)
@@ -163,7 +167,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
         RedisWorkerConfig.__init__(self, self.conf_path)
         Worker.__init__(self, conf_path=self.conf_path, work_tag=work_tag, log_dir=log_dir, **kwargs)
         if heartbeat_value is None:
-            heartbeat_value = StringTool.random_str(str_len=12, upper_s=True)
+            heartbeat_value = StringTool.random_str(str_len=12, upper_s=False)
         self.heartbeat_value = StringTool.decode(heartbeat_value)
         self.redis_man.set(self.heartbeat_key, heartbeat_value)
 
