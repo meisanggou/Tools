@@ -86,13 +86,19 @@ class RedisQueue(RedisWorkerConfig, WorkerConfig):
     def push_tail(self, key, params, work_tag=None, sub_key=None, report_tag=None):
         self.push(key, params, work_tag, sub_key=sub_key, report_tag=report_tag, is_head=False)
 
-    def wash_worker(self, work_tag=None, num=1):
+    def push_null_packages(self, work_tag=None, num=1):
         """
-            add in version 0.6.5
+            add in version 0.6.8
         """
         while num > 0:
             self._push("", "", work_tag, is_head=True)
             num -= 1
+
+    def wash_worker(self, work_tag=None, num=1):
+        """
+            add in version 0.6.5
+        """
+        self.push_null_packages(work_tag, num)
 
 
 class RedisData(object):
