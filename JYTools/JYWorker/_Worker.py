@@ -226,7 +226,7 @@ class Worker(WorkerConfig, _WorkerLog):
         task_item = WorkerTask(task_key=key, sub_key=sub_key, report_tag=report_tag, work_tag=self.work_tag)
         if self.expect_params_type is not None:
             if not isinstance(params, self.expect_params_type):
-                return False, "Invalid task, not expect param type"
+                raise TypeError("params should", self.expect_params_type)
         if self.expect_params_type == dict:
             task_item.set(task_params=WorkerTaskParams(**params))
         else:

@@ -9,6 +9,8 @@ __author__ = 'meisanggou'
 
 
 class PlusWorker(RedisWorker):
+    expect_params_type = dict
+
     def handler_task(self, key, params):
         print("Enter Mult Worker")
         if "a" not in params:
@@ -25,4 +27,5 @@ class PlusWorker(RedisWorker):
 
 
 p_w = PlusWorker(conf_path="redis_worker.conf", heartbeat_value="FFFFFF", log_dir="/tmp", work_tag="Mult")
-p_w.work()
+# p_w.work()
+p_w.test(1, {"a": 21})
