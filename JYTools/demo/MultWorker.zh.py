@@ -17,7 +17,7 @@ class PlusWorker(RedisWorker):
             self.set_current_task_invalid("Need a")
 
         if "b" not in params:
-            self.set_current_task_invalid("Need b")
+            self.set_current_task_invalid("Need b中位呢")
         self.task_log("a is ", params["a"])
         self.task_log("b is ", params["b"])
         sleep(2)
@@ -28,4 +28,5 @@ class PlusWorker(RedisWorker):
 
 p_w = PlusWorker(conf_path="redis_worker.conf", heartbeat_value="FFFFFF", log_dir="/tmp", work_tag="Mult")
 # p_w.work()
+p_w.debug = True
 p_w.test(1, {"a": 21})

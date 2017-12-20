@@ -35,6 +35,7 @@ class Worker(WorkerConfig, _WorkerLog):
         _WorkerLog.__init__(self, log_dir=log_dir, **kwargs)
         self._msg_manager = None
         self.is_running = False
+        self._debug = False
         self.before_handler_funcs = []
         self.after_handler_funcs = []
         self.init_log_dir()
@@ -53,6 +54,25 @@ class Worker(WorkerConfig, _WorkerLog):
                     self.log_dir = exclusive_log_dir
                 except OSError as e:
                     pass
+
+    """
+    property
+    add in 0.6.9
+    """
+
+    @property
+    def debug(self):
+        return self._debug
+
+    @debug.setter
+    def debug(self, v):
+        if self.is_running is True:
+            return
+        if not isinstance(v, bool):
+            raise TypeError("need bool value for debug")
+        self._debug = v
+        if self.debug is True:
+            self.redirect_stdout = False
 
     def has_heartbeat(self):
         return True
@@ -239,6 +259,7 @@ class Worker(WorkerConfig, _WorkerLog):
         add in version 0.1.8
         """
         if daemon is not False:
+            self.debug = False
             try:
                 pid = os.fork()
                 if pid == 0:  # pid大于0代表是父进程 返回的是子进程的pid pid==0为子进程

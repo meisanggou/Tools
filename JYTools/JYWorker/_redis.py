@@ -255,6 +255,8 @@ class RedisWorker(RedisWorkerConfig, Worker):
             s = StringTool.join(write_a, join_str="")
             s = StringTool.encode(s)
             wl.write(s)
+            if self.redirect_stdout is False and self.debug is True:
+                print(s)
 
     def task_log(self, *args, **kwargs):
         if self.log_dir is None or isinstance(self.log_dir, (unicode, str)) is False:
@@ -277,6 +279,8 @@ class RedisWorker(RedisWorkerConfig, Worker):
             s = StringTool.join(write_a, join_str="")
             s = StringTool.encode(s)
             wl.write(s)
+            if self.redirect_stdout is False and self.debug is True:
+                print(s)
 
     def handler_invalid_task(self, task_info, error_info):
         self.worker_log(error_info, level="WARING")
