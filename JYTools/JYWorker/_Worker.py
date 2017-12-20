@@ -8,7 +8,7 @@ import subprocess
 from time import time
 import traceback
 from _exception import TaskErrorException, InvalidTaskException, WorkerTaskParamsKeyNotFound
-from _Task import TaskStatus, WorkerTask
+from _Task import TaskStatus, WorkerTask, WorkerTaskParams
 from _config import WorkerConfig, WorkerLogConfig
 
 __author__ = 'meisanggou'
@@ -23,6 +23,13 @@ class _WorkerLog(WorkerLogConfig):
 
 
 class Worker(WorkerConfig, _WorkerLog):
+
+    """
+        expect_params_type
+        add in version 0.6.9
+    """
+    expect_params_type = None
+
     def __init__(self, log_dir=None, work_tag=None, **kwargs):
         WorkerConfig.__init__(self, work_tag=work_tag, **kwargs)
         _WorkerLog.__init__(self, log_dir=log_dir, **kwargs)
@@ -86,6 +93,7 @@ class Worker(WorkerConfig, _WorkerLog):
             self.task_log("%s exit code 0" % cmd[0])
 
     def execute(self):
+        self.worker_log("Start Execute", self.current_task.task_key)
         self.current_task.start_time = time()
         standard_out = None
         try:
@@ -138,6 +146,7 @@ class Worker(WorkerConfig, _WorkerLog):
                                is_report=True)
         use_time = self.current_task.end_time - self.current_task.start_time
         self.task_log("Use ", use_time, " Seconds")
+        self.worker_log("Completed Task", self.current_task.task_key)
 
     def execute_error(self, e):
         if self.handler_task_exception is not None:
@@ -212,6 +221,18 @@ class Worker(WorkerConfig, _WorkerLog):
 
     def run(self):
         pass
+
+    def test(self, key, params, sub_key=None, report_tag=None):
+        task_item = WorkerTask(task_key=key, sub_key=sub_key, report_tag=report_tag, work_tag=self.work_tag)
+        if self.expect_params_type is not None:
+            if not isinstance(params, self.expect_params_type):
+                return False, "Invalid task, not expect param type"
+        if self.expect_params_type == dict:
+            task_item.set(task_params=WorkerTaskParams(**params))
+        else:
+            task_item.set(task_params=params)
+        self.current_task = task_item
+        self.execute()
 
     def work(self, daemon=False):
         """

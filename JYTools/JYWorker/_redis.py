@@ -151,7 +151,6 @@ class RedisWorker(RedisWorkerConfig, Worker):
         expect_params_type
         add in version 0.1.8
     """
-    expect_params_type = None
     conf_path_environ_key = "REDIS_WORKER_CONF_PATH"
 
     def __init__(self, conf_path=None, heartbeat_value=None, work_tag=None, log_dir=None, **kwargs):
@@ -357,7 +356,5 @@ class RedisWorker(RedisWorkerConfig, Worker):
                 self.current_task = task_item
             else:
                 continue
-            self.worker_log("Start Execute", self.current_task.task_key)
             self.execute()
-            self.worker_log("Completed Task", self.current_task.task_key)
 
