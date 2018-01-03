@@ -5,6 +5,7 @@ import os
 import sys
 import types
 import subprocess
+import uuid
 from time import time
 import traceback
 from _exception import TaskErrorException, InvalidTaskException, WorkerTaskParamsKeyNotFound
@@ -33,6 +34,7 @@ class Worker(WorkerConfig, _WorkerLog):
     def __init__(self, log_dir=None, work_tag=None, **kwargs):
         WorkerConfig.__init__(self, work_tag=work_tag, **kwargs)
         _WorkerLog.__init__(self, log_dir=log_dir, **kwargs)
+        self._id = uuid.uuid4().hex  # add in 0.6.10
         self._msg_manager = None
         self.is_running = False
         self._debug = False
