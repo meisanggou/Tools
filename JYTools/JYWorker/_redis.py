@@ -174,7 +174,9 @@ class RedisWorker(RedisWorkerConfig, Worker):
             heartbeat_value = StringTool.random_str(str_len=12, upper_s=False)
         self.heartbeat_value = StringTool.decode(heartbeat_value)
         self.redis_man.set(self.heartbeat_key, heartbeat_value)
-        threading.Thread(target=self.punch_the_clock).start()
+        t_clock = threading.Thread(target=self.hang_up_clock)
+        t_clock.daemon = True
+        t_clock.start()
 
     def has_heartbeat(self):
         current_value = StringTool.decode(self.redis_man.get(self.heartbeat_key))
@@ -183,15 +185,22 @@ class RedisWorker(RedisWorkerConfig, Worker):
             return False
         return True
 
-    def punch_the_clock(self):
+    def hang_up_clock(self):
         key = "%s_%s_%s" % (self.clock_prefix_key, self.work_tag, self._id)
         while True:
+            if self.is_running is False:
+                sleep(5)
+                continue
             try:
                 v = "%s_%s" % (self.heartbeat_value, int(time()))
                 self.redis_man.setex(key, v, 60)
             except Exception:
                 pass
             sleep(55)
+
+    def hang_down_clock(self):
+        key = "%s_%s_%s" % (self.clock_prefix_key, self.work_tag, self._id)
+        self.redis_man.delete(key)
 
     def pop_task(self, freq=0):
         try:

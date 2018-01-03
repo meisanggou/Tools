@@ -191,6 +191,12 @@ class Worker(WorkerConfig, _WorkerLog):
     def handler_invalid_task(self, task_info, error_info):
         pass
 
+    def hang_up_clock(self):
+        pass
+
+    def hang_down_clock(self):
+        pass
+
     def set_current_task_invalid(self, *args):
         """
             add in version 0.1.14
@@ -272,5 +278,7 @@ class Worker(WorkerConfig, _WorkerLog):
             self.run()
 
     def close(self, exit_code=0):
+        self.is_running = False
+        self.hang_down_clock()
         self.worker_log("start close. exit code: %s" % exit_code)
         exit(exit_code)
