@@ -187,7 +187,8 @@ class RedisWorker(RedisWorkerConfig, Worker):
         key = "%s_%s_%s" % (self.clock_prefix_key, self.work_tag, self._id)
         while True:
             try:
-                self.redis_man.setex(key, time(), 60)
+                v = "%s_%s" % (self.heartbeat_value, int(time()))
+                self.redis_man.setex(key, v, 60)
             except Exception:
                 pass
             sleep(55)
