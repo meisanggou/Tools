@@ -3,7 +3,8 @@
 
 import os
 import json
-from time import sleep
+import threading
+from time import sleep, time
 from datetime import datetime
 from JYTools import TIME_FORMAT
 from JYTools import StringTool
@@ -173,6 +174,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
             heartbeat_value = StringTool.random_str(str_len=12, upper_s=False)
         self.heartbeat_value = StringTool.decode(heartbeat_value)
         self.redis_man.set(self.heartbeat_key, heartbeat_value)
+        threading.Thread(target=self.punch_the_clock).start()
 
     def has_heartbeat(self):
         current_value = StringTool.decode(self.redis_man.get(self.heartbeat_key))
@@ -180,6 +182,15 @@ class RedisWorker(RedisWorkerConfig, Worker):
             self.worker_log("heartbeat is", self.heartbeat_value, "now is", current_value)
             return False
         return True
+
+    def punch_the_clock(self):
+        key = "%s_%s_%s" % (self.clock_prefix_key, self.work_tag, self._id)
+        while True:
+            try:
+                self.redis_man.setex(key, time(), 60)
+            except Exception:
+                pass
+            sleep(55)
 
     def pop_task(self, freq=0):
         try:

@@ -25,6 +25,7 @@ class WorkerConfig(object):
         self.heartbeat_prefix_key = "worker_heartbeat"
         self.worker_index = None
         self.queue_prefix_key = "task_queue"
+        self.clock_prefix_key = "CK"
         self.pop_time_out = 60
         self.redirect_stdout = False
         if conf_path is not None:
