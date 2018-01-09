@@ -41,6 +41,7 @@ class Worker(WorkerConfig, _WorkerLog):
         self.before_handler_funcs = []
         self.after_handler_funcs = []
         self.init_log_dir()
+        self._handle_task_func = self.handle_task
 
     """
     add in 0.4.0
@@ -125,7 +126,7 @@ class Worker(WorkerConfig, _WorkerLog):
                 sys.stdout = self
             self.current_task.task_status = TaskStatus.RUNNING
             if self.current_task.is_report_task is False:
-                self.handle_task(self.current_task.task_key, self.current_task.task_params)
+                self._handle_task_func(self.current_task.task_key, self.current_task.task_params)
             else:
                 self.handle_report_task()
             self.current_task.task_status = TaskStatus.SUCCESS
