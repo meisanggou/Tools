@@ -264,7 +264,8 @@ class RedisWorker(RedisWorkerConfig, Worker):
             return
         msg = StringTool.join(args, " ")
         level = kwargs.pop("level", "INFO")
-        if level != "INFO":
+        level = str(level).upper()
+        if level not in ["INFO", "DEBUG"]:
             self.publish_message(msg)
         log_file = os.path.join(self.log_dir, "%s.log" % self.work_tag)
         now_time = datetime.now().strftime(TIME_FORMAT)
@@ -286,7 +287,8 @@ class RedisWorker(RedisWorkerConfig, Worker):
             return
         msg = StringTool.join(args, " ")
         level = kwargs.pop("level", "INFO")
-        if level != "INFO":
+        level = str(level).upper()
+        if level not in ["INFO", "DEBUG"]:
             self.publish_message("%s\n%s" % (self.current_task.task_key, msg))
         log_file = os.path.join(self.log_dir, "%s_%s.log" % (self.work_tag, self.current_task.task_key))
         now_time = datetime.now().strftime(TIME_FORMAT)
