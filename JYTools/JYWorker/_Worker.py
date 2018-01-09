@@ -110,7 +110,6 @@ class Worker(WorkerConfig, _WorkerLog):
         r_code = child.returncode
         if r_code != 0:
             self.set_current_task_error("%s exit code not 0, is " % cmd[0], r_code)
-            return
         else:
             self.task_log("%s exit code 0" % cmd[0])
 
