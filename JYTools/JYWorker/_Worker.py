@@ -125,9 +125,9 @@ class Worker(WorkerConfig, _WorkerLog):
                 sys.stdout = self
             self.current_task.task_status = TaskStatus.RUNNING
             if self.current_task.is_report_task is False:
-                self.handler_task(self.current_task.task_key, self.current_task.task_params)
+                self.handle_task(self.current_task.task_key, self.current_task.task_params)
             else:
-                self.handler_report_task()
+                self.handle_report_task()
             self.current_task.task_status = TaskStatus.SUCCESS
             if standard_out is not None:
                 sys.stdout = standard_out
@@ -173,15 +173,23 @@ class Worker(WorkerConfig, _WorkerLog):
         if self.handler_task_exception is not None:
             self.handler_task_exception(e)
 
-    # 子类需重载的方法
+    # 待废弃 被handle_task替代
     def handler_task(self, key, params):
         pass
 
+    # 子类需重载的方法
+    def handle_task(self, key, params):
+        self.handler_task(key, params)
+
+    # 待废弃 被handle_report_task替代
     def handler_report_task(self):
         """
             add in version 0.1.19
         """
         pass
+
+    def handle_report_task(self):
+        self.handler_report_task()
 
     # 子类需重载的方法
     def handler_task_exception(self, e):
