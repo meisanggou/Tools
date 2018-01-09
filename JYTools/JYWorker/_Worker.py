@@ -187,7 +187,7 @@ class Worker(WorkerConfig, _WorkerLog):
     def handler_task_exception(self, e):
         pass
 
-    def handler_invalid_task(self, task_info, error_info):
+    def handle_invalid_task(self, task_info, error_info):
         pass
 
     def hang_up_clock(self):

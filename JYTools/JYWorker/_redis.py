@@ -305,7 +305,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
             if self.redirect_stdout is False and self.debug is True:
                 print(s)
 
-    def handler_invalid_task(self, task_info, error_info):
+    def handle_invalid_task(self, task_info, error_info):
         self.worker_log(error_info, level="WARING")
 
     def parse_task_info(self, task_info):
@@ -374,7 +374,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
                 continue
             parse_r, task_item = self.parse_task_info(next_task)
             if parse_r is False:
-                self.handler_invalid_task(next_task, task_item)
+                self.handle_invalid_task(next_task, task_item)
                 continue
             elif task_item is None:
                 self.worker_log("Receive Null Package")
