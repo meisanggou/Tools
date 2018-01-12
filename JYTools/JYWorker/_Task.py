@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # coding: utf-8
 
+import types
 from _exception import WorkerTaskParamsKeyNotFound
 
 __author__ = 'meisanggou'
@@ -26,7 +27,10 @@ class WorkerTaskParams(dict):
     def __getitem__(self, item):
         if item not in self:
             raise WorkerTaskParamsKeyNotFound(item)
-        return dict.__getitem__(self, item)
+        v = dict.__getitem__(self, item)
+        if isinstance(self.debug_func, types.MethodType) is True:
+            self.debug_func(item, v)
+        return v
 
 
 class WorkerTask(object):

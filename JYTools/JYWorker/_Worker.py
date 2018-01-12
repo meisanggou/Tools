@@ -22,6 +22,13 @@ class _WorkerLog(WorkerLogConfig):
     def task_log(self, *args, **kwargs):
         pass
 
+    """
+    add in 0.7.5
+    """
+    def task_debug_log(self, *args, **kwargs):
+        kwargs.update(level="DEBUG")
+        self.task_log(*args, **kwargs)
+
 
 class Worker(WorkerConfig, _WorkerLog):
 
@@ -86,33 +93,41 @@ class Worker(WorkerConfig, _WorkerLog):
     def push_task(self, key, params, work_tag=None, sub_key=None, is_report=False):
         pass
 
-    def execute_subprocess(self, cmd, stdout=None, stderr=None):
-        self.task_log(cmd)
-        if stdout is None:
-            stdout = subprocess.PIPE
-        if stderr is None:
-            if stdout == subprocess.PIPE:
-                stderr = subprocess.STDOUT
+    def execute_subprocess(self, cmd, stdout=None, stderr=None, error_continue=False):
+        self.task_debug_log(cmd)
+        if isinstance(cmd, list) is True:
+            cmd = map(lambda x: str(x) if isinstance(x, int) else x, cmd)
+        std_out = stdout
+        std_err = stderr
+        if std_out is None:
+            std_out = subprocess.PIPE
+        if std_err is None:
+            if std_out == subprocess.PIPE:
+                std_err = subprocess.STDOUT
             else:
-                stderr = subprocess.PIPE
-        child = subprocess.Popen(cmd, stderr=stderr, stdout=stdout)
+                std_err = subprocess.PIPE
+        child = subprocess.Popen(cmd, stderr=std_err, stdout=std_out)
         if child.stdout is not None:
             std_log = child.stdout
         elif child.stderr is not None:
             std_log = child.stderr
         else:
             std_log = None
+        exec_msg = ""
         while std_log:
             out_line = std_log.readline()
             if out_line is None or len(out_line) <= 0:
                 break
+            exec_msg += out_line
             self.task_log(out_line)
         child.wait()
         r_code = child.returncode
         if r_code != 0:
-            self.set_current_task_error("%s exit code not 0, is " % cmd[0], r_code)
+            if error_continue is False:
+                self.set_current_task_error("%s exit code not 0, is " % cmd[0], r_code)
         else:
-            self.task_log("%s exit code 0" % cmd[0])
+            self.task_debug_log("%s exit code 0" % cmd[0])
+        return r_code, exec_msg
 
     def execute(self):
         self.worker_log("Start Execute", self.current_task.task_key)
@@ -263,8 +278,9 @@ class Worker(WorkerConfig, _WorkerLog):
         if self.expect_params_type is not None:
             if not isinstance(params, self.expect_params_type):
                 raise TypeError("params should", self.expect_params_type)
-        if self.expect_params_type == dict:
+        if isinstance(params, dict):
             task_item.set(task_params=WorkerTaskParams(**params))
+            task_item.task_params.debug_func = self.task_debug_log
         else:
             task_item.set(task_params=params)
         self.current_task = task_item

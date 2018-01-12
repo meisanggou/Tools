@@ -350,6 +350,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
                     return False, "Invalid task, not expect param type"
             if self.expect_params_type == dict:
                 task_item.set(task_params=WorkerTaskParams(**params))
+                task_item.task_params.debug_func = self.task_debug_log
             else:
                 task_item.set(task_params=params)
         return True, task_item
@@ -384,4 +385,3 @@ class RedisWorker(RedisWorkerConfig, Worker):
             else:
                 continue
             self.execute()
-
