@@ -129,7 +129,7 @@ class Worker(WorkerConfig, _WorkerLog):
             self.task_debug_log("%s exit code 0" % cmd[0])
         return r_code, exec_msg
 
-    def execute(self):
+    def _execute(self):
         self.worker_log("Start Execute", self.current_task.task_key)
         self.current_task.start_time = time()
         standard_out = None
@@ -167,7 +167,7 @@ class Worker(WorkerConfig, _WorkerLog):
             self.current_task.task_status = TaskStatus.FAIL
             self.current_task.task_message = str(e)
             self.task_log(traceback.format_exc(), level="ERROR")
-            self.execute_error(e)
+            self._execute_error(e)
         except SystemExit as se:
             self.current_task.task_status = TaskStatus.FAIL
             self.current_task.task_message = str(se)
@@ -185,7 +185,7 @@ class Worker(WorkerConfig, _WorkerLog):
         self.task_log("Use ", use_time, " Seconds")
         self.worker_log("Completed Task", self.current_task.task_key)
 
-    def execute_error(self, e):
+    def _execute_error(self, e):
         if self.handler_task_exception is not None:
             self.handler_task_exception(e)
 
@@ -284,7 +284,7 @@ class Worker(WorkerConfig, _WorkerLog):
         else:
             task_item.set(task_params=params)
         self.current_task = task_item
-        self.execute()
+        self._execute()
 
     def work(self, daemon=False):
         """

@@ -384,4 +384,4 @@ class RedisWorker(RedisWorkerConfig, Worker):
                 self.current_task = task_item
             else:
                 continue
-            self.execute()
+            self._execute()
