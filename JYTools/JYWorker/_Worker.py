@@ -62,7 +62,7 @@ class Worker(WorkerConfig, _WorkerLog):
                 try:
                     os.mkdir(exclusive_log_dir)
                     self.log_dir = exclusive_log_dir
-                except OSError as e:
+                except OSError:
                     pass
 
     """
@@ -296,7 +296,7 @@ class Worker(WorkerConfig, _WorkerLog):
                 pid = os.fork()
                 if pid == 0:  # pid大于0代表是父进程 返回的是子进程的pid pid==0为子进程
                     self.run()
-            except OSError as e:
+            except OSError:
                 sys.exit(1)
         else:
             self.run()
