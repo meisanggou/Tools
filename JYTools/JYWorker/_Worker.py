@@ -150,9 +150,11 @@ class Worker(WorkerConfig, _WorkerLog):
         r_code = child.returncode
         if r_code != 0:
             if error_continue is False:
-                self.set_current_task_error("%s exit code not 0, is " % cmd[0], r_code)
+                self.set_current_task_error(cmd[0], " exit code not 0, is ", r_code)
+            else:
+                self.task_debug_log(cmd[0], " exit code not 0, is ", r_code, " but continue return.")
         else:
-            self.task_debug_log("%s exit code 0" % cmd[0])
+            self.task_debug_log(cmd[0], " exit code 0")
         return r_code, exec_msg
 
     def _execute(self):
