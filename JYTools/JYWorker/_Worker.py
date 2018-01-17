@@ -96,6 +96,12 @@ class Worker(WorkerConfig, _WorkerLog):
 
     @staticmethod
     def _subprocess_timeout_thread(p, timeout):
+        """
+        add in version 0.7.7
+        :param p:
+        :param timeout:
+        :return:
+        """
         while timeout > 0:
             r_code = p.poll()
             if r_code is not None:
