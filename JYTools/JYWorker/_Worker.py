@@ -6,7 +6,8 @@ import sys
 import types
 import subprocess
 import uuid
-from time import time
+from time import time, sleep
+import threading
 import traceback
 from _exception import TaskErrorException, InvalidTaskException, WorkerTaskParamsKeyNotFound
 from _Task import TaskStatus, WorkerTask, WorkerTaskParams
@@ -93,7 +94,18 @@ class Worker(WorkerConfig, _WorkerLog):
     def push_task(self, key, params, work_tag=None, sub_key=None, is_report=False):
         pass
 
-    def execute_subprocess(self, cmd, stdout=None, stderr=None, error_continue=False):
+    @staticmethod
+    def _subprocess_timeout_thread(p, timeout):
+        while timeout > 0:
+            r_code = p.poll()
+            if r_code is not None:
+                return
+            timeout -= 1
+            sleep(1)
+        p.kill()
+        return
+
+    def execute_subprocess(self, cmd, stdout=None, stderr=None, error_continue=False, timeout=None):
         self.task_debug_log(cmd)
         if isinstance(cmd, list) is True:
             cmd = map(lambda x: str(x) if isinstance(x, int) else x, cmd)
@@ -107,6 +119,12 @@ class Worker(WorkerConfig, _WorkerLog):
             else:
                 std_err = subprocess.PIPE
         child = subprocess.Popen(cmd, stderr=std_err, stdout=std_out)
+        if isinstance(timeout, int) and timeout > 0:
+            t_timeout = threading.Thread(target=self._subprocess_timeout_thread, args=(child, timeout))
+            t_timeout.start()
+        else:
+            t_timeout = None
+
         if child.stdout is not None:
             std_log = child.stdout
         elif child.stderr is not None:
@@ -121,6 +139,8 @@ class Worker(WorkerConfig, _WorkerLog):
             exec_msg += out_line
             self.task_log(out_line)
         child.wait()
+        if t_timeout is not None:
+            t_timeout.join()
         r_code = child.returncode
         if r_code != 0:
             if error_continue is False:
