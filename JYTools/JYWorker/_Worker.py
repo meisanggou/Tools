@@ -3,6 +3,7 @@
 
 import os
 import sys
+import json
 import types
 import subprocess
 import uuid
@@ -301,7 +302,11 @@ class Worker(WorkerConfig, _WorkerLog):
     def run(self):
         pass
 
-    def test(self, key, params, sub_key=None, report_tag=None):
+    def test(self, key, params=None, params_path=None, sub_key=None, report_tag=None):
+        if params is None and params_path is not None:
+            with open(params_path, "r") as rp:
+                c = rp.read()
+                params = json.loads(c)
         task_item = WorkerTask(task_key=key, sub_key=sub_key, report_tag=report_tag, work_tag=self.work_tag)
         if self.expect_params_type is not None:
             if not isinstance(params, self.expect_params_type):
