@@ -12,7 +12,7 @@ __author__ = 'meisanggou'
 class DAGWorker(RedisWorker):
     expect_params_type = dict
 
-    def handler_report_task(self):
+    def handle_report_task(self):
         r_task = self.current_task.task_params
         sp_keys = self.current_task.task_sub_key.rsplit("_", 1)
         if len(sp_keys) == 2:
@@ -245,7 +245,7 @@ class DAGWorker(RedisWorker):
             pipeline_task["task_list"].append(sub_task_item)
         return pipeline_task
 
-    def handler_task(self, key, params):
+    def handle_task(self, key, params):
         if self.current_task.is_report_task is False:
             self.task_log("Start Format Pipeline")
             self.format_pipeline(key, params)
