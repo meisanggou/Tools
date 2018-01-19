@@ -14,7 +14,7 @@ from _Worker import Worker
 from _Task import WorkerTask, WorkerTaskParams
 from _exception import InvalidTaskKey, InvalidWorkerTag
 
-__author__ = 'meisanggou'
+__author__ = '鹛桑够'
 
 
 class RedisQueue(RedisWorkerConfig, WorkerConfig):
