@@ -2,7 +2,7 @@
 # coding: utf-8
 
 import types
-from _exception import WorkerTaskParamsKeyNotFound
+from _exception import WorkerTaskParamsKeyNotFound, WorkerTaskParamsValueTypeError
 
 __author__ = '鹛桑够'
 
@@ -35,6 +35,18 @@ class WorkerTaskParams(dict):
         v = dict.get(self, k, d)
         if isinstance(self.debug_func, types.MethodType) is True:
             self.debug_func(k, v)
+        return v
+
+    def getint(self, k, d=None):
+        v = self.get(k, d)
+        if isinstance(v, int) is False:
+            raise WorkerTaskParamsValueTypeError(k, v, int)
+        return v
+
+    def getboolean(self, k, d=None):
+        v = self.get(k, d)
+        if isinstance(v, bool) is False:
+            raise WorkerTaskParamsValueTypeError(k, v, bool)
         return v
 
     def __getitem__(self, item):

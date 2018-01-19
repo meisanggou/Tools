@@ -44,3 +44,11 @@ class WorkerTaskParamsKeyNotFound(Exception):
 
     def __str__(self):
         return "Not Found Key %s" % self.missing_key
+
+
+class WorkerTaskParamsValueTypeError(Exception):
+
+    def __init__(self, k, v, t):
+        self.key = k
+        self.value = v
+        self.except_type = t
