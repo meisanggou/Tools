@@ -24,6 +24,19 @@ class WorkerTaskParams(dict):
         add in version 0.5.0
     """
 
+    def __init__(self, seq=None, **kwargs):
+        if seq is not None:
+            super(WorkerTaskParams, self).__init__(seq, **kwargs)
+        else:
+            super(WorkerTaskParams, self).__init__(**kwargs)
+        self.debug_func = None
+
+    def get(self, k, d=None):
+        v = dict.get(self, k, d)
+        if isinstance(self.debug_func, types.MethodType) is True:
+            self.debug_func(k, v)
+        return v
+
     def __getitem__(self, item):
         if item not in self:
             raise WorkerTaskParamsKeyNotFound(item)
@@ -123,9 +136,12 @@ class WorkerTask(object):
 
 
 if __name__ == "__main__":
-    wp = WorkerTaskParams(a=1, b=2)
-    for key in wp:
-        print(key)
-    print wp.keys()
-    print(wp["a"])
-    print(wp["c"])
+    a = dict({"a": "b"}, c="c")
+    print(a)
+    wp = WorkerTaskParams(dict(a=1, b=2), c=5)
+    print(wp)
+    # for key in wp:
+    #     print(key)
+    # print wp.keys()
+    # print(wp["a"])
+    # print(wp["c"])
