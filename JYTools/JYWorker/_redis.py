@@ -6,6 +6,7 @@ import json
 import threading
 from time import sleep, time
 from datetime import datetime
+from redis import RedisError
 from JYTools import TIME_FORMAT
 from JYTools import StringTool
 from _config import RedisWorkerConfig, WorkerConfig
@@ -194,7 +195,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
             try:
                 v = "%s_%s" % (self.heartbeat_value, int(time()))
                 self.redis_man.setex(key, v, 60)
-            except Exception:
+            except RedisError:
                 pass
             sleep(55)
 
