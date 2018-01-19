@@ -4,7 +4,7 @@
 import types
 from _exception import WorkerTaskParamsKeyNotFound
 
-__author__ = 'meisanggou'
+__author__ = '鹛桑够'
 
 
 class TaskStatus(object):
