@@ -1,14 +1,14 @@
 #! /usr/bin/env python
 # coding: utf-8
 
-#  __author__ = 'meisanggou'
-
 try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
 
 import sys
+
+__author__ = 'meisanggou'
 
 if sys.version_info <= (2, 7):
     sys.stderr.write("ERROR: jingyun tools requires Python Version 2.7 or above.\n")
@@ -18,8 +18,7 @@ if sys.version_info <= (2, 7):
 name = "JYTools"
 version = "0.7.10"
 url = "https://github.com/meisanggou/Tools"
-license = "MIT"
-author = "meisanggou"
+author = __author__
 short_description = "Jing Yun Tools Library"
 long_description = """Jing Yun Tools Library."""
 keywords = "JYTools"
@@ -31,7 +30,7 @@ setup(name=name,
       author_email="zhouheng@gene.ac",
       url=url,
       packages=["JYTools", "JYTools/JYWorker", "JYTools/JYFlask"],
-      license=license,
+      license="MIT",
       description=short_description,
       long_description=long_description,
       keywords=keywords,
