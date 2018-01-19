@@ -38,12 +38,18 @@ class WorkerTaskParams(dict):
         return v
 
     def getint(self, k, d=None):
+        """
+        add in version 0.7.10
+        """
         v = self.get(k, d)
         if isinstance(v, int) is False:
             raise WorkerTaskParamsValueTypeError(k, v, int)
         return v
 
     def getboolean(self, k, d=None):
+        """
+        add in version 0.7.10
+        """
         v = self.get(k, d)
         if isinstance(v, bool) is False:
             raise WorkerTaskParamsValueTypeError(k, v, bool)
