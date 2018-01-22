@@ -98,7 +98,8 @@ class RedisWorkerConfig(object):
         redis_db: 13
     """
 
-    def __init__(self, conf_path=None, section_name="Redis"):
+    def __init__(self, conf_path=None, redis_host=None, redis_password=None, redis_port=None, redis_db=None,
+                 section_name="Redis"):
         self.redis_host = "localhost"
         self.redis_port = 6379
         self.redis_password = None
@@ -107,6 +108,16 @@ class RedisWorkerConfig(object):
             self.load_redis_config(conf_path, section_name)
         if self.redis_password == "":
             self.redis_password = None
+
+        if redis_host is not None:
+            self.redis_host = redis_host
+        if redis_password is not None:
+            self.redis_password = redis_password
+        if redis_port is not None:
+            self.redis_port = redis_port
+        if redis_db is not None:
+            self.redis_db = redis_db
+
         self.redis_man = Redis(host=self.redis_host, port=self.redis_port, db=self.redis_db,
                                password=self.redis_password)
 
