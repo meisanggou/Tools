@@ -318,6 +318,7 @@ class Worker(WorkerConfig, _WorkerLog):
             task_item.set(task_params=params)
         self.current_task = task_item
         self._execute()
+        return self.current_task.task_output
 
     def work(self, daemon=False):
         """
