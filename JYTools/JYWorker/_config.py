@@ -133,3 +133,37 @@ class RedisWorkerConfig(object):
                 self.redis_password = config.get(section_name, "redis_password")
             if config.has_option(section_name, "redis_db"):
                 self.redis_db = config.getint(section_name, "redis_db")
+
+    @staticmethod
+    def write_config(file_path, redis_host=None, redis_password=None, redis_port=None, redis_db=None,
+                     section_name="Redis", append=True):
+        """
+        Add in version 0.7.11
+        :param file_path:
+        :param redis_host:
+        :param redis_password:
+        :param redis_port:
+        :param redis_db:
+        :param section_name:
+        :param append:
+        :return:
+        """
+        mode = "w"
+        if append is True:
+            mode = "a"
+        c = "[%s]\n" % section_name
+        if redis_host is not None:
+            c += "redis_host: %s\n" % redis_host
+        if redis_password is not None:
+            c += "redis_password: %s\n" % redis_password
+        if redis_port is not None:
+            c += "redis_port: %s\n" % redis_port
+        if redis_db is not None:
+            c += "redis_db: %s\n" % redis_db
+        with open(file_path, mode) as wf:
+            wf.write(c)
+        return True, c
+
+
+if __name__ == "__main__":
+    RedisWorkerConfig.write_config("redis.conf", redis_host="localhost", redis_password="", redis_port=6379, redis_db=1)
