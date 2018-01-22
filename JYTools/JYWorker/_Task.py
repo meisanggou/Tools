@@ -55,6 +55,15 @@ class WorkerTaskParams(dict):
             raise WorkerTaskParamsValueTypeError(k, v, bool)
         return v
 
+    def getlist(self, k, d=None):
+        """
+        add in version 0.7.11
+        """
+        v = self.get(k, d)
+        if isinstance(v, list) is False:
+            raise WorkerTaskParamsValueTypeError(k, v, list)
+        return v
+
     def __getitem__(self, item):
         if item not in self:
             raise WorkerTaskParamsKeyNotFound(item)
