@@ -117,9 +117,14 @@ class RedisWorkerConfig(object):
             self.redis_port = redis_port
         if redis_db is not None:
             self.redis_db = redis_db
+        self.redis_man = None
+        self.connected = False
+        self._connect()
 
+    def _connect(self):
         self.redis_man = Redis(host=self.redis_host, port=self.redis_port, db=self.redis_db,
                                password=self.redis_password)
+        self.connected = True
 
     def load_redis_config(self, conf_path, section_name):
         config = ConfigParser.ConfigParser()

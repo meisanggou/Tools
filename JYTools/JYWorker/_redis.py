@@ -24,7 +24,8 @@ class RedisQueue(RedisWorkerConfig, WorkerConfig):
     """
     conf_path_environ_key = "REDIS_WORKER_CONF_PATH"
 
-    def __init__(self, conf_path=None, work_tag=None, **kwargs):
+    def __init__(self, conf_path=None, work_tag=None, redis_host=None, redis_password=None, redis_port=None,
+                 redis_db=None, section_name="Redis", **kwargs):
         self.conf_path = conf_path
         if self.conf_path is None or os.path.exists(self.conf_path) is False:
             print("Conf Path Not Exist ", self.conf_path)
@@ -37,7 +38,8 @@ class RedisQueue(RedisWorkerConfig, WorkerConfig):
                     print("Use ", env_conf_path, " As conf path")
                 else:
                     print("Path ", env_conf_path, " Not Exist")
-        RedisWorkerConfig.__init__(self, self.conf_path)
+        RedisWorkerConfig.__init__(self, self.conf_path, redis_host=redis_host, redis_password=redis_password,
+                                   redis_port=redis_port, redis_db=redis_db, section_name=section_name)
         WorkerConfig.__init__(self, self.conf_path, work_tag=work_tag, is_queue=True, **kwargs)
 
     @staticmethod
@@ -155,7 +157,8 @@ class RedisWorker(RedisWorkerConfig, Worker):
     """
     conf_path_environ_key = "REDIS_WORKER_CONF_PATH"
 
-    def __init__(self, conf_path=None, heartbeat_value=None, work_tag=None, log_dir=None, **kwargs):
+    def __init__(self, conf_path=None, heartbeat_value=None, work_tag=None, log_dir=None, redis_host=None,
+                 redis_password=None, redis_port=None, redis_db=None, section_name="Redis", **kwargs):
         self.conf_path = conf_path
         if self.conf_path is None or isinstance(self.conf_path, (unicode, str)) is False or os.path.exists(
                 self.conf_path) is False:
@@ -169,7 +172,8 @@ class RedisWorker(RedisWorkerConfig, Worker):
                     print("Use ", env_conf_path, " As conf path")
                 else:
                     print("Path ", env_conf_path, " Not Exist")
-        RedisWorkerConfig.__init__(self, self.conf_path)
+        RedisWorkerConfig.__init__(self, self.conf_path, redis_host=redis_host, redis_password=redis_password,
+                                   redis_port=redis_port, redis_db=redis_db, section_name=section_name)
         Worker.__init__(self, conf_path=self.conf_path, work_tag=work_tag, log_dir=log_dir, **kwargs)
         if heartbeat_value is None:
             heartbeat_value = StringTool.random_str(str_len=12, upper_s=False)
