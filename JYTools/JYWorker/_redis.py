@@ -190,14 +190,24 @@ class RedisWorker(RedisWorkerConfig, Worker):
             return False
         return True
 
-    def hang_up_clock(self):
+    def hang_up_clock(self, freq=None):
+        loop_run = True
+        if isinstance(freq, int) and freq >= 1:
+            loop_run = False
+        else:
+            freq = 0
         key = "%s_%s_%s" % (self.clock_prefix_key, self.work_tag, self._id)
-        while True:
+        hang_freq = 0
+        while hang_freq <= freq or loop_run is True:
+            freq += 1
             if self.is_running is False:
                 sleep(5)
                 continue
             try:
-                v = "%s_%s" % (self.heartbeat_value, int(time()))
+                if self.current_task is not None and self.current_task.task_key is not None:
+                    v = "%s_%s" % (self.heartbeat_value, int(time()))
+                else:
+                    v = "%s_%s" % (self.heartbeat_value, int(time()))
                 self.redis_man.setex(key, v, 60)
             except RedisError:
                 pass
@@ -378,12 +388,15 @@ class RedisWorker(RedisWorkerConfig, Worker):
             next_task = self.pop_task()
             if next_task is None:
                 continue
+            self.num_total_job += 1
             parse_r, task_item = self.parse_task_info(next_task)
             if parse_r is False:
                 self.handle_invalid_task(next_task, task_item)
+                self.num_wrongful_job += 1
                 continue
             elif task_item is None:
                 self.worker_log("Receive Null Package")
+                self.num_null_job += 1
                 continue
             if isinstance(task_item, WorkerTask):
                 self.current_task = task_item

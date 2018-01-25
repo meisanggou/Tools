@@ -51,6 +51,12 @@ class Worker(WorkerConfig, _WorkerLog):
         self.after_handler_funcs = []
         self.init_log_dir()
         self._handle_task_func = self.handle_task
+        self.num_total_job = 0  # add in 0.8.1
+        self.num_success_job = 0  # add in 0.8.1
+        self.num_fail_job = 0  # add in 0.8.1
+        self.num_wrongful_job = 0  # add in 0.8.1
+        self.num_invalid_job = 0  # add in 0.8.1
+        self.num_null_job = 0  # add in 0.8.1
 
     """
     add in 0.4.0
@@ -178,29 +184,35 @@ class Worker(WorkerConfig, _WorkerLog):
                 sys.stdout = standard_out
             for func in reversed(self.after_handler_funcs):
                 func()
+            self.num_success_job += 1
         except WorkerTaskParamsKeyNotFound as pk:
             self.current_task.task_status = TaskStatus.FAIL
             self.current_task.task_message = "Need Key %s, Not Found." % pk.missing_key
             self.task_log(self.current_task.task_message, level="ERROR")
+            self.num_invalid_job += 1
         except TaskErrorException as te:
             self.current_task.task_status = TaskStatus.FAIL
             self.current_task.task_message = te.error_message
             self.worker_log("Task: ", te.key, "Params: ", te.params, " Error Info: ", te.error_message, level="ERROR")
             self.task_log(te.error_message, level="ERROR")
+            self.num_fail_job += 1
         except InvalidTaskException as it:
             self.current_task.task_status = TaskStatus.INVALID
             self.current_task.task_message = it.invalid_message
             self.task_log(it.invalid_message, level="WARING")
             self.worker_log("Invalid Task ", it.task_info, " Invalid Info: ", it.invalid_message, level="WARING")
+            self.num_invalid_job += 1
         except Exception as e:
             self.current_task.task_status = TaskStatus.FAIL
             self.current_task.task_message = str(e)
             self.task_log(traceback.format_exc(), level="ERROR")
             self._execute_error(e)
+            self.num_fail_job += 1
         except SystemExit as se:
             self.current_task.task_status = TaskStatus.FAIL
             self.current_task.task_message = str(se)
             self.task_log(traceback.format_exc(), level="ERROR")
+            self.num_fail_job += 1
         finally:
             if standard_out is not None:
                 sys.stdout = standard_out
