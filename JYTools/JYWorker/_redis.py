@@ -4,6 +4,7 @@
 import os
 import json
 import threading
+import re
 from time import sleep, time
 from datetime import datetime
 from redis import RedisError
@@ -178,6 +179,8 @@ class RedisWorker(RedisWorkerConfig, Worker):
         if heartbeat_value is None:
             heartbeat_value = StringTool.random_str(str_len=12, upper_s=False)
         self.heartbeat_value = StringTool.decode(heartbeat_value)
+        if re.match(r"^[\da-zA-Z]{3,50}$", self.heartbeat_value) is None:
+            raise ValueError("heartbeat only allow 0-9 a-z and length between 3 and 50.")
         self.redis_man.set(self.heartbeat_key, heartbeat_value)
         t_clock = threading.Thread(target=self.hang_up_clock)
         t_clock.daemon = True
@@ -205,7 +208,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
                 continue
             try:
                 if self.current_task is not None and self.current_task.task_key is not None:
-                    v = "%s_%s" % (self.heartbeat_value, int(time()))
+                    v = "%s_%s_%s" % (self.heartbeat_value, int(time()), self.current_task.task_key)
                 else:
                     v = "%s_%s" % (self.heartbeat_value, int(time()))
                 self.redis_man.setex(key, v, 60)
