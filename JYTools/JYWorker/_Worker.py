@@ -51,7 +51,6 @@ class Worker(WorkerConfig, _WorkerLog):
         self.after_handler_funcs = []
         self.init_log_dir()
         self._handle_task_func = self.handle_task
-        self.num_total_job = 0  # add in 0.8.1
         self.num_success_job = 0  # add in 0.8.1
         self.num_fail_job = 0  # add in 0.8.1
         self.num_wrongful_job = 0  # add in 0.8.1
@@ -91,6 +90,12 @@ class Worker(WorkerConfig, _WorkerLog):
         self._debug = v
         if self.debug is True:
             self.redirect_stdout = False
+
+    @property
+    def num_total_job(self):
+        r_job = self.num_success_job + self.num_fail_job + self.num_invalid_job
+        t_job = r_job + self.num_wrongful_job +  + self.num_null_job
+        return t_job
 
     def has_heartbeat(self):
         return True
@@ -166,6 +171,7 @@ class Worker(WorkerConfig, _WorkerLog):
 
     def _execute(self):
         self.worker_log("Start Execute", self.current_task.task_key)
+        self.hang_up_clock(1)
         self.current_task.start_time = time()
         standard_out = None
         try:
@@ -225,6 +231,7 @@ class Worker(WorkerConfig, _WorkerLog):
         use_time = self.current_task.end_time - self.current_task.start_time
         self.task_log("Use ", use_time, " Seconds")
         self.worker_log("Completed Task", self.current_task.task_key)
+        self.current_task = None
 
     def _execute_error(self, e):
         if self.handler_task_exception is not None:
@@ -255,7 +262,7 @@ class Worker(WorkerConfig, _WorkerLog):
     def handle_invalid_task(self, task_info, error_info):
         pass
 
-    def hang_up_clock(self):
+    def hang_up_clock(self, freq=None):
         pass
 
     def hang_down_clock(self):

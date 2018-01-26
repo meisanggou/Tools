@@ -201,8 +201,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
             freq = 0
         key = "%s_%s_%s" % (self.clock_prefix_key, self.work_tag, self._id)
         hang_freq = 0
-        while hang_freq <= freq or loop_run is True:
-            freq += 1
+        while True:
             if self.is_running is False:
                 sleep(5)
                 continue
@@ -214,7 +213,12 @@ class RedisWorker(RedisWorkerConfig, Worker):
                 self.redis_man.setex(key, v, 60)
             except RedisError:
                 pass
-            sleep(55)
+            hang_freq += 1
+            if hang_freq < freq or loop_run is True:
+                sleep(55)
+            else:
+                break
+        print("completed")
 
     def hang_down_clock(self):
         key = "%s_%s_%s" % (self.clock_prefix_key, self.work_tag, self._id)
@@ -391,7 +395,6 @@ class RedisWorker(RedisWorkerConfig, Worker):
             next_task = self.pop_task()
             if next_task is None:
                 continue
-            self.num_total_job += 1
             parse_r, task_item = self.parse_task_info(next_task)
             if parse_r is False:
                 self.handle_invalid_task(next_task, task_item)
