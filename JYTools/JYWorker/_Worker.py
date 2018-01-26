@@ -93,9 +93,13 @@ class Worker(WorkerConfig, _WorkerLog):
 
     @property
     def num_total_job(self):
-        r_job = self.num_success_job + self.num_fail_job + self.num_invalid_job
-        t_job = r_job + self.num_wrongful_job +  + self.num_null_job
+        r_job = self.num_worked_job
+        t_job = r_job + self.num_wrongful_job + self.num_null_job
         return t_job
+
+    @property
+    def num_worked_job(self):
+        return self.num_success_job + self.num_fail_job + self.num_invalid_job
 
     def has_heartbeat(self):
         return True
