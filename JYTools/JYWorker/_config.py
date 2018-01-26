@@ -42,12 +42,36 @@ class WorkerConfig(object):
             self.worker_index = kwargs["worker_index"]
         if "redirect_stdout" in kwargs:
             self.redirect_stdout = kwargs["redirect_stdout"]
+
+        self.resolve_conflict()
         if is_queue is False:
             self.heartbeat_key = self.heartbeat_prefix_key + "_" + self.work_tag
             self.queue_key = self.queue_prefix_key + "_" + self.work_tag
-            if self.heartbeat_key == self.queue_key:
-                self.heartbeat_key = "heartbeat_" + self.heartbeat_key
+
         self.current_task = WorkerTask()
+
+    def resolve_conflict(self):
+        h_c = q_c = c_c = False
+        if self._prefix_key_conflict(self.heartbeat_prefix_key, self.queue_prefix_key) is True:
+            h_c = q_c = True
+        if self._prefix_key_conflict(self.heartbeat_prefix_key, self.clock_prefix_key) is True:
+            h_c = c_c = True
+        if self._prefix_key_conflict(self.clock_prefix_key, self.queue_prefix_key) is True:
+            c_c = q_c = True
+        if h_c is True:
+            self.heartbeat_prefix_key = "HB_" + self.heartbeat_prefix_key
+        if q_c is True:
+            self.queue_prefix_key = "QL_" + self.queue_prefix_key
+        if c_c is True:
+            self.clock_prefix_key = "CK_" + self.clock_prefix_key
+
+    @staticmethod
+    def _prefix_key_conflict(key1, key2):
+        if key1.find(key2) == 0:
+            return True
+        if key2.find(key1) == 0:
+            return True
+        return False
 
     def load_work_config(self, conf_path, section_name):
         config = ConfigParser.ConfigParser()
