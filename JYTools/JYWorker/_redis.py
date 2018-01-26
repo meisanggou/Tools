@@ -106,6 +106,43 @@ class RedisQueue(RedisWorkerConfig, WorkerConfig):
         self.push_null_packages(work_tag, num)
 
 
+class RedisStat(RedisWorkerConfig, WorkerConfig):
+
+    """
+        class RedisStat
+        add in version 0.9.1
+    """
+    conf_path_environ_key = "REDIS_WORKER_CONF_PATH"
+
+    def __init__(self, conf_path=None, work_tag=None, redis_host=None, redis_password=None, redis_port=None,
+                 redis_db=None, section_name="Redis", **kwargs):
+        self.conf_path = conf_path
+        if self.conf_path is None or os.path.exists(self.conf_path) is False:
+            print("Conf Path Not Exist ", self.conf_path)
+            print("Read os environ :", self.conf_path_environ_key, " ")
+            env_conf_path = os.environ.get(self.conf_path_environ_key)
+            print("os environ ", self.conf_path_environ_key, " is ", env_conf_path)
+            if env_conf_path is not None:
+                if os.path.exists(env_conf_path) is True:
+                    self.conf_path = env_conf_path
+                    print("Use ", env_conf_path, " As conf path")
+                else:
+                    print("Path ", env_conf_path, " Not Exist")
+        RedisWorkerConfig.__init__(self, self.conf_path, redis_host=redis_host, redis_password=redis_password,
+                                   redis_port=redis_port, redis_db=redis_db, section_name=section_name)
+        WorkerConfig.__init__(self, self.conf_path, work_tag=work_tag, is_queue=True, **kwargs)
+
+    def list_queue(self):
+        d_q = dict()
+        qs = self.redis_man.keys(self.queue_prefix_key + "_*")
+        len_k = len(self.queue_prefix_key) + 1
+        for item in qs:
+            if self.redis_man.type(item) == "list":
+                l = self.redis_man.llen(item)
+                d_q[item[len_k:]] = l
+        return d_q
+
+
 class RedisData(object):
     BOOL_VALUE = [False, True]
 
