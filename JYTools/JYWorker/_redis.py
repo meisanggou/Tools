@@ -244,9 +244,9 @@ class RedisWorker(RedisWorkerConfig, Worker):
                 continue
             try:
                 if self.current_task is not None and self.current_task.task_key is not None:
-                    v = "%s_%s_%s" % (self.heartbeat_value, int(time()), self.current_task.task_key)
+                    v = StringTool.join([self.heartbeat_value, int(time()), self.current_task.task_key], "_").strip("_")
                 else:
-                    v = "%s_%s" % (self.heartbeat_value, int(time()))
+                    v = StringTool.join([self.heartbeat_value, int(time())], "_").strip("_")
                 self.redis_man.setex(key, v, 60)
             except RedisError:
                 pass
@@ -255,7 +255,6 @@ class RedisWorker(RedisWorkerConfig, Worker):
                 sleep(55)
             else:
                 break
-        print("completed")
 
     def hang_down_clock(self):
         key = "%s_%s_%s" % (self.clock_prefix_key, self.work_tag, self._id)
