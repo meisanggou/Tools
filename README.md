@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 0.8.5
+fix bug: test方法return时AttributeError: 'NoneType' object has no attribute 'task_output'
+
 ## 0.8.4
 fix bug: hang_up_clock debug模式下sleep死循环
 

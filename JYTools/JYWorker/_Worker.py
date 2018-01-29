@@ -235,7 +235,9 @@ class Worker(WorkerConfig, _WorkerLog):
         use_time = self.current_task.end_time - self.current_task.start_time
         self.task_log("Use ", use_time, " Seconds")
         self.worker_log("Completed Task", self.current_task.task_key)
+        task_output = self.current_task.task_output
         self.current_task = None
+        return task_output
 
     def _execute_error(self, e):
         if self.handler_task_exception is not None:
@@ -340,8 +342,7 @@ class Worker(WorkerConfig, _WorkerLog):
         else:
             task_item.set(task_params=params)
         self.current_task = task_item
-        self._execute()
-        return self.current_task.task_output
+        return self._execute()
 
     def work(self, daemon=False):
         """
