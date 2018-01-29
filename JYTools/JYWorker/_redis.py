@@ -347,7 +347,8 @@ class RedisWorker(RedisWorkerConfig, Worker):
         level = kwargs.pop("level", "INFO")
         level = str(level).upper()
         if level not in ["INFO", "DEBUG"]:
-            self.publish_message("%s\n%s" % (self.current_task.task_key, msg))
+            p_msg = StringTool.join([self.current_task.task_key, "\n", msg], "")
+            self.publish_message(p_msg)
         log_file = os.path.join(self.log_dir, "%s_%s.log" % (self.work_tag, self.current_task.task_key))
         now_time = datetime.now().strftime(TIME_FORMAT)
         write_a = ["[", self.heartbeat_value]
