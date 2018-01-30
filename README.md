@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 0.8.7
+开发JYTools中JYWorker交互式生成配置文件
+
 ## 0.8.6
 task信息全部转成unicode
 

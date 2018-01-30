@@ -92,6 +92,33 @@ class WorkerConfig(object):
         self.heartbeat_key = self.heartbeat_prefix_key + "_" + self.work_tag
         self.queue_key = self.queue_prefix_key + "_" + self.work_tag
 
+    @staticmethod
+    def write_work_config(file_path, heartbeat_prefix_key=None, queue_prefix_key=None, pop_time_out=None,
+                          section_name="Worker", append=True):
+        """
+        Add in version 0.8.7
+        :param file_path:
+        :param heartbeat_prefix_key:
+        :param queue_prefix_key:
+        :param pop_time_out:
+        :param section_name:
+        :param append:
+        :return:
+        """
+        mode = "w"
+        if append is True:
+            mode = "a"
+        c = "[%s]\n" % section_name
+        if heartbeat_prefix_key is not None:
+            c += "heartbeat_prefix_key: %s\n" % heartbeat_prefix_key
+        if queue_prefix_key is not None:
+            c += "queue_prefix_key: %s\n" % queue_prefix_key
+        if pop_time_out is not None:
+            c += "pop_time_out: %s\n" % pop_time_out
+        with open(file_path, mode) as wf:
+            wf.write(c)
+        return True, c
+
 
 class WorkerLogConfig(object):
 
