@@ -1,5 +1,9 @@
+#! /usr/bin/env python
+# coding: utf-8
 from _config import RedisWorkerConfig, WorkerConfig
-
+"""
+add in version 0.8.7
+"""
 redis_host_input = "please input the redis_host, need the format like 192.168.0.1, default localhost"
 redis_password_input = "please input the redis_password, need string redis_password, default null"
 redis_port_input = "please input the redis_port, need number redis_port < 65535, default 6379"
