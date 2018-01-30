@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 0.8.6
+task信息全部转成unicode
+
 ## 0.8.5
 fix bug: test方法return时AttributeError: 'NoneType' object has no attribute 'task_output'
 

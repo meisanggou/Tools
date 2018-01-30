@@ -271,7 +271,8 @@ class RedisWorker(RedisWorkerConfig, Worker):
             sleep(10 * freq)
             return self.pop_task(freq)
         if next_task is not None:
-            return next_task[1]
+            t = StringTool.decode(next_task[1])
+            return t
         return next_task
 
     def push_task(self, key, params, work_tag=None, sub_key=None, report_tag=None, is_report=False):
