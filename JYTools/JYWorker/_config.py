@@ -96,7 +96,7 @@ class WorkerConfig(object):
     def write_work_config(file_path, heartbeat_prefix_key=None, queue_prefix_key=None, pop_time_out=None,
                           section_name="Worker", append=True):
         """
-        Add in version 0.7.11
+        Add in version 0.8.7
         :param file_path:
         :param heartbeat_prefix_key:
         :param queue_prefix_key:
@@ -118,6 +118,7 @@ class WorkerConfig(object):
         with open(file_path, mode) as wf:
             wf.write(c)
         return True, c
+
 
 class WorkerLogConfig(object):
 
