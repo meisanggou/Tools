@@ -4,7 +4,7 @@
 import os
 import tempfile
 import ConfigParser
-from _Task import WorkerTask
+from ._Task import WorkerTask
 from redis import Redis
 
 __author__ = 'meisanggou'

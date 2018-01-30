@@ -10,10 +10,10 @@ from datetime import datetime
 from redis import RedisError
 from JYTools import TIME_FORMAT
 from JYTools import StringTool
-from _config import RedisWorkerConfig, WorkerConfig
-from _Worker import Worker
-from _Task import WorkerTask, WorkerTaskParams
-from _exception import InvalidTaskKey, InvalidWorkerTag
+from ._config import RedisWorkerConfig, WorkerConfig
+from ._Worker import Worker
+from ._Task import WorkerTask, WorkerTaskParams
+from ._exception import InvalidTaskKey, InvalidWorkerTag
 
 __author__ = '鹛桑够'
 

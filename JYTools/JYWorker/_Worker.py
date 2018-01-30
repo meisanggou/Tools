@@ -10,9 +10,9 @@ import uuid
 from time import time, sleep
 import threading
 import traceback
-from _exception import TaskErrorException, InvalidTaskException, WorkerTaskParamsKeyNotFound
-from _Task import TaskStatus, WorkerTask, WorkerTaskParams
-from _config import WorkerConfig, WorkerLogConfig
+from ._exception import TaskErrorException, InvalidTaskException, WorkerTaskParamsKeyNotFound
+from ._Task import TaskStatus, WorkerTask, WorkerTaskParams
+from ._config import WorkerConfig, WorkerLogConfig
 
 __author__ = 'meisanggou'
 

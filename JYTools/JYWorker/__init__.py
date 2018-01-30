@@ -2,10 +2,10 @@
 # coding: utf-8
 
 import os
-from _redis import RedisWorker, RedisQueue, RedisStat
-from _async import AsyncRedisWorker, AsyncStatRedisWorker
-from _Task import TaskStatus
-from _du import DAGWorker
+from ._redis import RedisWorker, RedisQueue, RedisStat
+from ._async import AsyncRedisWorker, AsyncStatRedisWorker
+from ._Task import TaskStatus
+from ._du import DAGWorker
 
 __author__ = 'meisanggou'
 
