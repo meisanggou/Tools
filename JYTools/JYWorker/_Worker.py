@@ -236,8 +236,9 @@ class Worker(WorkerConfig, _WorkerLog):
         self.task_log("Use ", use_time, " Seconds")
         self.worker_log("Completed Task", self.current_task.task_key)
         task_output = self.current_task.task_output
+        task_status = self.current_task.task_status
         self.current_task = None
-        return task_output
+        return task_status, task_output
 
     def _execute_error(self, e):
         if self.handler_task_exception is not None:
@@ -327,7 +328,8 @@ class Worker(WorkerConfig, _WorkerLog):
     def run(self):
         pass
 
-    def test(self, key, params=None, params_path=None, sub_key=None, report_tag=None):
+    def test(self, key, params=None, params_path=None, sub_key=None, report_tag=None, debug=True):
+        self.debug = debug
         if params is None and params_path is not None:
             with open(params_path, "r") as rp:
                 c = rp.read()
