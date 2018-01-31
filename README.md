@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 0.8.8
+fix bug: hang_up_clock test模式下sleep死循环
+
 ## 0.8.7
 开发JYTools中JYWorker交互式生成配置文件
 
