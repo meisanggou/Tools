@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import string
+import six
 import random
 
 # add in version 0.1.7
@@ -13,25 +14,25 @@ second_encoding = "gbk"
 
 
 def decode(s):
-    if isinstance(s, str):
+    if isinstance(s, six.binary_type):
         try:
             return s.decode(encoding)
         except UnicodeError:
             return s.decode(second_encoding, "replace")
-    if isinstance(s, (int, long)):
+    if isinstance(s, (int, six.integer_types)):
         return "%s" % s
     return s
 
 
 def encode(s):
-    if isinstance(s, unicode):
+    if isinstance(s, six.text_type):
         return s.encode(encoding)
     return s
 
 
 def join(a, join_str):
     r_a = ""
-    if isinstance(a, (unicode, str)):
+    if isinstance(a, (six.text_type, six.binary_type)):
         r_a += decode(a) + join_str
     elif isinstance(a, (tuple, list)):
         for item in a:
@@ -54,6 +55,6 @@ def random_str(str_len=32, upper_s=False):
 
 
 def is_string(s):
-    if isinstance(s, (str, unicode)) is False:
+    if isinstance(s, (six.binary_type, six.text_type)) is False:
         return False
     return True
