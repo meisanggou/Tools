@@ -239,7 +239,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
         key = "%s_%s_%s" % (self.clock_prefix_key, self.work_tag, self._id)
         hang_freq = 0
         while True:
-            if self.is_running is False and loop_run is False:
+            if self.is_running is False and loop_run is True:
                 sleep(5)
                 continue
             try:
