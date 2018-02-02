@@ -79,7 +79,7 @@ class DB(object):
         return s
 
     @staticmethod
-    def merge_where(where_value=None, where_is_none=None, where_cond=None, where_cond_args=None):
+    def merge_where(where_value=None, where_is_none=None, where_cond=None, where_cond_args=None, prefix_value=None):
         args = []
         if where_cond is None:
             where_cond = list()
@@ -92,6 +92,13 @@ class DB(object):
             args.extend(where_args)
             for key in dict(where_value).keys():
                 where_cond.append("%s=%%s" % key)
+        if isinstance(prefix_value, dict) is True:
+            for key in prefix_value.keys():
+                v = "%s" % prefix_value[key]
+                v = v.replace("_", r"\_").replace("%", r"\%")
+                v = "%s%%" % v
+                where_cond.append("%s LIKE %%s" % key)
+                args.append(v)
         if where_is_none is not None and len(where_is_none) > 0:
             for key in where_is_none:
                 where_cond.append("%s is NULL" % key)
@@ -173,8 +180,9 @@ class DB(object):
         kwargs = dict(kwargs)
         where_is_none = kwargs.pop("where_is_none", None)
         where_cond_args = kwargs.pop("where_cond_args", None)
+        prefix_value = kwargs.pop("prefix_value", None)
         where_cond, args = self.merge_where(where_value=where_value, where_cond=where_cond, where_is_none=where_is_none,
-                                            where_cond_args=where_cond_args)
+                                            where_cond_args=where_cond_args, prefix_value=prefix_value)
         if cols is None:
             select_item = "*"
         else:
@@ -196,7 +204,8 @@ class DB(object):
         if isinstance(limit, int):
             sql_query += " LIMIT %s" % limit
         sql_query += ";"
-        exec_result = self.execute(sql_query, args)
+        print_sql = kwargs.get("print_sql", False)
+        exec_result = self.execute(sql_query, args, print_sql=print_sql)
         if cols is not None and package is True:
             db_items = self.fetchall()
             select_items = []
@@ -374,3 +383,10 @@ class DB(object):
         if self.cursor:
             self.cursor.close()
         self.conn.close()
+
+
+if __name__ == "__main__":
+    db = DB()
+    items = db.execute_select("zh_test", prefix_value=dict(a=r"abc_", b="%"), cols=["a"], print_sql=True)
+    for item in items:
+        print(item)
