@@ -3,7 +3,10 @@
 import os
 import six
 import tempfile
-import configparser
+try:
+    import ConfigParser as configparser
+except ImportError:
+    import configparser
 from ._Task import WorkerTask
 from redis import Redis
 
