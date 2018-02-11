@@ -32,7 +32,7 @@ def encode(s):
 
 def join(a, join_str):
     r_a = ""
-    if isinstance(a, (six.text_type, six.binary_type)):
+    if is_string(a):
         r_a += decode(a) + join_str
     elif isinstance(a, (tuple, list)):
         for item in a:
