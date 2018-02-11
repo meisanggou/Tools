@@ -1,11 +1,15 @@
 #! /usr/bin/env python
 # coding: utf-8
-
 import os
+import six
 import tempfile
-import ConfigParser
-from _Task import WorkerTask
+try:
+    import ConfigParser as configparser
+except ImportError:
+    import configparser
+from ._Task import WorkerTask
 from redis import Redis
+from JYTools.StringTool import is_string
 
 __author__ = 'meisanggou'
 
@@ -34,7 +38,7 @@ class WorkerConfig(object):
             self.work_tag = work_tag
         else:
             self.work_tag = self.DEFAULT_WORK_TAG
-        if isinstance(self.work_tag, (unicode, str)) is False and is_queue is False:
+        if is_string(self.work_tag) is False and is_queue is False:
             class_name = self.__class__.__name__
             msg = "Need String work_tag. Please Set {0}.DEFAULT_WORK_TAG=yourWorkTag Or {0}(work_tag=yourWorkTag)"
             raise TypeError(msg.format(class_name))
@@ -74,7 +78,7 @@ class WorkerConfig(object):
         return False
 
     def load_work_config(self, conf_path, section_name):
-        config = ConfigParser.ConfigParser()
+        config = configparser.ConfigParser()
         config.read(conf_path)
         if config.has_section(section_name):
             if config.has_option(section_name, "heartbeat_prefix_key"):
@@ -178,7 +182,7 @@ class RedisWorkerConfig(object):
         self.connected = True
 
     def load_redis_config(self, conf_path, section_name):
-        config = ConfigParser.ConfigParser()
+        config = configparser.ConfigParser()
         config.read(conf_path)
         if config.has_section(section_name):
             if config.has_option(section_name, "redis_host"):

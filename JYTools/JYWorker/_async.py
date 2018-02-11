@@ -3,7 +3,7 @@
 
 from time import sleep
 from JYTools.StringTool import is_string
-from _redis import RedisWorker
+from ._redis import RedisWorker
 
 __author__ = 'meisanggou'
 

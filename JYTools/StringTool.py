@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import string
+import six
 import random
 
 # add in version 0.1.7
@@ -13,25 +14,31 @@ second_encoding = "gbk"
 
 
 def decode(s):
-    if isinstance(s, str):
+    if isinstance(s, six.binary_type):
         try:
             return s.decode(encoding)
         except UnicodeError:
             return s.decode(second_encoding, "replace")
-    if isinstance(s, (int, long)):
+    if isinstance(s, (int, six.integer_types)):
         return "%s" % s
     return s
 
 
 def encode(s):
-    if isinstance(s, unicode):
+    if isinstance(s, six.text_type):
         return s.encode(encoding)
     return s
 
 
+def is_string(s):
+    if isinstance(s, (six.binary_type, six.text_type)) is False:
+        return False
+    return True
+
+
 def join(a, join_str):
     r_a = ""
-    if isinstance(a, (unicode, str)):
+    if is_string(a):
         r_a += decode(a) + join_str
     elif isinstance(a, (tuple, list)):
         for item in a:
@@ -45,15 +52,9 @@ def random_str(str_len=32, upper_s=False):
     """ 随机生成str_len位字符串
     @return: str_len位字符串
     """
-    rule = string.letters + string.digits
+    rule = string.ascii_letters + string.digits
     c_list = random.sample(rule, str_len)
     s = "".join(c_list)
     if upper_s is True:
         return s.upper()
     return s
-
-
-def is_string(s):
-    if isinstance(s, (str, unicode)) is False:
-        return False
-    return True

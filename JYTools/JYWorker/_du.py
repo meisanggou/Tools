@@ -3,8 +3,8 @@
 
 import re
 from time import time
-from _Task import TaskStatus
-from _redis import RedisWorker
+from ._Task import TaskStatus
+from ._redis import RedisWorker
 
 __author__ = 'meisanggou'
 

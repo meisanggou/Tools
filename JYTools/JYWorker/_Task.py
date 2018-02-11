@@ -2,7 +2,7 @@
 # coding: utf-8
 
 import types
-from _exception import WorkerTaskParamsKeyNotFound, WorkerTaskParamsValueTypeError
+from ._exception import WorkerTaskParamsKeyNotFound, WorkerTaskParamsValueTypeError
 
 __author__ = '鹛桑够'
 
