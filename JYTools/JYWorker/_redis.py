@@ -359,11 +359,11 @@ class RedisWorker(RedisWorkerConfig, Worker):
             write_a.extend(["][", self.current_task.task_sub_key])
         write_a.extend(["] ", now_time, ": ", level, " ", msg, "\n"])
         with open(log_file, "ab", 0) as wl:
-            s = StringTool.join(write_a, join_str="")
-            s = StringTool.encode(s)
+            u = StringTool.join(write_a, join_str="")
+            s = StringTool.encode(u)
             wl.write(s)
             if self.redirect_stdout is False and self.debug is True:
-                print(s)
+                print(u)
 
     def handle_invalid_task(self, task_info, error_info):
         self.worker_log(error_info, level="WARING")
