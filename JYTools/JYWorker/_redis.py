@@ -333,11 +333,11 @@ class RedisWorker(RedisWorkerConfig, Worker):
             write_a.extend([":", self.worker_index])
         write_a.extend(["] ", now_time, ": ", level, " ", msg, "\n"])
         with open(log_file, "ab", 0) as wl:
-            s = StringTool.join(write_a, join_str="")
-            s = StringTool.encode(s)
+            u = StringTool.join(write_a, join_str="")
+            s = StringTool.encode(u)
             wl.write(s)
             if self.redirect_stdout is False and self.debug is True:
-                print(s)
+                print(u)
 
     def task_log(self, *args, **kwargs):
         if self.log_dir is None or isinstance(self.log_dir, (six.text_type, six.binary_type)) is False:
