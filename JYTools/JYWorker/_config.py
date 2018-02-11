@@ -9,6 +9,7 @@ except ImportError:
     import configparser
 from ._Task import WorkerTask
 from redis import Redis
+from JYTools.StringTool import is_string
 
 __author__ = 'meisanggou'
 
@@ -37,7 +38,7 @@ class WorkerConfig(object):
             self.work_tag = work_tag
         else:
             self.work_tag = self.DEFAULT_WORK_TAG
-        if isinstance(self.work_tag, (six.text_type, six.binary_type)) is False and is_queue is False:
+        if is_string(self.work_tag) is False and is_queue is False:
             class_name = self.__class__.__name__
             msg = "Need String work_tag. Please Set {0}.DEFAULT_WORK_TAG=yourWorkTag Or {0}(work_tag=yourWorkTag)"
             raise TypeError(msg.format(class_name))
