@@ -30,6 +30,12 @@ def encode(s):
     return s
 
 
+def is_string(s):
+    if isinstance(s, (six.binary_type, six.text_type)) is False:
+        return False
+    return True
+
+
 def join(a, join_str):
     r_a = ""
     if is_string(a):
@@ -52,9 +58,3 @@ def random_str(str_len=32, upper_s=False):
     if upper_s is True:
         return s.upper()
     return s
-
-
-def is_string(s):
-    if isinstance(s, (six.binary_type, six.text_type)) is False:
-        return False
-    return True
