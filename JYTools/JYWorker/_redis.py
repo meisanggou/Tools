@@ -10,6 +10,7 @@ from datetime import datetime
 from redis import RedisError
 from JYTools import TIME_FORMAT
 from JYTools import StringTool
+from JYTools.StringTool import is_string
 from ._config import RedisWorkerConfig, WorkerConfig
 from ._Worker import Worker
 from ._Task import WorkerTask, WorkerTaskParams
@@ -53,7 +54,7 @@ class RedisQueue(RedisWorkerConfig, WorkerConfig):
         """
         if sub_key is not None:
             key = "%s|%s" % (key, sub_key)
-        if isinstance(work_tag, (six.text_type, six.binary_type)) is False:
+        if is_string(work_tag) is False:
             raise InvalidWorkerTag()
         if len(work_tag) <= 0:
             raise InvalidWorkerTag()
@@ -165,7 +166,7 @@ class RedisData(object):
 
     @staticmethod
     def unpack_data(p_data):
-        if isinstance(p_data, (six.text_type, six.binary_type)) is False:
+        if is_string(p_data) is False:
             return p_data
         sp_data = p_data.split("_", 1)
         if len(sp_data) != 2:
@@ -198,8 +199,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
     def __init__(self, conf_path=None, heartbeat_value=None, work_tag=None, log_dir=None, redis_host=None,
                  redis_password=None, redis_port=None, redis_db=None, section_name="Redis", **kwargs):
         self.conf_path = conf_path
-        if self.conf_path is None or isinstance(self.conf_path, (six.text_type, six.binary_type)) is False or os.path.exists(
-                self.conf_path) is False:
+        if self.conf_path is None or is_string(self.conf_path) is False or os.path.exists(self.conf_path) is False:
             print("Conf Path Not Exist ", self.conf_path)
             print("Read os environ :", self.conf_path_environ_key, " ")
             env_conf_path = os.environ.get(self.conf_path_environ_key)
@@ -319,7 +319,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
         return self.redis_man.delete(item_key)
 
     def worker_log(self, *args, **kwargs):
-        if self.log_dir is None or isinstance(self.log_dir, (six.text_type, six.binary_type)) is False:
+        if self.log_dir is None or is_string(self.log_dir) is False:
             return
         msg = StringTool.join(args, " ")
         level = kwargs.pop("level", "INFO")
@@ -340,7 +340,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
                 print(u)
 
     def task_log(self, *args, **kwargs):
-        if self.log_dir is None or isinstance(self.log_dir, (six.text_type, six.binary_type)) is False:
+        if self.log_dir is None or is_string(self.log_dir) is False:
             return
         if self.current_task is None or self.current_task.task_key is None:
             return
