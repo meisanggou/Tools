@@ -4,6 +4,7 @@ import sys
 from JYTools.JYWorker._config import RedisWorkerConfig, WorkerConfig
 if sys.version_info[0] == 3:
     raw_input = input
+
 """
 add in version 0.8.7
 """
