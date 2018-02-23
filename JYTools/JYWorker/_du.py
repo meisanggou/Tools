@@ -12,6 +12,31 @@ __author__ = 'meisanggou'
 class DAGWorker(RedisWorker):
     expect_params_type = dict
 
+    @staticmethod
+    def split_ref(ref_str):
+        """
+
+        :param ref_str: index+字母开头的key index+&+数字开头的key index+&+字母开头的key
+        :return:
+        """
+        match_r = re.match(r"^(\d{1,10})((&\d+|&*[a-z])\w{0,60})$", ref_str, re.I)
+        if match_r is None:
+            return None
+        ref_index = int(match_r.groups()[0])
+        ref_key = match_r.groups()[1]
+        if ref_key[0] == "&":
+            ref_key = ref_key[1:]
+        return dict(index=ref_index, key=ref_key)
+
+    @staticmethod
+    def exist_loop(params):
+        task_list = params["task_list"]
+        assert isinstance(task_list, list)
+        task_len = len(task_list)
+        assert task_len > 0
+
+        return False, None
+
     def handle_report_task(self):
         r_task = self.current_task.task_params
         sp_keys = self.current_task.task_sub_key.rsplit("_", 1)
@@ -351,3 +376,7 @@ class DAGWorker(RedisWorker):
                 self.task_log("Pipeline Has Endless Loop Waiting")
                 self.fail_pipeline("Pipeline Has Endless Loop Waiting")
             self.fail_pipeline(self.get_task_item(0, "task_message"))
+
+if __name__ == "__main__":
+    ref_data = DAGWorker.split_ref("123n")
+    print(ref_data)
