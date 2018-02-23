@@ -3,6 +3,7 @@ jingyun tools
 
 ## 0.9.1
 修改不适合python3的代码，使得代码既符合python3又符合python2
+DAGWorker 增加方法exist_loop find_loop 判断是否有回路和获得回路
 
 ## 0.8.11
 DB execute_select 加入参数prefix_value 支持按前缀查找
