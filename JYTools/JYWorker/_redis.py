@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # coding: utf-8
-
 import os
+import six
 import json
 import threading
 import re
@@ -10,10 +10,11 @@ from datetime import datetime
 from redis import RedisError
 from JYTools import TIME_FORMAT
 from JYTools import StringTool
-from _config import RedisWorkerConfig, WorkerConfig
-from _Worker import Worker
-from _Task import WorkerTask, WorkerTaskParams
-from _exception import InvalidTaskKey, InvalidWorkerTag
+from JYTools.StringTool import is_string
+from ._config import RedisWorkerConfig, WorkerConfig
+from ._Worker import Worker
+from ._Task import WorkerTask, WorkerTaskParams
+from ._exception import InvalidTaskKey, InvalidWorkerTag
 
 __author__ = '鹛桑够'
 
@@ -53,7 +54,7 @@ class RedisQueue(RedisWorkerConfig, WorkerConfig):
         """
         if sub_key is not None:
             key = "%s|%s" % (key, sub_key)
-        if isinstance(work_tag, (unicode, str)) is False:
+        if is_string(work_tag) is False:
             raise InvalidWorkerTag()
         if len(work_tag) <= 0:
             raise InvalidWorkerTag()
@@ -165,7 +166,7 @@ class RedisData(object):
 
     @staticmethod
     def unpack_data(p_data):
-        if isinstance(p_data, (unicode, str)) is False:
+        if is_string(p_data) is False:
             return p_data
         sp_data = p_data.split("_", 1)
         if len(sp_data) != 2:
@@ -198,8 +199,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
     def __init__(self, conf_path=None, heartbeat_value=None, work_tag=None, log_dir=None, redis_host=None,
                  redis_password=None, redis_port=None, redis_db=None, section_name="Redis", **kwargs):
         self.conf_path = conf_path
-        if self.conf_path is None or isinstance(self.conf_path, (unicode, str)) is False or os.path.exists(
-                self.conf_path) is False:
+        if self.conf_path is None or is_string(self.conf_path) is False or os.path.exists(self.conf_path) is False:
             print("Conf Path Not Exist ", self.conf_path)
             print("Read os environ :", self.conf_path_environ_key, " ")
             env_conf_path = os.environ.get(self.conf_path_environ_key)
@@ -319,7 +319,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
         return self.redis_man.delete(item_key)
 
     def worker_log(self, *args, **kwargs):
-        if self.log_dir is None or isinstance(self.log_dir, (unicode, str)) is False:
+        if self.log_dir is None or is_string(self.log_dir) is False:
             return
         msg = StringTool.join(args, " ")
         level = kwargs.pop("level", "INFO")
@@ -332,15 +332,15 @@ class RedisWorker(RedisWorkerConfig, Worker):
         if self.worker_index is not None:
             write_a.extend([":", self.worker_index])
         write_a.extend(["] ", now_time, ": ", level, " ", msg, "\n"])
-        with open(log_file, "a", 0) as wl:
-            s = StringTool.join(write_a, join_str="")
-            s = StringTool.encode(s)
+        with open(log_file, "ab", 0) as wl:
+            u = StringTool.join(write_a, join_str="")
+            s = StringTool.encode(u)
             wl.write(s)
             if self.redirect_stdout is False and self.debug is True:
-                print(s)
+                print(u)
 
     def task_log(self, *args, **kwargs):
-        if self.log_dir is None or isinstance(self.log_dir, (unicode, str)) is False:
+        if self.log_dir is None or is_string(self.log_dir) is False:
             return
         if self.current_task is None or self.current_task.task_key is None:
             return
@@ -358,12 +358,12 @@ class RedisWorker(RedisWorkerConfig, Worker):
         if self.current_task.task_sub_key is not None:
             write_a.extend(["][", self.current_task.task_sub_key])
         write_a.extend(["] ", now_time, ": ", level, " ", msg, "\n"])
-        with open(log_file, "a", 0) as wl:
-            s = StringTool.join(write_a, join_str="")
-            s = StringTool.encode(s)
+        with open(log_file, "ab", 0) as wl:
+            u = StringTool.join(write_a, join_str="")
+            s = StringTool.encode(u)
             wl.write(s)
             if self.redirect_stdout is False and self.debug is True:
-                print(s)
+                print(u)
 
     def handle_invalid_task(self, task_info, error_info):
         self.worker_log(error_info, level="WARING")
