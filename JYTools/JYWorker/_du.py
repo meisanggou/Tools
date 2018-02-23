@@ -19,6 +19,8 @@ class DAGWorker(RedisWorker):
         :param ref_str: index+字母开头的key index+&+数字开头的key index+&+字母开头的key
         :return:
         """
+        if ref_str[0] == "&":
+            ref_str = ref_str[1:]
         match_r = re.match(r"^(\d{1,10})((&\d+|&*[a-z])\w{0,60})$", ref_str, re.I)
         if match_r is None:
             return None
@@ -30,10 +32,15 @@ class DAGWorker(RedisWorker):
 
     @staticmethod
     def exist_loop(params):
-        task_list = params["task_list"]
-        assert isinstance(task_list, list)
-        task_len = len(task_list)
+        tl = params["task_list"]
+        assert isinstance(tl, list)
+        task_len = len(tl)
         assert task_len > 0
+        rs_l = [dict()] * task_len
+        print(rs_l)
+        for index in range(task_len):
+            task_item = tl[index]
+            assert isinstance(task_item, dict)
 
         return False, None
 
@@ -377,6 +384,13 @@ class DAGWorker(RedisWorker):
                 self.fail_pipeline("Pipeline Has Endless Loop Waiting")
             self.fail_pipeline(self.get_task_item(0, "task_message"))
 
+
 if __name__ == "__main__":
-    ref_data = DAGWorker.split_ref("123n")
-    print(ref_data)
+    task_1 = dict()
+    task_2 = dict()
+    task_3 = dict()
+    task_4 = dict()
+    task_5 = dict()
+    task_list = [task_1, task_2, task_3, task_4, task_5]
+    task = dict(task_list=task_list)
+    DAGWorker.exist_loop(task)
