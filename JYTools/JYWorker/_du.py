@@ -251,7 +251,7 @@ class DAGWorker(RedisWorker):
             outputs = dict()
             for out_key in task_output.keys():
                 out_value = task_output[out_key]
-                if isinstance(out_value, (unicode, str)) and out_value.startswith("&"):
+                if is_string(out_value) is True and out_value.startswith("&"):
                     ref_r, ref_info = self.analysis_ref(out_value[1:], None, task_len)
                     if ref_r is False:
                         continue
@@ -264,7 +264,7 @@ class DAGWorker(RedisWorker):
 
                     for sub_i in range(len(out_value)):
                         sub_v = out_value[sub_i]
-                        if isinstance(sub_v, (str, unicode)) is False or sub_v.startswith("&") is False:
+                        if is_string(sub_v) is False or sub_v.startswith("&") is False:
                             continue
                         ref_r, ref_info = self.analysis_ref(sub_v[1:], None, task_len)
                         if ref_r is False:
@@ -336,7 +336,7 @@ class DAGWorker(RedisWorker):
             ref_output = self.get_task_item(ref_index, hash_key="output_%s" % ref_key)
         if not ref_output:
             return False, "Input Ref %s Not In Task %s Output. %s" % (ref_key, ref_index, ref_str)
-        if isinstance(ref_output, (str, unicode)) and ref_output.startswith("&") is True:
+        if is_string(ref_output) is True and ref_output.startswith("&") is True:
             return False, "Ref Output Value Can Not Start With &. %s" % ref_output
         return True, dict(ref_output=ref_output, ref_index=ref_index, ref_key=ref_key)
 
@@ -377,7 +377,7 @@ class DAGWorker(RedisWorker):
                 output_ref_def[output_key] = output_key
                 pipeline_task["task_output"][output_key] = []
                 continue
-            if isinstance(output_value, (str, unicode)) is False:
+            if is_string(output_value) is False:
                 continue
             if output_value.startswith("&"):
                 ov_f = re.findall("^\\d*(\\w+)$", output_value[1:])
@@ -416,7 +416,7 @@ class DAGWorker(RedisWorker):
                 if item_key.startswith("input_") is False:
                     continue
                 inp = task_item[item_key]
-                if isinstance(inp, (unicode, str)) and inp.startswith("&"):
+                if is_string(inp) is True and inp.startswith("&"):
                     self.task_log("Task ", index + 1, " Handle Input ", item_key)
                     ref_r, ref_info = self.analysis_ref(inp[1:], index, task_len)
                     if ref_r is False:
@@ -432,7 +432,7 @@ class DAGWorker(RedisWorker):
                 elif isinstance(inp, list):
                     for sub_i in range(len(inp)):
                         sub_inp = inp[sub_i]
-                        if isinstance(sub_inp, (str, unicode)) is False or sub_inp.startswith("&") is False:
+                        if is_string(sub_inp) is False or sub_inp.startswith("&") is False:
                             continue
                         ref_r, ref_info = self.analysis_ref(sub_inp[1:], index, task_len)
                         if ref_r is False:
@@ -462,13 +462,13 @@ class DAGWorker(RedisWorker):
                     continue
                 input_keys.append(item_key)
                 inp = task_item[item_key]
-                if isinstance(inp, (unicode, str)) and inp.startswith("&"):
+                if is_string(inp) is True and inp.startswith("&"):
                     is_ready = False
                     break
                 elif isinstance(inp, list):
                     for sub_i in range(len(inp)):
                         sub_inp = inp[sub_i]
-                        if isinstance(sub_inp, (unicode, str)) and sub_inp.startswith("&"):
+                        if is_string(sub_inp) and sub_inp.startswith("&"):
                             ref_output = self.get_task_item(index + 1, "%s_%s" % (item_key, sub_i))
                             if ref_output is None:
                                 is_ready = False
