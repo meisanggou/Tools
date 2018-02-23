@@ -151,9 +151,10 @@ class DAGWorker(RedisWorker):
                 if len(rs_l[j]["next"]) <= 0:
                     return None
                 for n_item in rs_l[j]["next"]:
+                    if n_item in l:
+                        l.append(n_item)
+                        return l[l.index(n_item):]
                     l.append(n_item)
-                    if n_item == l[0]:
-                        return l
                     lr_l = link(n_item, l)
                     if lr_l is not None:
                         return lr_l
