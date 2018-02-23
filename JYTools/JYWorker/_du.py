@@ -3,6 +3,7 @@
 
 import re
 from time import time
+from JYTools.StringTool import is_string
 from ._Task import TaskStatus
 from ._redis import RedisWorker
 
@@ -36,13 +37,90 @@ class DAGWorker(RedisWorker):
         assert isinstance(tl, list)
         task_len = len(tl)
         assert task_len > 0
-        rs_l = [dict()] * task_len
-        print(rs_l)
+        rs_l = [dict(quotes=list(), next=list()) for i in range(task_len)]
         for index in range(task_len):
             task_item = tl[index]
             assert isinstance(task_item, dict)
+            for k, v in task_item.items():
+                if k.startswith("input_") is False:
+                    continue
+                if is_string(v) is False:
+                    continue
+                ref_d = DAGWorker.split_ref(v)
+                if ref_d is None:
+                    continue
+                if ref_d["index"] < 0 or ref_d["index"] > task_len:
+                    raise ValueError("")  # out of index
+                if ref_d["index"] not in rs_l[index]["quotes"]:
+                    rs_l[index]["quotes"].append(ref_d["index"])
+                    if ref_d["index"] > 0:
+                        rs_l[ref_d["index"] - 1]["next"].append(index)
+        completed_queue = [0]
 
-        return False, None
+        while True:
+            completed_num = 0
+            for index in range(task_len):
+                if index + 1 in completed_queue:
+                    continue
+                rs_item = rs_l[index]
+                q_len = len(rs_item["quotes"])
+                for i in range(q_len - 1, -1, -1):
+                    if rs_item["quotes"][i] in completed_queue:
+                        rs_item["quotes"].remove(rs_item["quotes"][i])
+                if len(rs_item["quotes"]) <= 0:
+                    completed_queue.append(index + 1)
+                    completed_num += 1
+                    continue
+            if len(completed_queue) == task_len + 1:
+                return False
+            if completed_num == 0:
+                return True
+        return False
+
+    @staticmethod
+    def find_loop(params):
+        tl = params["task_list"]
+        assert isinstance(tl, list)
+        task_len = len(tl)
+        assert task_len > 0
+        rs_l = [dict(quotes=list(), next=list()) for i in range(task_len)]
+        for index in range(task_len):
+            task_item = tl[index]
+            assert isinstance(task_item, dict)
+            for k, v in task_item.items():
+                if k.startswith("input_") is False:
+                    continue
+                if is_string(v) is False:
+                    continue
+                ref_d = DAGWorker.split_ref(v)
+                if ref_d is None:
+                    continue
+                if ref_d["index"] < 0 or ref_d["index"] > task_len:
+                    raise ValueError("")  # out of index
+                if ref_d["index"] not in rs_l[index]["quotes"]:
+                    rs_l[index]["quotes"].append(ref_d["index"])
+                    if ref_d["index"] > 0:
+                        rs_l[ref_d["index"] - 1]["next"].append(index)
+
+        for index in range(task_len):
+            def link(j, l):
+                if j + 1 in l:
+                    l.append(j + 1)
+                    return l
+                if len(rs_l[j]["next"]) <= 0:
+                    return None
+                l.append(j + 1)
+                for n_item in rs_l[j]["next"]:
+                    lr_l = link(n_item, l)
+                    if lr_l is not None:
+                        return lr_l
+                l.remove(l[-1])
+                return None
+            r_l = link(index, list())
+            if r_l is not None:
+                return r_l
+
+        return None
 
     def handle_report_task(self):
         r_task = self.current_task.task_params
@@ -383,14 +461,3 @@ class DAGWorker(RedisWorker):
                 self.task_log("Pipeline Has Endless Loop Waiting")
                 self.fail_pipeline("Pipeline Has Endless Loop Waiting")
             self.fail_pipeline(self.get_task_item(0, "task_message"))
-
-
-if __name__ == "__main__":
-    task_1 = dict()
-    task_2 = dict()
-    task_3 = dict()
-    task_4 = dict()
-    task_5 = dict()
-    task_list = [task_1, task_2, task_3, task_4, task_5]
-    task = dict(task_list=task_list)
-    DAGWorker.exist_loop(task)
