@@ -168,6 +168,7 @@ class RedisStat(RedisWorkerConfig, WorkerConfig):
         add in version 0.9.7
         """
         d_wd = dict()
+        work_tag = StringTool.encode(work_tag)
         key = StringTool.join([self.clock_prefix_key, work_tag, "*"], "_").strip("_")
         len_k = len(self.clock_prefix_key) + 2 + len(work_tag)
         ws = self.redis_man.keys(key)
