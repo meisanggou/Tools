@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 0.9.7
+RedisStat 增加 list_worker list_worker_detail
+
 ## 0.9.5
 增加requires six
 

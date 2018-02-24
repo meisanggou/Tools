@@ -142,6 +142,57 @@ class RedisStat(RedisWorkerConfig, WorkerConfig):
                 d_q[item[len_k:]] = l
         return d_q
 
+    def list_worker(self):
+        """
+        add in version 0.9.7
+        """
+        d_w = dict()
+        ws = self.redis_man.keys(self.clock_prefix_key + "_*")
+        len_k = len(self.clock_prefix_key) + 1
+        for item in ws:
+            if self.redis_man.type(item) == "string":
+                tag_id = item[len_k:]
+                tag_id_s = tag_id.rsplit("_", 1)
+                if len(tag_id_s) != 2:
+                    continue
+                tag = tag_id_s[0]
+                w_id = tag_id_s[1]
+                if tag not in d_w:
+                    d_w[tag] = [w_id]
+                else:
+                    d_w[tag].append(w_id)
+        return d_w
+
+    def list_worker_detail(self, work_tag):
+        """
+        add in version 0.9.7
+        """
+        d_wd = dict()
+        key = StringTool.join([self.clock_prefix_key, work_tag, "*"], "_").strip("_")
+        len_k = len(self.clock_prefix_key) + 2 + len(work_tag)
+        ws = self.redis_man.keys(key)
+        for item in ws:
+            if self.redis_man.type(item) != "string":
+                continue
+            pre_key = item[len_k:]
+            if re.search(r"[^\da-z]", pre_key, re.I) is not None:
+                continue
+            p = dict()
+            v = self.redis_man.get(item)
+            p["value"] = v
+            vs = v.split("_", 2)
+            if len(vs) < 2:
+                continue
+            p["heartbeat_value"] = vs[0]
+            p["clock_time"] = vs[1]
+            if len(vs) > 2:
+                p["current_task"] = vs[2]
+                p["working"] = True
+            else:
+                p["working"] = False
+            d_wd[pre_key] = p
+        return d_wd
+
 
 class RedisData(object):
     BOOL_VALUE = [False, True]
