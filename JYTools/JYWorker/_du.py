@@ -37,7 +37,7 @@ class DAGWorker(RedisWorker):
         assert isinstance(tl, list)
         task_len = len(tl)
         assert task_len > 0
-        rs_l = [dict(quotes=list(), next=list()) for i in range(task_len)]
+        rs_l = [dict(quotes=list(), next=list(), index=i) for i in range(task_len)]
         for index in range(task_len):
             task_item = tl[index]
             assert isinstance(task_item, dict)
@@ -83,7 +83,7 @@ class DAGWorker(RedisWorker):
         assert isinstance(tl, list)
         task_len = len(tl)
         assert task_len > 0
-        rs_l = [dict(quotes=list(), next=list()) for i in range(task_len)]
+        rs_l = [dict(quotes=list(), next=list(), index=i) for i in range(task_len)]
         for index in range(task_len):
             task_item = tl[index]
             assert isinstance(task_item, dict)
@@ -128,7 +128,7 @@ class DAGWorker(RedisWorker):
         assert isinstance(tl, list)
         task_len = len(tl)
         assert task_len > 0
-        rs_l = [dict(quotes=list(), next=list()) for i in range(task_len + 1)]
+        rs_l = [dict(quotes=list(), next=list(), index=i) for i in range(task_len + 1)]
         for index in range(task_len):
             task_item = tl[index]
             assert isinstance(task_item, dict)
@@ -172,7 +172,7 @@ class DAGWorker(RedisWorker):
         assert isinstance(tl, list)
         task_len = len(tl)
         assert task_len > 0
-        rs_l = [dict(quotes=list(), next=list()) for i in range(task_len + 1)]
+        rs_l = [dict(quotes=list(), next=list(), index=i) for i in range(task_len + 1)]
         for index in range(task_len):
             task_item = tl[index]
             assert isinstance(task_item, dict)
@@ -189,7 +189,7 @@ class DAGWorker(RedisWorker):
                 if ref_d["index"] not in rs_l[index + 1]["quotes"]:
                     rs_l[index + 1]["quotes"].append(ref_d["index"])
                     rs_l[ref_d["index"]]["next"].append(index + 1)
-        passed_point = [False for i in range(task_len + 1)]
+        passed_point = [False] * (task_len + 1)
         for index in range(1, task_len):
             def link(j, l):
                 if passed_point[j] is not False:
