@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 0.9.4
+fix find_loop bug
+
 ## 0.9.3
 DAGWorker update function find_loop. old find_loop move to find_loop2
 

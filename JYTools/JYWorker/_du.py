@@ -142,7 +142,7 @@ class DAGWorker(RedisWorker):
                     continue
                 if ref_d["index"] < 0 or ref_d["index"] > task_len:
                     raise ValueError("")  # out of index
-                if ref_d["index"] not in rs_l[index]["quotes"]:
+                if ref_d["index"] not in rs_l[index + 1]["quotes"]:
                     rs_l[index + 1]["quotes"].append(ref_d["index"])
                     rs_l[ref_d["index"]]["next"].append(index + 1)
 
@@ -158,7 +158,7 @@ class DAGWorker(RedisWorker):
                     lr_l = link(n_item, l)
                     if lr_l is not None:
                         return lr_l
-                l.remove(l[-1])
+                    l.remove(l[-1])
                 return None
             r_l = link(index, [index])
             if r_l is not None:
