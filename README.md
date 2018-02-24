@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 0.9.5
+增加requires six
+
 ## 0.9.4
 fix find_loop bug
 
