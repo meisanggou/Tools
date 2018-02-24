@@ -166,6 +166,54 @@ class DAGWorker(RedisWorker):
 
         return None
 
+    @staticmethod
+    def find_loop3(params):
+        tl = params["task_list"]
+        assert isinstance(tl, list)
+        task_len = len(tl)
+        assert task_len > 0
+        rs_l = [dict(quotes=list(), next=list()) for i in range(task_len + 1)]
+        for index in range(task_len):
+            task_item = tl[index]
+            assert isinstance(task_item, dict)
+            for k, v in task_item.items():
+                if k.startswith("input_") is False:
+                    continue
+                if is_string(v) is False:
+                    continue
+                ref_d = DAGWorker.split_ref(v)
+                if ref_d is None:
+                    continue
+                if ref_d["index"] < 0 or ref_d["index"] > task_len:
+                    raise ValueError("")  # out of index
+                if ref_d["index"] not in rs_l[index + 1]["quotes"]:
+                    rs_l[index + 1]["quotes"].append(ref_d["index"])
+                    rs_l[ref_d["index"]]["next"].append(index + 1)
+        passed_point = [False for i in range(task_len + 1)]
+        for index in range(1, task_len):
+            def link(j, l):
+                if passed_point[j] is not False:
+                    return None
+                if len(rs_l[j]["next"]) <= 0:
+                    passed_point[j] = True
+                    return None
+                for n_item in rs_l[j]["next"]:
+                    if n_item in l:
+                        l.append(n_item)
+                        return l[l.index(n_item):]
+                    l.append(n_item)
+                    lr_l = link(n_item, l)
+                    if lr_l is not None:
+                        return lr_l
+                    l.remove(l[-1])
+                passed_point[j] = True
+                return None
+            r_l = link(index, [index])
+            if r_l is not None:
+                return r_l
+
+        return None
+
     def handle_report_task(self):
         r_task = self.current_task.task_params
         sp_keys = self.current_task.task_sub_key.rsplit("_", 1)
