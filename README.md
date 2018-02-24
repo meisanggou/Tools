@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 0.9.3
+DAGWorker update function find_loop. old find_loop move to find_loop2
+
 ## 0.9.1
 修改不适合python3的代码，使得代码既符合python3又符合python2
 DAGWorker 增加方法exist_loop find_loop 判断是否有回路和获得回路
