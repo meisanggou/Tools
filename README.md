@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 0.9.9
+只要params是dict类型都转换成WorkerTaskParams类型
+
 ## 0.9.8
 RedisStat 增加 list_queue_detail
 fix DAGWorker bug

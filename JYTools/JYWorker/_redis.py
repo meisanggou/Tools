@@ -532,7 +532,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
             if self.expect_params_type is not None:
                 if not isinstance(params, self.expect_params_type):
                     return False, "Invalid task, not expect param type"
-            if self.expect_params_type == dict:
+            if isinstance(self.expect_params_type, dict) is True:
                 task_item.set(task_params=WorkerTaskParams(**params))
                 task_item.task_params.debug_func = self.task_debug_log
             else:

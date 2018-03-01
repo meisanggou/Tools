@@ -10,7 +10,7 @@ __author__ = 'meisanggou'
 
 
 class ResultWorker(RedisWorker):
-    def handler_report_task(self):
+    def handle_report_task(self):
         print(self.current_task.task_key)
         task_params = self.current_task.task_params
         print(task_params)
