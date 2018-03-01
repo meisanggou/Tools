@@ -91,8 +91,8 @@ class WorkerTask(object):
         self.task_output = dict()
         self.task_message = None
         self.work_tag = None
-        self.start_time = None
-        self.end_time = None
+        self.start_time = None  # 任务真正执行的开始时间
+        self.end_time = None  # 任务真正执行结束的时间
         self.sub_task_detail = None
         self.set(**kwargs)
 
