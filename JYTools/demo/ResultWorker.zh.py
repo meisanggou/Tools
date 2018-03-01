@@ -13,6 +13,7 @@ class ResultWorker(RedisWorker):
     def handler_report_task(self):
         print(self.current_task.task_key)
         task_params = self.current_task.task_params
+        print(task_params)
         # print(task_params)
         print(task_params["task_status"])
         print(task_params["task_message"])
@@ -26,5 +27,5 @@ class ResultWorker(RedisWorker):
         print(json.dumps(task_params["sub_task_detail"]))
 
 
-p_w = ResultWorker(conf_path="redis_worker.conf", heartbeat_value="FFFFFF", log_dir="/tmp", work_tag="Result")
+p_w = ResultWorker(conf_path="redis_worker.conf", log_dir="/tmp", work_tag="Result")
 p_w.work()

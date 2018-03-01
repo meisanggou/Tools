@@ -18,6 +18,59 @@ from ._exception import InvalidTaskKey, InvalidWorkerTag
 __author__ = '鹛桑够'
 
 
+class RedisQueueData(object):
+    """
+    add in version 0.9.8
+    """
+
+    @staticmethod
+    def parse_task_info(task_info, work_tag=None, expect_params_type=None):
+        task_item = WorkerTask(task_info=task_info)
+
+        partition_task = task_info.split(",", 3)
+        if len(partition_task) != 4:
+            error_msg = "Invalid task %s, task partition length is not 3" % task_info
+            return False, error_msg
+
+        work_tags = partition_task[0].split("|")  # 0 work tag 1 return tag
+        if work_tag is not None and work_tags[0] != work_tag:
+            error_msg = "Invalid task %s, task not match work tag %s" % (task_info, work_tag)
+            return False, error_msg
+        task_item.set(work_tag=work_tags[0])
+        if len(work_tags) > 1:
+            task_item.set(task_report_tag=work_tags[1])
+
+        keys = partition_task[1].split("|")
+        if len(keys[0]) <= 0:
+            return True, None
+        task_item.set(task_key=keys[0])
+        if len(keys) > 1:
+            task_item.set(task_sub_key=keys[1])
+
+        if partition_task[2] not in ("string", "json", "report"):
+            error_msg = "Invalid task %s, task args type invalid" % task_info
+            return False, error_msg
+        params = partition_task[3]
+        if partition_task[2] in ("json", "report"):
+            try:
+                params = json.loads(params)
+            except ValueError:
+                error_msg = "Invalid task %s, task args type and args not uniform" % task_info
+                return False, error_msg
+        if partition_task[2] == "report":
+            task_item.set(is_report_task=True)
+            task_item.set(task_params=WorkerTask(**params))
+        else:
+            if expect_params_type is not None:
+                if not isinstance(params, expect_params_type):
+                    return False, "Invalid task, not expect param type"
+            if expect_params_type == dict:
+                task_item.set(task_params=WorkerTaskParams(**params))
+            else:
+                task_item.set(task_params=params)
+        return True, task_item
+
+
 class RedisQueue(RedisWorkerConfig, WorkerConfig):
     """
         conf_path_environ_key
@@ -141,6 +194,26 @@ class RedisStat(RedisWorkerConfig, WorkerConfig):
                 l = self.redis_man.llen(item)
                 d_q[item[len_k:]] = l
         return d_q
+
+    def list_queue_detail(self, work_tag, limit=None):
+        l_qd = []
+        key = self.queue_prefix_key + "_" + work_tag
+        t = self.redis_man.type(key)
+        if t != "list":
+            return None
+        index = 0
+        if isinstance(limit, int) is True and limit > 0:
+            is_true = False
+        else:
+            limit = -1
+            is_true = True
+        while is_true or index < limit:
+            v = self.redis_man.lindex(key, index)
+            if v is None:
+                break
+            l_qd.append(v)
+            index += 1
+        return l_qd
 
     def list_worker(self):
         """

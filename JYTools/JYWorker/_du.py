@@ -242,7 +242,7 @@ class DAGWorker(RedisWorker):
         self.set_task_item(reporter_sub_key, "start_time", r_task.start_time)
         self.set_task_item(reporter_sub_key, "end_time", r_task.end_time)
         self.set_task_item(reporter_sub_key, "finished_time", time())
-        self.handler_task(self.current_task.task_key, None)
+        self.handle_task(self.current_task.task_key, None)
 
     def format_pipeline(self, key, params):
         if "task_list" not in params:
