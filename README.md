@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 0.9.11
+worker运行时 增加打印clock_key
+
 ## 0.9.9
 只要params是dict类型都转换成WorkerTaskParams类型
 

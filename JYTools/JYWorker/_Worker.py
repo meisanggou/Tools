@@ -43,7 +43,6 @@ class Worker(WorkerConfig, _WorkerLog):
     def __init__(self, log_dir=None, work_tag=None, **kwargs):
         WorkerConfig.__init__(self, work_tag=work_tag, **kwargs)
         _WorkerLog.__init__(self, log_dir=log_dir, **kwargs)
-        self._id = uuid.uuid4().hex  # add in 0.7.1
         self._msg_manager = None
         self.is_running = False
         self._debug = False

@@ -360,7 +360,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
             loop_run = False
         else:
             freq = 0
-        key = "%s_%s_%s" % (self.clock_prefix_key, self.work_tag, self._id)
+        key = self.clock_key
         hang_freq = 0
         while True:
             if self.is_running is False and loop_run is True:
@@ -550,6 +550,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
         self.worker_log("Worker Work Tag Is ", self.work_tag)
         self.worker_log("Worker QueHeartbeat Key Is", self.heartbeat_key)
         self.worker_log("Worker Queue Key Is", self.queue_key)
+        self.worker_log("Worker Clock Key Is", self.clock_key)
 
         while True:
             if self.has_heartbeat() is False:

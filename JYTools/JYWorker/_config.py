@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # coding: utf-8
 import os
-import six
+import uuid
 import tempfile
 try:
     import ConfigParser as configparser
@@ -31,6 +31,7 @@ class WorkerConfig(object):
         self.queue_prefix_key = "task_queue"
         self.clock_prefix_key = "CK"
         self.pop_time_out = 60
+        self._id = uuid.uuid4().hex  # add in 0.9.11
         self.redirect_stdout = False
         if conf_path is not None:
             self.load_work_config(conf_path, section_name)
@@ -51,6 +52,7 @@ class WorkerConfig(object):
         if is_queue is False:
             self.heartbeat_key = self.heartbeat_prefix_key + "_" + self.work_tag
             self.queue_key = self.queue_prefix_key + "_" + self.work_tag
+            self.clock_key = self.clock_prefix_key + "_" + self.work_tag + "_" + self._id
 
         self.current_task = WorkerTask()
 
