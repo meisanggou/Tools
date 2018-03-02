@@ -97,34 +97,13 @@ class WorkerTask(object):
         self.set(**kwargs)
 
     def set(self, **kwargs):
-        if "task_key" in kwargs:
-            self.task_key = kwargs["task_key"]
-        if "task_status" in kwargs:
-            self.task_status = kwargs["task_status"]
-        if "task_name" in kwargs:
-            self.task_name = kwargs["task_name"]
-        if "sub_task_detail" in kwargs:
-            self.sub_task_detail = kwargs["sub_task_detail"]
-        if "task_sub_key" in kwargs:
-            self.task_sub_key = kwargs["task_sub_key"]
-        if "task_info" in kwargs:
-            self.task_info = kwargs["task_info"]
-        if "task_params" in kwargs:
-            self.task_params = kwargs["task_params"]
-        if "task_report_tag" in kwargs:
-            self.task_report_tag = kwargs["task_report_tag"]
-        if "is_report_task" in kwargs:
-            self.is_report_task = kwargs["is_report_task"]
-        if "work_tag" in kwargs:
-            self.work_tag = kwargs["work_tag"]
-        if "task_message" in kwargs:
-            self.task_message = kwargs["task_message"]
-        if "start_time" in kwargs:
-            self.start_time = kwargs["start_time"]
-        if "end_time" in kwargs:
-            self.end_time = kwargs["end_time"]
-        if "task_output" in kwargs:
-            self.task_output = kwargs["task_output"]
+        allow_keys = ["task_key", "task_status", "task_name", "sub_task_detail", "task_sub_key", "task_info",
+                      "task_params", "task_report_tag", "is_report_task", "work_tag", "task_message", "start_time",
+                      "end_time", "task_output"]
+        for k, v in kwargs.items():
+            if k not in allow_keys:
+                continue
+            self.__setattr__(k, v)
 
     def to_dict(self):
         d = dict()
