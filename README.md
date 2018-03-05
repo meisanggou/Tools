@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.0.1
+JYWorker添加方法sub_classes，获得所有最后的RedisClass的子类
+
 ## 0.9.11
 worker运行时 增加打印clock_key
 
