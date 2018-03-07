@@ -365,11 +365,11 @@ class DAGWorker(RedisWorker):
             self.del_task_item(index)
 
     def analysis_ref(self, ref_str, current_index, task_len):
-        match_r = re.match("^(\\d{1,10})([a-z]\\w{0,60})$", ref_str, re.I)
-        if match_r is None:
+        split_d = self.split_ref(ref_str)
+        if split_d is None:
             return False, "Input Not Standard Ref Result Format %s" % ref_str
-        ref_index = int(match_r.groups()[0])
-        ref_key = match_r.groups()[1]
+        ref_index = split_d["index"]
+        ref_key = split_d["ref_key"]
         if isinstance(current_index, int):
             if ref_index == current_index + 1:
                 return False, "Input Can Not Ref Self %s" % ref_str
