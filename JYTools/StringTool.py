@@ -48,6 +48,11 @@ def join(a, join_str):
     return r_a
 
 
+def m_print(s):
+    s = encode(s)
+    print(s)
+
+
 def random_str(str_len=32, upper_s=False):
     """ 随机生成str_len位字符串
     @return: str_len位字符串
