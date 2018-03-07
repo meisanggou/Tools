@@ -2,6 +2,8 @@
 jingyun tools
 
 ## 1.0.2
+DAGWorker 引用支持key以数字开头
+StringTools 添加方法 m_print
 fix JYWorker task log bug in debug module
 
 ## 1.0.1
