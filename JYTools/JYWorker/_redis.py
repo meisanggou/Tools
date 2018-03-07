@@ -4,6 +4,7 @@ import os
 import json
 import threading
 import re
+import six
 from time import sleep, time
 from datetime import datetime
 from redis import RedisError
@@ -281,7 +282,7 @@ class RedisData(object):
             return "l_" + json.dumps(data)
         if isinstance(data, bool):
             return "b_%s" % RedisData.BOOL_VALUE.index(data)
-        if isinstance(data, int):
+        if isinstance(data, six.integer_types):
             return "i_%s" % data
         if isinstance(data, float):
             return "f_%s" % data
