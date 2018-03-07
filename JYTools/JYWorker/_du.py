@@ -369,7 +369,7 @@ class DAGWorker(RedisWorker):
         if split_d is None:
             return False, "Input Not Standard Ref Result Format %s" % ref_str
         ref_index = split_d["index"]
-        ref_key = split_d["ref_key"]
+        ref_key = split_d["key"]
         if isinstance(current_index, int):
             if ref_index == current_index + 1:
                 return False, "Input Can Not Ref Self %s" % ref_str
