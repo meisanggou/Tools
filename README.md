@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.0.2
+fix JYWorker task log bug in debug module
+
 ## 1.0.1
 JYWorker添加方法sub_classes，获得所有最后的RedisClass的子类
 
