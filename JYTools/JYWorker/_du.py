@@ -379,11 +379,13 @@ class DAGWorker(RedisWorker):
             return True, None
         # 判断 是获得 input 还是 output
         if ref_index == 0:
+            if self.has_task_item(ref_index, hash_key="input_%s" % ref_key) is False:
+                return False, "Input Ref %s Not In Task %s Input. %s" % (ref_key, ref_index, ref_str)
             ref_output = self.get_task_item(ref_index, hash_key="input_%s" % ref_key)
         else:
+            if self.has_task_item(ref_index, hash_key="output_%s" % ref_key) is False:
+                return False, "Input Ref %s Not In Task %s Output. %s" % (ref_key, ref_index, ref_str)
             ref_output = self.get_task_item(ref_index, hash_key="output_%s" % ref_key)
-        if not ref_output:
-            return False, "Input Ref %s Not In Task %s Output. %s" % (ref_key, ref_index, ref_str)
         if is_string(ref_output) is True and ref_output.startswith("&") is True:
             return False, "Ref Output Value Can Not Start With &. %s" % ref_output
         return True, dict(ref_output=ref_output, ref_index=ref_index, ref_key=ref_key)

@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.0.3
+RedisWorker 添加方法 has_task_item
+
 ## 1.0.2
 DAGWorker 引用支持key以数字开头
 StringTools 添加方法 m_print

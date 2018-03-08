@@ -430,6 +430,10 @@ class RedisWorker(RedisWorkerConfig, Worker):
             return self.redis_man.hsetnx(item_key, hash_key, RedisData.package_data(hash_value))
         self.redis_man.hset(item_key, hash_key, RedisData.package_data(hash_value))
 
+    def has_task_item(self, item_index, hash_key=None, key=None, sub_key=None):
+        item_key = self._task_item_key(item_index, key, sub_key)
+        return self.redis_man.hexists(item_key, hash_key)
+
     def get_task_item(self, item_index, hash_key=None, key=None, sub_key=None):
         item_key = self._task_item_key(item_index, key, sub_key)
         if hash_key is None:
