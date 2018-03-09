@@ -522,7 +522,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
                     pass
 
     def handle_invalid_task(self, task_info, error_info):
-        self.worker_log(error_info, level="WARING")
+        self.worker_log(error_info, level="WARNING")
 
     def parse_task_info(self, task_info):
         task_item = WorkerTask(task_info=task_info)

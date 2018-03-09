@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.0.9
+修改日志中的级别用词，将WARING替换为WARNING
+
 ## 1.0.8
 fix RedisWorker在daemon运行下不能打卡的问题
 

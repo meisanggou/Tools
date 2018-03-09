@@ -376,8 +376,8 @@ class ReadWorkerLog(WorkerLogConfig):
 
     log_pattern = r"^\[[\s\S]+?\](\[[\s\S]*?\]|) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}): ([a-z]{1,10}) ([\s\S]*)"
     log_compile = re.compile(log_pattern, re.I)
-    log_level = dict(DEBUG=("DEBUG", "INFO", "WARING", "ERROR"), INFO=("INFO", "WARING", "ERROR"),
-                     WARING=("WARING", "ERROR"), ERROR=("ERROR", ))
+    log_level = dict(DEBUG=("DEBUG", "INFO", "WARING", "WARNING", "ERROR"), INFO=("INFO", "WARING", "WARNING", "ERROR"),
+                     WARNING=("WARING", "WARNING", "ERROR"), ERROR=("ERROR", ))
 
     def read_task_log(self, work_tag, key, sub_key=None, level="INFO"):
         """
@@ -385,7 +385,7 @@ class ReadWorkerLog(WorkerLogConfig):
         :param work_tag:
         :param key:
         :param sub_key: 为None时查询所有有子key和无子key的日志，为空字符串时仅查询无子key的日志，为具体某个子key时查询具体子key的日志
-        :param level: 默认为INFO，允许DEBUG，INFO，WARING，ERROR。其他值认为是INFO
+        :param level: 默认为INFO，允许DEBUG，INFO，WARNING，ERROR。其他值认为是INFO
         :return:
         """
         name = StringTool.join([work_tag, "_", key, ".log"], "")
