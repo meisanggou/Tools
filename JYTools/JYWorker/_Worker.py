@@ -396,7 +396,7 @@ class ReadWorkerLog(WorkerLogConfig):
                 return False, None
         # 处理参数
         if sub_key is not None:
-            sub_key = StringTool.join_encode(["[", sub_key, "]"], "")
+            sub_key = StringTool.encode(sub_key)
         if StringTool.is_string(level) is False:
             level = "INFO"
         level = level.upper()
@@ -411,7 +411,11 @@ class ReadWorkerLog(WorkerLogConfig):
                 rl = self.log_compile.match(line)
                 if rl is not None:
                     line_sub_key = rl.groups()[0]
+                    log_time = rl.groups()[1]
+                    if len(line_sub_key) >= 2:
+                        line_sub_key = line_sub_key[1:-1]
                     line_level = rl.groups()[2]
+                    log_msg = rl.groups()[3]
                     if sub_key is not None and sub_key != line_sub_key:
                         last_save = False
                         continue
@@ -419,7 +423,7 @@ class ReadWorkerLog(WorkerLogConfig):
                         last_save = False
                         continue
                     last_save = True
-                    logs_list.append(map(StringTool.decode, rl.groups()))
+                    logs_list.append(map(StringTool.decode, [line_sub_key, log_time, line_level, log_msg]))
                 elif last_save is True:
                     logs_list[-1][3] = StringTool.join_decode([logs_list[-1][3], line])
         return True, logs_list
