@@ -228,12 +228,12 @@ class Worker(WorkerConfig, _WorkerLog):
                 sys.stdout = standard_out
             self.current_task.end_time = time()
             if self.current_task.is_report_task is False and self.current_task.task_report_tag is not None:
-                self.task_log("Start Report Task Status")
+                self.task_debug_log("Start Report Task Status")
                 self.push_task(self.current_task.task_key, self.current_task.to_dict(),
                                work_tag=self.current_task.task_report_tag, sub_key=self.current_task.task_sub_key,
                                is_report=True)
         use_time = self.current_task.end_time - self.current_task.start_time
-        self.task_log("Use ", use_time, " Seconds")
+        self.task_debug_log("Use ", use_time, " Seconds")
         self.worker_log("Completed Task", self.current_task.task_key)
         task_output = self.current_task.task_output
         task_status = self.current_task.task_status
