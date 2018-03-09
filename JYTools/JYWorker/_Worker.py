@@ -389,6 +389,9 @@ class ReadWorkerLog(WorkerLogConfig):
         # 处理参数
         if sub_key is not None:
             sub_key = StringTool.join_encode(["[", sub_key, "]"], "")
+        if StringTool.is_string(level) is False:
+            level = "INFO"
+        level = level.upper()
         if level not in self.log_level:
             level = "INFO"
         allow_levels = self.log_level[level]

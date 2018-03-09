@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.0.6
+ReadWorkerLog 查询的level为小写时自动转为大写
+
 ## 1.0.5
 set_output的日志级别由INFO变为DEBUG
 
