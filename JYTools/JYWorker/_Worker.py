@@ -291,7 +291,7 @@ class Worker(WorkerConfig, _WorkerLog):
             raise TaskErrorException(self.current_task.task_key, self.current_task.task_params, *args)
 
     def set_output(self, key, value):
-        self.task_log("Task Out ", key, ": ", value)
+        self.task_debug_log("Task Out ", key, ": ", value)
         if isinstance(self.current_task, WorkerTask):
             self.current_task.task_output[key] = value
 
