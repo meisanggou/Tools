@@ -380,6 +380,14 @@ class ReadWorkerLog(WorkerLogConfig):
                      WARING=("WARING", "ERROR"), ERROR=("ERROR", ))
 
     def read_task_log(self, work_tag, key, sub_key=None, level="INFO"):
+        """
+
+        :param work_tag:
+        :param key:
+        :param sub_key: 为None时查询所有有子key和无子key的日志，为空字符串时仅查询无子key的日志，为具体某个子key时查询具体子key的日志
+        :param level: 默认为INFO，允许DEBUG，INFO，WARING，ERROR。其他值认为是INFO
+        :return:
+        """
         name = StringTool.join([work_tag, "_", key, ".log"], "")
         log_path = StringTool.path_join(self.log_dir, work_tag.lower(), name)
         if os.path.exists(log_path) is False:
