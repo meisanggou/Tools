@@ -366,9 +366,8 @@ class RedisWorker(RedisWorkerConfig, Worker):
         if re.match(r"^[\da-zA-Z]{3,50}$", self.heartbeat_value) is None:
             raise ValueError("heartbeat only allow 0-9 a-z and length between 3 and 50.")
         self.redis_man.set(self.heartbeat_key, heartbeat_value)
-        t_clock = threading.Thread(target=self.hang_up_clock)
-        t_clock.daemon = True
-        t_clock.start()
+        self.t_clock = threading.Thread(target=self.hang_up_clock)
+        self.t_clock.daemon = True
 
     def has_heartbeat(self):
         current_value = StringTool.decode(self.redis_man.get(self.heartbeat_key))
@@ -577,6 +576,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
             self.worker_log("Is Running")
             return False
         self.is_running = True
+        self.t_clock.start()
         self.worker_log("Start Run Worker")
         self.worker_log("Worker Conf Path Is ", self.conf_path)
         self.worker_log("Worker Heartbeat Value Is", self.heartbeat_value)

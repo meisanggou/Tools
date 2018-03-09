@@ -16,6 +16,6 @@ print(w)
 wd = rs.list_worker_detail("Plus")
 print(wd)
 
-lh = rs.list_heartbeat()
-for item in lh:
-    print(rs.list_heartbeat_detail(item))
+# lh = rs.list_heartbeat()
+# for item in lh:
+#     print(rs.list_heartbeat_detail(item))
