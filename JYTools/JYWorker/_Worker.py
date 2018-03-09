@@ -2,14 +2,15 @@
 # coding: utf-8
 
 import os
+import re
 import sys
 import json
 import types
 import subprocess
-import uuid
 from time import time, sleep
 import threading
 import traceback
+from JYTools import StringTool
 from ._exception import TaskErrorException, InvalidTaskException, WorkerTaskParamsKeyNotFound
 from ._Task import TaskStatus, WorkerTask, WorkerTaskParams
 from ._config import WorkerConfig, WorkerLogConfig
@@ -365,3 +366,49 @@ class Worker(WorkerConfig, _WorkerLog):
         self.hang_down_clock()
         self.worker_log("start close. exit code: %s" % exit_code)
         exit(exit_code)
+
+"""
+    ReadWorkerLog Add In Version 1.0.4
+"""
+
+
+class ReadWorkerLog(WorkerLogConfig):
+
+    log_pattern = r"^\[[\s\S]+?\](\[[\s\S]*?\]|) (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}): ([a-z]{1,10}) ([\s\S]*)"
+    log_compile = re.compile(log_pattern, re.I)
+    log_level = dict(DEBUG=("DEBUG", "INFO", "WARING", "ERROR"), INFO=("INFO", "WARING", "ERROR"),
+                     WARING=("WARING", "ERROR"), ERROR=("ERROR", ))
+
+    def read_task_log(self, work_tag, key, sub_key=None, level="INFO"):
+        name = StringTool.join([work_tag, "_", key, ".log"], "")
+        log_path = StringTool.path_join(self.log_dir, work_tag.lower(), name)
+        if os.path.exists(log_path) is False:
+            log_path = StringTool.path_join(self.log_dir, name)
+            if os.path.exists(log_path) is False:
+                return False, None
+        # 处理参数
+        if sub_key is not None:
+            sub_key = StringTool.join_encode(["[", sub_key, "]"], "")
+        if level not in self.log_level:
+            level = "INFO"
+        allow_levels = self.log_level[level]
+        logs_list = []
+        last_save = False
+        with open(log_path, "r") as rl:
+            all_lines = rl.readlines()
+            for line in all_lines:
+                rl = self.log_compile.match(line)
+                if rl is not None:
+                    line_sub_key = rl.groups()[0]
+                    line_level = rl.groups()[2]
+                    if sub_key is not None and sub_key != line_sub_key:
+                        last_save = False
+                        continue
+                    if line_level not in allow_levels:
+                        last_save = False
+                        continue
+                    last_save = True
+                    logs_list.append(map(StringTool.decode, rl.groups()))
+                elif last_save is True:
+                    logs_list[-1][3] = StringTool.join_decode([logs_list[-1][3], line])
+        return True, logs_list

@@ -1,6 +1,10 @@
 # Tools
 jingyun tools
 
+## 1.0.4
+StringTools 添加方法 join_decode join_encode
+JYWorker添加类ReadWorkerLog
+
 ## 1.0.3
 RedisWorker 添加方法 has_task_item
 
