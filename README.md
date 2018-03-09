@@ -4,6 +4,7 @@ jingyun tools
 ## 1.0.7
 ReadWorkerLog添加注释
 写入运行时间和开始汇报，日志级别由INFO改成DEBUG
+RedisStat 添加方法 list_heartbeat list_heartbeat_detail
 
 ## 1.0.6
 ReadWorkerLog 查询的level为小写时自动转为大写

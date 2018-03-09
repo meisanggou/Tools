@@ -268,6 +268,28 @@ class RedisStat(RedisWorkerConfig, WorkerConfig):
             d_wd[pre_key] = p
         return d_wd
 
+    def list_heartbeat(self):
+        """
+        add in version 1.0.6
+        """
+        l_h = []
+        key_prefix = StringTool.join_decode([self.heartbeat_prefix_key, "_*"])
+        len_k = len(key_prefix) - 1
+        hs = self.redis_man.keys(key_prefix)
+        for item in hs:
+            if self.redis_man.type(item) == "string":
+                tag = item[len_k:]
+                if len(tag) > 0:
+                    l_h.append(tag)
+        return l_h
+
+    def list_heartbeat_detail(self, work_tag):
+        """
+        add in version 1.0.6
+        """
+        key = StringTool.join_encode([self.heartbeat_prefix_key, "_", work_tag])
+        return self.redis_man.get(key)
+
 
 class RedisData(object):
     BOOL_VALUE = [False, True]
