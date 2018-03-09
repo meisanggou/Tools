@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.0.5
+set_output的日志级别由INFO变为DEBUG
+
 ## 1.0.4
 StringTools 添加方法 join_decode join_encode
 JYWorker添加类ReadWorkerLog
