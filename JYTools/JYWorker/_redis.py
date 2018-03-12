@@ -501,7 +501,10 @@ class RedisWorker(RedisWorkerConfig, Worker):
         level = kwargs.pop("level", "INFO")
         level = str(level).upper()
         if level not in ["INFO", "DEBUG"]:
-            p_msg = StringTool.join([self.current_task.task_key, "\n", msg], "")
+            p_msg_a = [self.current_task.task_key]
+            if self.current_task.task_sub_key is not None:
+                p_msg_a.extend([" ", self.current_task.task_sub_key])
+            p_msg = StringTool.join([p_msg_a, "\n", msg], "")
             self.publish_message(p_msg)
         log_file = os.path.join(self.log_dir, "%s_%s.log" % (self.work_tag, self.current_task.task_key))
         now_time = datetime.now().strftime(TIME_FORMAT)
