@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.1.1
+DAG任务调度，子任务失败后打印出sub_key 以及work_tag
+
 ## 1.0.10
 解决ReadWorkerLog当sub_key设置为空字符串时读取日志时BUG
 
