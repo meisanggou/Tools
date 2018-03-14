@@ -15,7 +15,8 @@ w = rs.list_worker()
 print(w)
 wd = rs.list_worker_detail("Plus")
 print(wd)
-
+wq = rs.list_worry_queue()
+print(wq)
 # lh = rs.list_heartbeat()
 # for item in lh:
 #     print(rs.list_heartbeat_detail(item))

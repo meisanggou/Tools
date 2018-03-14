@@ -290,6 +290,15 @@ class RedisStat(RedisWorkerConfig, WorkerConfig):
         key = StringTool.join_encode([self.heartbeat_prefix_key, "_", work_tag])
         return self.redis_man.get(key)
 
+    def list_worry_queue(self):
+        w_q = dict()
+        d_q = self.list_queue()
+        for k, v in d_q.items():
+            d_wd = self.list_worker_detail(k)
+            if len(d_wd.keys()) <= 0:
+                w_q[k] = v
+        return w_q
+
 
 class RedisData(object):
     BOOL_VALUE = [False, True]

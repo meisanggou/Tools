@@ -379,7 +379,7 @@ class ReadWorkerLog(WorkerLogConfig):
     log_level = dict(DEBUG=("DEBUG", "INFO", "WARING", "WARNING", "ERROR"), INFO=("INFO", "WARING", "WARNING", "ERROR"),
                      WARNING=("WARING", "WARNING", "ERROR"), ERROR=("ERROR", ))
 
-    def read_task_log(self, work_tag, key, sub_key=None, level="INFO"):
+    def read_task_log(self, work_tag, key, sub_key=None, sub_key_prefix=None, level="INFO"):
         """
 
         :param work_tag:
@@ -397,6 +397,8 @@ class ReadWorkerLog(WorkerLogConfig):
         # 处理参数
         if sub_key is not None:
             sub_key = StringTool.encode(sub_key)
+        if sub_key_prefix is not None:
+            sub_key_prefix = StringTool.encode(sub_key_prefix)
         if StringTool.is_string(level) is False:
             level = "INFO"
         level = level.upper()
@@ -417,6 +419,9 @@ class ReadWorkerLog(WorkerLogConfig):
                     line_level = rl.groups()[2]
                     log_msg = rl.groups()[3]
                     if sub_key is not None and sub_key != line_sub_key:
+                        last_save = False
+                        continue
+                    if sub_key_prefix is not None and line_sub_key.startswith(sub_key_prefix) is False:
                         last_save = False
                         continue
                     if line_level not in allow_levels:

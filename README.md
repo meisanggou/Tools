@@ -3,6 +3,8 @@ jingyun tools
 
 ## 1.1.3
 DAG任务调度，RepeatApp的所有输入都不是list的时候，所有输入都转成包含一个元素的list
+ReadWorkerLog，可查询以sub_key_prefix为前缀的sub_key
+RedisStat 添加方法 list_worry_queue
 
 ## 1.1.2
 DAG任务调度，支持RepeatApp的输入list的长度不一致，但长度都必须能整除最大长度
