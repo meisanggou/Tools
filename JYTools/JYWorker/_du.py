@@ -413,7 +413,7 @@ class DAGWorker(RedisWorker):
         if "repeat_freq" in task_item:
             repeat_freq = task_item["repeat_freq"]
         elif len(input_list_keys) <= 0:
-            return task_item
+            repeat_freq = 1
         else:
             repeat_freq = max(map(lambda x: len(task_item[x]), input_list_keys))
         for list_key in input_list_keys:
