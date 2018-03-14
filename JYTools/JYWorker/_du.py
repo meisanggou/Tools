@@ -12,6 +12,7 @@ __author__ = 'meisanggou'
 
 class DAGWorker(RedisWorker):
     expect_params_type = dict
+    ref_compile = re.compile(r"^(\d{1,10})((&\d+|&*[a-z])\w{0,60})$", re.I)
 
     @staticmethod
     def split_ref(ref_str):
@@ -22,7 +23,7 @@ class DAGWorker(RedisWorker):
         """
         if ref_str[0] == "&":
             ref_str = ref_str[1:]
-        match_r = re.match(r"^(\d{1,10})((&\d+|&*[a-z])\w{0,60})$", ref_str, re.I)
+        match_r = DAGWorker.ref_compile.match(ref_str)
         if match_r is None:
             return None
         ref_index = int(match_r.groups()[0])
@@ -414,11 +415,13 @@ class DAGWorker(RedisWorker):
         elif len(input_list_keys) <= 0:
             return task_item
         else:
-            repeat_freq = len(task_item[input_list_keys[0]])
+            repeat_freq = max(map(lambda x: len(task_item[x]), input_list_keys))
         for list_key in input_list_keys:
-            if len(task_item[list_key]) != repeat_freq:
+            k_l = len(task_item[list_key])
+            if repeat_freq % k_l != 0:
                 self.set_task_item(index + 1, "task_status", TaskStatus.INVALID)
                 self.fail_pipeline("Task ", index + 1, " list input length different")
+            task_item[list_key] *= repeat_freq / k_l
         pipeline_task = dict(task_list=[], task_output=dict(), task_type="pipeline", work_tag=self.work_tag)
         output_ref_def = dict()
         for output_key in task_output:
@@ -430,7 +433,7 @@ class DAGWorker(RedisWorker):
             if is_string(output_value) is False:
                 continue
             if output_value.startswith("&"):
-                ov_f = re.findall("^\\d*(\\w+)$", output_value[1:])
+                ov_f = re.findall("^\\d*&*(\\w+)$", output_value[1:])
                 if len(ov_f) != 1:
                     continue
                 output_ref_def[output_key] = ov_f[0]
@@ -535,7 +538,7 @@ class DAGWorker(RedisWorker):
                     else:
                         sub_task_params = task_item
                         for input_key in input_keys:
-                            sub_task_params[input_key[6:]] = task_item[input_key]
+                            sub_task_params[input_key[6:]] = sub_task_params[input_key]
                     if self.current_task.task_sub_key is None:
                         sub_key = index + 1
                     else:

@@ -1,6 +1,10 @@
 # Tools
 jingyun tools
 
+## 1.1.2
+DAG任务调度，支持RepeatApp的输入list的长度不一致，但长度都必须能整除最大长度
+DAG任务调度，支持RepeatApp输出设置成&&+数字开头的key或& + 任意数字 + &+数字开头的key
+
 ## 1.1.1
 DAG任务调度，子任务失败后打印出sub_key 以及work_tag
 
