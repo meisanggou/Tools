@@ -290,6 +290,10 @@ class RedisStat(RedisWorkerConfig, WorkerConfig):
         key = StringTool.join_encode([self.heartbeat_prefix_key, "_", work_tag])
         return self.redis_man.get(key)
 
+    def delete_heartbeat(self, work_tag):
+        key = StringTool.join_encode([self.heartbeat_prefix_key, "_", work_tag])
+        return self.redis_man.delete(key)
+
     def list_worry_queue(self):
         w_q = dict()
         d_q = self.list_queue()

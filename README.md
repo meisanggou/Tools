@@ -3,6 +3,7 @@ jingyun tools
 
 ## 1.1.5
 RedisWorker构造函数，增加is_brother参数，此参数为true时，优先使用现有的心跳值
+RedisStat 添加方法 delete_heartbeat
 
 ## 1.1.4
 DAG调度，只要有任务汇报结果为Fail，就写入ERROR日志
@@ -21,7 +22,6 @@ DAG任务调度，子任务失败后打印出sub_key 以及work_tag
 
 ## 1.0.10
 解决ReadWorkerLog当sub_key设置为空字符串时读取日志时BUG
-
 
 ## 1.0.9
 修改日志中的级别用词，将WARING替换为WARNING
