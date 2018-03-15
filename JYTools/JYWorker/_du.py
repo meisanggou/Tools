@@ -544,7 +544,7 @@ class DAGWorker(RedisWorker):
                         sub_key = index + 1
                     else:
                         sub_key = "%s_%s" % (self.current_task.task_sub_key, index + 1)
-                    self.task_log("Push Task ", index + 1, " Run")
+                    self.task_log("Push Task ", index + 1, " ", task_item["work_tag"], " Run")
                     self.set_task_item(index + 1, "begin_time", time())
                     self.push_task(key, sub_task_params, sub_key=sub_key, work_tag=sub_task_params["work_tag"],
                                    report_tag=self.work_tag)
