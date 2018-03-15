@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.1.4
+DAG调度，只要有任务汇报结果为Fail，就写入ERROR日志
+
 ## 1.1.3
 DAG任务调度，RepeatApp的所有输入都不是list的时候，所有输入都转成包含一个元素的list
 ReadWorkerLog，可查询以sub_key_prefix为前缀的sub_key
