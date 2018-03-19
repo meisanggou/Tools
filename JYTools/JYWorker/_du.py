@@ -3,7 +3,7 @@
 
 import re
 from time import time
-from JYTools.StringTool import is_string
+from JYTools.StringTool import is_string, join_decode
 from ._Task import TaskStatus
 from ._redis import RedisWorker
 
@@ -339,6 +339,12 @@ class DAGWorker(RedisWorker):
         :param args:
         :return:
         """
+        # set task errors
+        task_errors = self.get_task_item(0, hash_key="task_errors")
+        if isinstance(task_errors, list) is False:
+            task_errors = []
+        task_errors.append(join_decode(args))
+        self.set_task_item(0, hash_key="task_errors", hash_value=task_errors)
         task_len = self.get_task_item(0, hash_key="task_len")
         if task_len is None:
             self.set_current_task_error("Not Found Pipeline Task Len")
@@ -367,6 +373,10 @@ class DAGWorker(RedisWorker):
         pipeline_task.update(self.get_task_item(0))
         for index in range(task_len):
             pipeline_task["task_list"].append(self.get_task_item(index + 1))
+
+        task_errors = self.get_task_item(0, hash_key="task_errors")
+        if isinstance(task_errors, list) is True:
+            self.current_task.add_error_msg(*task_errors)
         self.current_task.task_name = self.get_task_item(0, hash_key="task_name")
         self.current_task.start_time = pipeline_task["start_time"]
         self.current_task.sub_task_detail = pipeline_task["task_list"]

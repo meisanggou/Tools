@@ -89,7 +89,8 @@ class WorkerTask(object):
         self.task_report_tag = None  # 任务结束后汇报的的work_tag
         self.is_report_task = False
         self.task_output = dict()
-        self.task_message = None
+        self.task_message = None  # 保存任务的执行结果的综述
+        self.task_errors = []  # 保存多条错误记录
         self.work_tag = None
         self.start_time = None  # 任务真正执行的开始时间
         self.end_time = None  # 任务真正执行结束的时间
@@ -99,7 +100,7 @@ class WorkerTask(object):
     def set(self, **kwargs):
         allow_keys = ["task_key", "task_status", "task_name", "sub_task_detail", "task_sub_key", "task_info",
                       "task_params", "task_report_tag", "is_report_task", "work_tag", "task_message", "start_time",
-                      "end_time", "task_output"]
+                      "end_time", "task_output", "task_errors"]
         for k, v in kwargs.items():
             if k not in allow_keys:
                 continue
@@ -116,6 +117,7 @@ class WorkerTask(object):
         d["task_output"] = self.task_output
         d["work_tag"] = self.work_tag
         d["task_message"] = self.task_message
+        d["task_errors"] = self.task_errors
         d["start_time"] = self.start_time
         d["end_time"] = self.end_time
         d["sub_task_detail"] = self.sub_task_detail
@@ -139,6 +141,10 @@ class WorkerTask(object):
         if other.task_sub_key != self.task_sub_key:
             return False
         return True
+
+    def add_error_msg(self, *args):
+        for arg in args:
+            self.task_errors.append(arg)
 
 
 if __name__ == "__main__":

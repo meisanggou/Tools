@@ -15,6 +15,10 @@ class ResultWorker(RedisWorker):
         task_params = self.current_task.task_params
         print(task_params)
         # print(task_params)
+        print("------------------------task errors start---------------------------------")
+        for error in task_params.task_errors:
+            print(error)
+        print("------------------------task errors end---------------------------------")
         print(task_params["task_status"])
         print(task_params["task_message"])
         start_time = task_params["start_time"]

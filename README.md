@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.1.7
+WorkerTask增加属性task_errors用于记录任务多条错误信息
+
 
 ## 1.1.6
 fix bug DAG Worker引用其他任务的输出时，输出值为list时，list的每一个元素都不能是以&开头的字符串
