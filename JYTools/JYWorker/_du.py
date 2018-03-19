@@ -232,7 +232,6 @@ class DAGWorker(RedisWorker):
         if r_task["sub_task_detail"] is not None:
             self.set_task_item(reporter_sub_key, "task_list", r_task.sub_task_detail)
         if task_status != TaskStatus.SUCCESS:
-            self.set_task_item(0, "task_status", TaskStatus.FAIL)
             self.set_task_item(0, "task_message", task_message)
             self.set_task_item(0, "task_fail_index", reporter_sub_key)
             self.task_log("Sub Task ", r_task.task_sub_key, " ", r_task.work_tag, " Failed", level="ERROR")
@@ -243,6 +242,10 @@ class DAGWorker(RedisWorker):
         self.set_task_item(reporter_sub_key, "start_time", r_task.start_time)
         self.set_task_item(reporter_sub_key, "end_time", r_task.end_time)
         self.set_task_item(reporter_sub_key, "finished_time", time())
+        # 获取当前pipeline状态
+        pipeline_status = self.get_task_item(0, hash_key="task_status")
+        if pipeline_status == TaskStatus.FAIL:
+            return self.try_finish_pipeline()
         self.handle_task(self.current_task.task_key, None)
 
     def format_pipeline(self, key, params):
@@ -332,6 +335,30 @@ class DAGWorker(RedisWorker):
             self.current_task.task_report_tag = pipeline_report_tag
         self.clear_task_item(task_len)
 
+    def try_finish_pipeline(self):
+        """
+        若无正在运行的任务，清理pipeline的调度信息，打包运行结果，汇报结果。返回True
+        若有正在运行的任务。返回False
+        :return:
+        """
+        task_len = self.get_task_item(0, hash_key="task_len")
+        if task_len is None:
+            self.set_current_task_error("Not Found Pipeline Task Len")
+            return False
+        running_count = 0
+        for index in range(task_len):
+            if self.get_task_item(index + 1, "task_status") == TaskStatus.RUNNING:
+                running_count += 1
+        if running_count != 0:
+            return False
+        self.package_task_item(task_len)
+        pipeline_report_tag = self.get_task_item(0, hash_key="report_tag")
+        if pipeline_report_tag is not None:
+            self.current_task.is_report_task = False
+            self.current_task.task_report_tag = pipeline_report_tag
+        self.clear_task_item(task_len)
+        return True
+
     def fail_pipeline(self, *args):
         """
         若无正在运行的任务，清理pipeline的调度信息，打包运行结果，汇报结果
@@ -339,29 +366,16 @@ class DAGWorker(RedisWorker):
         :param args:
         :return:
         """
+        # set pipeline status is fail
+        self.set_task_item(0, "task_status", TaskStatus.FAIL)
+
         # set task errors
         task_errors = self.get_task_item(0, hash_key="task_errors")
         if isinstance(task_errors, list) is False:
             task_errors = []
         task_errors.append(join_decode(args))
         self.set_task_item(0, hash_key="task_errors", hash_value=task_errors)
-        task_len = self.get_task_item(0, hash_key="task_len")
-        if task_len is None:
-            self.set_current_task_error("Not Found Pipeline Task Len")
-            return
-        running_count = 0
-        for index in range(task_len):
-            if self.get_task_item(index + 1, "task_status") == TaskStatus.RUNNING:
-                running_count += 1
-        if running_count != 0:
-            self.set_current_task_error(*args)
-            return
-        self.package_task_item(task_len)
-        pipeline_report_tag = self.get_task_item(0, hash_key="report_tag")
-        if pipeline_report_tag is not None:
-            self.current_task.is_report_task = False
-            self.current_task.task_report_tag = pipeline_report_tag
-        self.clear_task_item(task_len)
+        self.try_finish_pipeline()
         self.set_current_task_error(*args)
 
     def package_task_item(self, task_len=None):
@@ -584,4 +598,4 @@ class DAGWorker(RedisWorker):
             if task_status is None:
                 self.task_log("Pipeline Has Endless Loop Waiting")
                 self.fail_pipeline("Pipeline Has Endless Loop Waiting")
-            self.fail_pipeline(self.get_task_item(0, "task_message"))
+            return self.try_finish_pipeline()

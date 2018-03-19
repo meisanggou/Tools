@@ -3,7 +3,8 @@ jingyun tools
 
 ## 1.1.7
 WorkerTask增加属性task_errors用于记录任务多条错误信息
-
+DAGWorker 发现错误时，立刻将pipeline的状态置成Fail
+DAGWorker 发现当前Pipeline状态为Fail时，终止调度返回
 
 ## 1.1.6
 fix bug DAG Worker引用其他任务的输出时，输出值为list时，list的每一个元素都不能是以&开头的字符串
