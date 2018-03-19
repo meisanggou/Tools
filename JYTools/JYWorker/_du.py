@@ -304,10 +304,9 @@ class DAGWorker(RedisWorker):
                 if is_string(out_value) is True and out_value.startswith("&"):
                     ref_r, ref_info = self.analysis_ref(out_value[1:], None, task_len)
                     if ref_r is False:
+                        self.task_log(ref_info, level="WARNING")
                         continue
                     if ref_info is None:
-                        self.task_log("Pipeline Not Get Output %s Value. Ref is %s" % (out_key, out_value),
-                                      level="WARNING")
                         continue
                     out_value = ref_info["ref_output"]
                     outputs[out_key] = out_value
@@ -319,6 +318,7 @@ class DAGWorker(RedisWorker):
                             continue
                         ref_r, ref_info = self.analysis_ref(sub_v[1:], None, task_len)
                         if ref_r is False:
+                            self.task_log(ref_info, level="WARNING")
                             continue
                         if ref_info is None:
                             continue

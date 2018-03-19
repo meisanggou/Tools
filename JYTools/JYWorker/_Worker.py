@@ -203,14 +203,14 @@ class Worker(WorkerConfig, _WorkerLog):
         except TaskErrorException as te:
             self.current_task.task_status = TaskStatus.FAIL
             self.current_task.task_message = te.error_message
-            self.worker_log("Task: ", te.key, "Params: ", te.params, " Error Info: ", te.error_message, level="ERROR")
+            self.worker_log("Task: ", te.key, "Params: ", te.params, " Error Info: ", te.error_message)
             self.task_log(te.error_message, level="ERROR")
             self.num_fail_job += 1
         except InvalidTaskException as it:
             self.current_task.task_status = TaskStatus.INVALID
             self.current_task.task_message = it.invalid_message
             self.task_log(it.invalid_message, level="WARING")
-            self.worker_log("Invalid Task ", it.task_info, " Invalid Info: ", it.invalid_message, level="WARING")
+            self.worker_log("Invalid Task ", it.task_info, " Invalid Info: ", it.invalid_message)
             self.num_invalid_job += 1
         except Exception as e:
             self.current_task.task_status = TaskStatus.FAIL
