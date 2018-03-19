@@ -306,12 +306,13 @@ class DAGWorker(RedisWorker):
                     if ref_r is False:
                         continue
                     if ref_info is None:
+                        self.task_log("Pipeline Not Get Output %s Value. Ref is %s" % (out_key, out_value),
+                                      level="WARNING")
                         continue
                     out_value = ref_info["ref_output"]
                     outputs[out_key] = out_value
                     self.set_task_item(0, "output_%s" % out_key, out_value)
                 elif isinstance(out_value, list):
-
                     for sub_i in range(len(out_value)):
                         sub_v = out_value[sub_i]
                         if is_string(sub_v) is False or sub_v.startswith("&") is False:
@@ -394,10 +395,18 @@ class DAGWorker(RedisWorker):
             ref_output = self.get_task_item(ref_index, hash_key="input_%s" % ref_key)
         else:
             if self.has_task_item(ref_index, hash_key="output_%s" % ref_key) is False:
-                return False, "Input Ref %s Not In Task %s Output. %s" % (ref_key, ref_index, ref_str)
+                work_tag = self.get_task_item(ref_index, hash_key="work_tag")
+                return False, "Input Ref %s Not In Task %s %s Output. [%s]" % (ref_key, ref_index, work_tag, ref_str)
             ref_output = self.get_task_item(ref_index, hash_key="output_%s" % ref_key)
         if is_string(ref_output) is True and ref_output.startswith("&") is True:
-            return False, "Ref Output Value Can Not Start With &. %s" % ref_output
+            return False, "Ref Output Value Can Not Start With &. [%s]" % ref_output
+        if isinstance(ref_output, list) is True:
+            for item in ref_output:
+                if is_string(item) is True and item.startswith("&") is True:
+                    work_tag = self.get_task_item(ref_index, hash_key="work_tag")
+                    msg = "Ref task %s %s output %s value is list, each item can not start with &, but exist item " \
+                          "value is %s" % (ref_index, work_tag, ref_key, item)
+                    return False, msg
         return True, dict(ref_output=ref_output, ref_index=ref_index, ref_key=ref_key)
 
     def convert_repeat(self, task_item, index):
