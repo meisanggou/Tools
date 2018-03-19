@@ -4,6 +4,7 @@ jingyun tools
 ## 1.1.5
 RedisWorker构造函数，增加is_brother参数，此参数为true时，优先使用现有的心跳值
 RedisStat 添加方法 delete_heartbeat
+fix bug DAG Worker
 
 ## 1.1.4
 DAG调度，只要有任务汇报结果为Fail，就写入ERROR日志
