@@ -332,14 +332,22 @@ class DAGWorker(RedisWorker):
         self.clear_task_item(task_len)
 
     def fail_pipeline(self, *args):
+        """
+        若无正在运行的任务，清理pipeline的调度信息，打包运行结果，汇报结果
+        若有正在运行的任务，终止此次处理，通报错误
+        :param args:
+        :return:
+        """
         task_len = self.get_task_item(0, hash_key="task_len")
         if task_len is None:
+            self.set_current_task_error("Not Found Pipeline Task Len")
             return
         running_count = 0
         for index in range(task_len):
             if self.get_task_item(index + 1, "task_status") == TaskStatus.RUNNING:
                 running_count += 1
         if running_count != 0:
+            self.set_current_task_error(*args)
             return
         self.package_task_item(task_len)
         pipeline_report_tag = self.get_task_item(0, hash_key="report_tag")
