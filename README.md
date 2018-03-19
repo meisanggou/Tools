@@ -1,6 +1,10 @@
 # Tools
 jingyun tools
 
+
+## 1.1.6
+fix bug DAG Worker引用其他任务的输出时，输出值为list时，list的每一个元素都不能是以&开头的字符串
+
 ## 1.1.5
 RedisWorker构造函数，增加is_brother参数，此参数为true时，优先使用现有的心跳值
 RedisStat 添加方法 delete_heartbeat
