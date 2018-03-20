@@ -215,6 +215,15 @@ class DAGWorker(RedisWorker):
 
         return None
 
+    def get_sub_task_sub_key(self, index=None, task_index=None):
+        if index is not None:
+            task_index = index + 1
+        if self.current_task.task_sub_key is None:
+            sub_key = "%s" % task_index
+        else:
+            sub_key = "%s_%s" % (self.current_task.task_sub_key, task_index)
+        return sub_key
+
     def handle_report_task(self):
         r_task = self.current_task.task_params
         sp_keys = self.current_task.task_sub_key.rsplit("_", 1)
@@ -343,12 +352,15 @@ class DAGWorker(RedisWorker):
             return False
         for index in range(task_len):
             task_index = index + 1
-            if self.get_task_item(task_index, "task_status") == TaskStatus.RUNNING:
-                work_tag = self.get_task_item(task_index, "work_tag")
-                self.task_log("Try to remove task %s %s" % (task_index, work_tag))
-                print("Try to remove task %s %s" % (task_index, work_tag))
-                self.stat_man.remove_queue_task()
-        pass
+            if self.get_task_item(task_index, "task_status") != TaskStatus.RUNNING:
+                continue
+            work_tag = self.get_task_item(task_index, "work_tag")
+            self.task_log("Try to remove task %s %s" % (task_index, work_tag))
+            sub_key = self.get_sub_task_sub_key(task_index=task_index)
+            count = self.stat_man.remove_queue_task(work_tag, self.current_task.task_key, self.work_tag, sub_key)
+            if count > 0:
+                self.task_log("Remove task %s %s SUCCESS" % (task_index, work_tag))
+                self.set_task_item(task_index, hash_key="task_status", hash_value=TaskStatus.NONE)
 
     def try_finish_pipeline(self):
         """

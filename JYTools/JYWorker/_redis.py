@@ -218,10 +218,12 @@ class RedisStat(RedisWorkerConfig, WorkerConfig):
 
     def remove_queue_task(self, work_tag, key, report_tag=None, sub_key=None):
         if report_tag is not None:
-            work_tag = StringTool.join_decode([work_tag, report_tag], join_str="|")
+            re_work_tag = StringTool.join_decode([work_tag, report_tag], join_str="|")
+        else:
+            re_work_tag = work_tag
         if sub_key is not None:
             key = StringTool.join_decode([key, sub_key], join_str="|")
-        value_prefix = StringTool.join_decode([work_tag, key], ",")
+        value_prefix = StringTool.join_decode([re_work_tag, key], ",")
         queue_tasks = self.list_queue_detail(work_tag)
         if queue_tasks is None:
             return 0
@@ -229,7 +231,10 @@ class RedisStat(RedisWorkerConfig, WorkerConfig):
         key = StringTool.join_decode([self.queue_prefix_key, work_tag], join_str="_")
         for task in queue_tasks:
             if task.startswith(value_prefix) is True:
-                count += self.redis_man.lrem(key, 0, task)
+                try:
+                    count += self.redis_man.lrem(key, task, num=0)
+                except Exception:
+                    continue
         return count
 
     def list_worker(self):
