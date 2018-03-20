@@ -78,6 +78,9 @@ class WorkerTask(object):
         add in version 0.1.19
         task_name add in version 0.2.6
     """
+    __slots__ = ("task_key", "task_name", "task_sub_key", "task_info", "task_params", "task_status", "task_report_tag",
+                 "is_report_task", "task_output", "task_message", "task_errors", "work_tag", "start_time", "end_time",
+                 "sub_task_detail")
 
     def __init__(self, **kwargs):
         self.task_key = None

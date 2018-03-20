@@ -24,6 +24,8 @@ class WorkerConfig(object):
     """
 
     DEFAULT_WORK_TAG = None
+    __slots__ = ("heartbeat_prefix_key", "worker_index", "queue_prefix_key", "clock_prefix_key", "pop_time_out",
+                 "_id", "redirect_stdout", "work_tag", "heartbeat_key", "queue_key", "clock_key", "current_task")
 
     def __init__(self, conf_path=None, section_name="Worker", work_tag=None, is_queue=False, **kwargs):
         self.heartbeat_prefix_key = "worker_heartbeat"
