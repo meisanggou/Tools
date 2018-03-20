@@ -335,6 +335,21 @@ class DAGWorker(RedisWorker):
             self.current_task.task_report_tag = pipeline_report_tag
         self.clear_task_item(task_len)
 
+    def try_remove_running_task(self):
+        self.task_log("Try to remove or stop running task")
+        task_len = self.get_task_item(0, hash_key="task_len")
+        if task_len is None:
+            self.set_current_task_error("Not Found Pipeline Task Len")
+            return False
+        for index in range(task_len):
+            task_index = index + 1
+            if self.get_task_item(task_index, "task_status") == TaskStatus.RUNNING:
+                work_tag = self.get_task_item(task_index, "work_tag")
+                self.task_log("Try to remove task %s %s" % (task_index, work_tag))
+                print("Try to remove task %s %s" % (task_index, work_tag))
+                self.stat_man.remove_queue_task()
+        pass
+
     def try_finish_pipeline(self):
         """
         若无正在运行的任务，清理pipeline的调度信息，打包运行结果，汇报结果。返回True
@@ -375,6 +390,10 @@ class DAGWorker(RedisWorker):
             task_errors = []
         task_errors.append(join_decode(args))
         self.set_task_item(0, hash_key="task_errors", hash_value=task_errors)
+        # 若error_continue为False尽最大可能删除正在运行的任务
+        error_continue = self.get_task_item(0, hash_key="error_continue")
+        if error_continue is not False:
+            self.try_remove_running_task()
         self.try_finish_pipeline()
         self.set_current_task_error(*args)
 

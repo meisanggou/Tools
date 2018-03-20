@@ -5,6 +5,7 @@ import os
 import re
 import sys
 import json
+import uuid
 import types
 import subprocess
 from time import time, sleep
@@ -44,6 +45,12 @@ class Worker(WorkerConfig, _WorkerLog):
     def __init__(self, log_dir=None, work_tag=None, **kwargs):
         WorkerConfig.__init__(self, work_tag=work_tag, **kwargs)
         _WorkerLog.__init__(self, log_dir=log_dir, **kwargs)
+
+        if StringTool.is_string(self.work_tag) is False:
+            class_name = self.__class__.__name__
+            msg = "Need String work_tag. Please Set {0}.DEFAULT_WORK_TAG=yourWorkTag Or {0}(work_tag=yourWorkTag)"
+            raise TypeError(msg.format(class_name))
+        self._id = uuid.uuid4().hex  # add in 0.9.11
         self._msg_manager = None
         self.is_running = False
         self._debug = False
@@ -56,6 +63,14 @@ class Worker(WorkerConfig, _WorkerLog):
         self.num_wrongful_job = 0  # add in 0.8.1
         self.num_invalid_job = 0  # add in 0.8.1
         self.num_null_job = 0  # add in 0.8.1
+        if "worker_index" in kwargs:
+            self.worker_index = kwargs["worker_index"]
+        if "redirect_stdout" in kwargs:
+            self.redirect_stdout = kwargs["redirect_stdout"]
+        self.heartbeat_key = self.heartbeat_prefix_key + "_" + self.work_tag
+        self.queue_key = self.queue_prefix_key + "_" + self.work_tag
+        self.clock_key = self.clock_prefix_key + "_" + self.work_tag + "_" + self._id
+        self.current_task = WorkerTask()
 
     """
     add in 0.4.0

@@ -1,15 +1,12 @@
 #! /usr/bin/env python
 # coding: utf-8
 import os
-import uuid
 import tempfile
 try:
     import ConfigParser as configparser
 except ImportError:
     import configparser
-from ._Task import WorkerTask
 from redis import Redis
-from JYTools.StringTool import is_string
 
 __author__ = 'meisanggou'
 
@@ -27,13 +24,12 @@ class WorkerConfig(object):
     __slots__ = ("heartbeat_prefix_key", "worker_index", "queue_prefix_key", "clock_prefix_key", "pop_time_out",
                  "_id", "redirect_stdout", "work_tag", "heartbeat_key", "queue_key", "clock_key", "current_task")
 
-    def __init__(self, conf_path=None, section_name="Worker", work_tag=None, is_queue=False, **kwargs):
+    def __init__(self, conf_path=None, section_name="Worker", work_tag=None, **kwargs):
         self.heartbeat_prefix_key = "worker_heartbeat"
         self.worker_index = None
         self.queue_prefix_key = "task_queue"
         self.clock_prefix_key = "CK"
         self.pop_time_out = 60
-        self._id = uuid.uuid4().hex  # add in 0.9.11
         self.redirect_stdout = False
         if conf_path is not None:
             self.load_work_config(conf_path, section_name)
@@ -41,22 +37,7 @@ class WorkerConfig(object):
             self.work_tag = work_tag
         else:
             self.work_tag = self.DEFAULT_WORK_TAG
-        if is_string(self.work_tag) is False and is_queue is False:
-            class_name = self.__class__.__name__
-            msg = "Need String work_tag. Please Set {0}.DEFAULT_WORK_TAG=yourWorkTag Or {0}(work_tag=yourWorkTag)"
-            raise TypeError(msg.format(class_name))
-        if "worker_index" in kwargs:
-            self.worker_index = kwargs["worker_index"]
-        if "redirect_stdout" in kwargs:
-            self.redirect_stdout = kwargs["redirect_stdout"]
-
         self.resolve_conflict()
-        if is_queue is False:
-            self.heartbeat_key = self.heartbeat_prefix_key + "_" + self.work_tag
-            self.queue_key = self.queue_prefix_key + "_" + self.work_tag
-            self.clock_key = self.clock_prefix_key + "_" + self.work_tag + "_" + self._id
-
-        self.current_task = WorkerTask()
 
     def resolve_conflict(self):
         h_c = q_c = c_c = False

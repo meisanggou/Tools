@@ -7,6 +7,8 @@ DAGWorker 发现错误时，立刻将pipeline的状态置成Fail
 DAGWorker 发现当前Pipeline状态为Fail时，终止调度返回
 调整RedisWorker 运行起来后才设置心跳值
 WorkerConfig WorkerTaskParams add __slots__
+RedisStat 添加方法 remove_queue_task
+从WorkerConfig移出一些变量到Worker
 
 ## 1.1.6
 fix bug DAG Worker引用其他任务的输出时，输出值为list时，list的每一个元素都不能是以&开头的字符串

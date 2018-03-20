@@ -9,7 +9,7 @@ __author__ = '鹛桑够'
 rs = RedisStat()
 q = rs.list_queue()
 print(q)
-qd = rs.list_queue_detail("Plus")
+qd = rs.list_queue_detail("FuncEnrLncPre")
 print(qd)
 w = rs.list_worker()
 print(w)

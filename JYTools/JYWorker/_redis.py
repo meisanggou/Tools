@@ -95,7 +95,7 @@ class RedisQueue(RedisWorkerConfig, WorkerConfig):
                     print("Path ", env_conf_path, " Not Exist")
         RedisWorkerConfig.__init__(self, self.conf_path, redis_host=redis_host, redis_password=redis_password,
                                    redis_port=redis_port, redis_db=redis_db, section_name=section_name)
-        WorkerConfig.__init__(self, self.conf_path, work_tag=work_tag, is_queue=True, **kwargs)
+        WorkerConfig.__init__(self, self.conf_path, work_tag=work_tag, **kwargs)
 
     @staticmethod
     def package_task_info(work_tag, key, params, sub_key=None, report_tag=None, is_report=False):
@@ -201,7 +201,7 @@ class RedisStat(RedisWorkerConfig, WorkerConfig):
         key = self.queue_prefix_key + "_" + work_tag
         t = self.redis_man.type(key)
         if t != "list":
-            return None
+            return []
         index = 0
         if isinstance(limit, int) is True and limit > 0:
             is_true = False
@@ -215,6 +215,22 @@ class RedisStat(RedisWorkerConfig, WorkerConfig):
             l_qd.append(v)
             index += 1
         return l_qd
+
+    def remove_queue_task(self, work_tag, key, report_tag=None, sub_key=None):
+        if report_tag is not None:
+            work_tag = StringTool.join_decode([work_tag, report_tag], join_str="|")
+        if sub_key is not None:
+            key = StringTool.join_decode([key, sub_key], join_str="|")
+        value_prefix = StringTool.join_decode([work_tag, key], ",")
+        queue_tasks = self.list_queue_detail(work_tag)
+        if queue_tasks is None:
+            return 0
+        count = 0
+        key = StringTool.join_decode([self.queue_prefix_key, work_tag], join_str="_")
+        for task in queue_tasks:
+            if task.startswith(value_prefix) is True:
+                count += self.redis_man.lrem(key, 0, task)
+        return count
 
     def list_worker(self):
         """
@@ -373,7 +389,8 @@ class RedisWorker(RedisWorkerConfig, Worker):
         RedisWorkerConfig.__init__(self, self.conf_path, redis_host=redis_host, redis_password=redis_password,
                                    redis_port=redis_port, redis_db=redis_db, section_name=section_name)
         Worker.__init__(self, conf_path=self.conf_path, work_tag=work_tag, log_dir=log_dir, **kwargs)
-
+        self.stat_man = RedisStat(conf_path=self.conf_path, redis_host=redis_host, redis_password=redis_password,
+                                  redis_port=redis_port, redis_db=redis_db, section_name=section_name)
         if is_brother is True:
             current_heartbeat = self.redis_man.get(self.heartbeat_key)
             if current_heartbeat is not None:
