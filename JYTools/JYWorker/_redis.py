@@ -373,6 +373,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
         RedisWorkerConfig.__init__(self, self.conf_path, redis_host=redis_host, redis_password=redis_password,
                                    redis_port=redis_port, redis_db=redis_db, section_name=section_name)
         Worker.__init__(self, conf_path=self.conf_path, work_tag=work_tag, log_dir=log_dir, **kwargs)
+
         if is_brother is True:
             current_heartbeat = self.redis_man.get(self.heartbeat_key)
             if current_heartbeat is not None:
@@ -382,9 +383,12 @@ class RedisWorker(RedisWorkerConfig, Worker):
         self.heartbeat_value = StringTool.decode(heartbeat_value)
         if re.match(r"^[\da-zA-Z]{3,50}$", self.heartbeat_value) is None:
             raise ValueError("heartbeat only allow 0-9 a-z and length between 3 and 50.")
-        self.redis_man.set(self.heartbeat_key, heartbeat_value)
+
         self.t_clock = threading.Thread(target=self.hang_up_clock)
         self.t_clock.daemon = True
+
+    def set_heartbeat(self):
+        self.redis_man.set(self.heartbeat_key, self.heartbeat_value)
 
     def has_heartbeat(self):
         current_value = StringTool.decode(self.redis_man.get(self.heartbeat_key))
@@ -595,8 +599,11 @@ class RedisWorker(RedisWorkerConfig, Worker):
         if self.is_running is True:
             self.worker_log("Is Running")
             return False
+        # 启动前其他辅助 运行起来：设置心跳值 打卡
         self.is_running = True
         self.t_clock.start()
+        self.set_heartbeat()
+
         self.worker_log("Start Run Worker")
         self.worker_log("Worker Conf Path Is ", self.conf_path)
         self.worker_log("Worker Heartbeat Value Is", self.heartbeat_value)
