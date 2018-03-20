@@ -404,7 +404,7 @@ class DAGWorker(RedisWorker):
         self.set_task_item(0, hash_key="task_errors", hash_value=task_errors)
         # 若error_continue为False尽最大可能删除正在运行的任务
         error_continue = self.get_task_item(0, hash_key="error_continue")
-        if error_continue is not False:
+        if error_continue is not True:
             self.try_remove_running_task()
         self.try_finish_pipeline()
         self.set_current_task_error(*args)

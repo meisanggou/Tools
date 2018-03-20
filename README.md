@@ -9,6 +9,7 @@ DAGWorker 发现当前Pipeline状态为Fail时，终止调度返回
 WorkerConfig WorkerTaskParams add __slots__
 RedisStat 添加方法 remove_queue_task
 从WorkerConfig移出一些变量到Worker
+如果任务设置error_continue不为True Pipeline有任务失败时，尝试删除已放入队列的任务
 
 ## 1.1.6
 fix bug DAG Worker引用其他任务的输出时，输出值为list时，list的每一个元素都不能是以&开头的字符串
