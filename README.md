@@ -4,7 +4,7 @@ jingyun tools
 ## 1.1.8
 WorkerTask增加属性log_path记录日志位置
 fix DAG task_status bug
- 
+add UploadLogWorker
  
 ## 1.1.7
 WorkerTask增加属性task_errors用于记录任务多条错误信息

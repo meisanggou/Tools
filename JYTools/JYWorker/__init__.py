@@ -8,6 +8,7 @@ from ._Worker import ReadWorkerLog
 from ._async import AsyncRedisWorker, AsyncStatRedisWorker
 from ._Task import TaskStatus
 from ._du import DAGWorker
+from .UploadLog import UploadLogWorker
 
 __author__ = 'meisanggou'
 
