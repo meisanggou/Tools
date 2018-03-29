@@ -19,5 +19,6 @@ class UploadLogWorker(RedisWorker):
         timestamp = params["timestamp"]
         upload_r = self.upload_log(key, log_path, timestamp)
         if upload_r is True:
+            self.stat_man.remove_queue_task(self.work_tag, key)
             return
         self.push_task(key, params)
