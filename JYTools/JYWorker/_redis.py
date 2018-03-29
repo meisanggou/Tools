@@ -408,6 +408,10 @@ class RedisWorker(RedisWorkerConfig, Worker):
 
         self.t_clock = threading.Thread(target=self.hang_up_clock)
         self.t_clock.daemon = True
+        if "upload_log_tag" in kwargs:
+            self.upload_log_tag = kwargs["upload_log_tag"]
+        else:
+            self.upload_log_tag = None
 
     def set_heartbeat(self):
         self.redis_man.set(self.heartbeat_key, self.heartbeat_value)
@@ -547,6 +551,10 @@ class RedisWorker(RedisWorkerConfig, Worker):
                 p_msg_a.extend([" ", self.current_task.task_sub_key])
             p_msg = StringTool.join([p_msg_a, "\n", msg], "")
             self.publish_message(p_msg)
+            if self.upload_log_tag is not None:
+                upload_info = dict(log_path=self.current_task.log_path, timestamp=int(time()))
+                self.push_task(StringTool.join_decode([self.current_task.task_key, self.work_tag], join_str="_"),
+                               upload_info, work_tag=self.upload_log_tag)
         log_file = self.current_task.log_path
         now_time = datetime.now().strftime(TIME_FORMAT)
         write_a = ["[", self.heartbeat_value]

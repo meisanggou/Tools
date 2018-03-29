@@ -10,8 +10,7 @@ class UploadLogWorker(RedisWorker):
 
     expect_params_type = dict
 
-    @staticmethod
-    def upload_log(key, log_path, timestamp):
+    def upload_log(self, key, log_path, timestamp):
         return True
 
     def handler_task_exception(self, e):
