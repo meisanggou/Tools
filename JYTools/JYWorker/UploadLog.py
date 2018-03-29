@@ -14,11 +14,16 @@ class UploadLogWorker(RedisWorker):
     def upload_log(key, log_path, timestamp):
         return True
 
+    def handler_task_exception(self, e):
+        self.push_task(self.current_task.task_key, self.current_task.task_params)
+
     def handle_task(self, key, params):
         log_path = params["log_path"]
         timestamp = params["timestamp"]
         upload_r = self.upload_log(key, log_path, timestamp)
         if upload_r is True:
+            self.task_log("Upload ", log_path, " Success")
             self.stat_man.remove_queue_task(self.work_tag, key)
             return
+        self.task_log("Upload ", log_path, " Fail")
         self.push_task(key, params)
