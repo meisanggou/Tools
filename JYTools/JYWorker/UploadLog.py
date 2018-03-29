@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # coding: utf-8
 
+from time import sleep
 from ._redis import RedisWorker
 
 __author__ = '鹛桑够'
@@ -22,7 +23,8 @@ class UploadLogWorker(RedisWorker):
         upload_r = self.upload_log(key, log_path, timestamp)
         if upload_r is True:
             self.task_log("Upload ", log_path, " Success")
-            self.stat_man.remove_queue_task(self.work_tag, key)
+            l = self.stat_man.remove_queue_task(self.work_tag, key)
+            sleep(2)
             return
         self.task_log("Upload ", log_path, " Fail")
         self.push_task(key, params)
