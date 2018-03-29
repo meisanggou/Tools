@@ -384,6 +384,7 @@ class DAGWorker(RedisWorker):
             self.current_task.is_report_task = False
             self.current_task.task_report_tag = pipeline_report_tag
         self.clear_task_item(task_len)
+        self.current_task.task_status = TaskStatus.FAIL
         return True
 
     def fail_pipeline(self, *args):

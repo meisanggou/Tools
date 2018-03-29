@@ -80,7 +80,7 @@ class WorkerTask(object):
     """
     __slots__ = ("task_key", "task_name", "task_sub_key", "task_info", "task_params", "task_status", "task_report_tag",
                  "is_report_task", "task_output", "task_message", "task_errors", "work_tag", "start_time", "end_time",
-                 "sub_task_detail")
+                 "sub_task_detail", "log_path")
 
     def __init__(self, **kwargs):
         self.task_key = None
@@ -98,6 +98,7 @@ class WorkerTask(object):
         self.start_time = None  # 任务真正执行的开始时间
         self.end_time = None  # 任务真正执行结束的时间
         self.sub_task_detail = None
+        self.log_path = None  # add in 1.1.8
         self.set(**kwargs)
 
     def set(self, **kwargs):

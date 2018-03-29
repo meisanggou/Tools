@@ -204,7 +204,8 @@ class Worker(WorkerConfig, _WorkerLog):
                 self._handle_task_func(self.current_task.task_key, self.current_task.task_params)
             else:
                 self.handle_report_task()
-            self.current_task.task_status = TaskStatus.SUCCESS
+            if self.current_task.task_status == TaskStatus.RUNNING:
+                self.current_task.task_status = TaskStatus.SUCCESS
             if standard_out is not None:
                 sys.stdout = standard_out
             for func in reversed(self.after_handler_funcs):

@@ -536,9 +536,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
                     pass
 
     def task_log(self, *args, **kwargs):
-        if self.log_dir is None or is_string(self.log_dir) is False:
-            return
-        if self.current_task is None or self.current_task.task_key is None:
+        if self.current_task is None or self.current_task.log_path is None:
             return
         msg = StringTool.join(args, " ")
         level = kwargs.pop("level", "INFO")
@@ -549,7 +547,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
                 p_msg_a.extend([" ", self.current_task.task_sub_key])
             p_msg = StringTool.join([p_msg_a, "\n", msg], "")
             self.publish_message(p_msg)
-        log_file = os.path.join(self.log_dir, "%s_%s.log" % (self.work_tag, self.current_task.task_key))
+        log_file = self.current_task.log_path
         now_time = datetime.now().strftime(TIME_FORMAT)
         write_a = ["[", self.heartbeat_value]
         if self.worker_index is not None:
@@ -615,6 +613,9 @@ class RedisWorker(RedisWorkerConfig, Worker):
                 task_item.task_params.debug_func = self.task_debug_log
             else:
                 task_item.set(task_params=params)
+        if StringTool.is_string(self.log_dir) is True:
+            log_name = StringTool.join_encode([self.work_tag, "_", task_item.task_key, ".log"], join_str="")
+            task_item.log_path = StringTool.path_join(self.log_dir, log_name)
         return True, task_item
 
     def run(self):
