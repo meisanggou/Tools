@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.1.9
+fix not write log in debug mode
+
 ## 1.1.8
 WorkerTask增加属性log_path记录日志位置
 fix DAG task_status bug
