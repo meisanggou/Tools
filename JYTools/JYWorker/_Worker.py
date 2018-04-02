@@ -359,6 +359,9 @@ class Worker(WorkerConfig, _WorkerLog):
             task_item.task_params.debug_func = self.task_debug_log
         else:
             task_item.set(task_params=params)
+        if StringTool.is_string(self.log_dir) is True:
+            log_name = StringTool.join_encode([self.work_tag, "_", task_item.task_key, ".log"], join_str="")
+            task_item.log_path = StringTool.path_join(self.log_dir, log_name)
         self.current_task = task_item
         return self._execute()
 

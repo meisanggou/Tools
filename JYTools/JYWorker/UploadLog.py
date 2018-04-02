@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # coding: utf-8
 
+import os
 from time import sleep
 from ._redis import RedisWorker
 
@@ -20,6 +21,8 @@ class UploadLogWorker(RedisWorker):
     def handle_task(self, key, params):
         log_path = params["log_path"]
         timestamp = params["timestamp"]
+        if os.path.isfile(log_path) is False:
+            self.set_current_task_invalid(log_path, " Not A File.")
         upload_r = self.upload_log(key, log_path, timestamp)
         if upload_r is True:
             self.task_log("Upload ", log_path, " Success")
