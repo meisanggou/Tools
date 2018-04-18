@@ -1,6 +1,11 @@
 # Tools
 jingyun tools
 
+
+## 1.2.1
+DAGWorker支持Agent Push Task
+RedisWorker增加方法parse_args解析命令行参数
+
 ## 1.1.9
 fix not write log in debug mode
 
