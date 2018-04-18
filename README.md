@@ -1,6 +1,8 @@
 # Tools
 jingyun tools
 
+## 1.2.2
+fix RedisWorker test时初始化任务sub_key report_tag bug
 
 ## 1.2.1
 DAGWorker支持Agent Push Task
