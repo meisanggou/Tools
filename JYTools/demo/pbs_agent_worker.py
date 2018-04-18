@@ -1,11 +1,12 @@
 #! /usr/bin/env python
 # coding: utf-8
 
+import sys
 import os
 import time
 import json
 from JYTools import StringTool
-from JYTools.JYWorker import RedisWorker
+from JYTools.JYWorker import RedisWorker, worker_run
 
 
 __author__ = '鹛桑够'
@@ -89,12 +90,4 @@ class PBSAgentWorker(RedisWorker):
 
 
 if __name__ == "__main__":
-    args = PBSAgentWorker.parse_args()
-    if args.work_tag is None:
-        args.work_tag = "PBSAgent"
-    app = PBSAgentWorker(conf_path=args.conf_path, heartbeat_value=args.heartbeat_value, work_tag=args.work_tag,
-                         log_dir=args.log_dir)
-    if args.daemon is not None:
-        app.work(daemon=True)
-    else:
-        app.work()
+    sys.exit(worker_run(PBSAgentWorker, default_work_tag="PBSAgent"))

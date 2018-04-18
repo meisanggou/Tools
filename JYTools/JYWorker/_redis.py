@@ -677,7 +677,8 @@ class RedisWorker(RedisWorkerConfig, Worker):
     @classmethod
     def parse_args(cls):
         cls.init_parser.add_argument("-b", "--heartbeat-value", dest="heartbeat_value", help="heartbeat value")
-        cls.init_parser.add_argument("-c", "--worker-conf-path", dest="conf_path", help="worker conf path")
+        cls.init_parser.add_argument("-c", "--worker-conf-path", "--redis_worker-conf-path", dest="conf_path",
+                                     help="redis worker conf path")
         cls.init_parser.add_argument("-l", "--log-dir", dest="log_dir", help="worker log save dir")
         cls.init_parser.add_argument("-w", "--work-tag", dest="work_tag", help="work tag")
 

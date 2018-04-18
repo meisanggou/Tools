@@ -76,3 +76,21 @@ def min_class(classes):
             else:
                 m_s[j] = t_class
     return m_s
+
+
+def worker_run(worker_class, default_work_tag=None):
+    if issubclass(worker_class, RedisWorker) is False:
+        print("Error worker class")
+        return 1, None
+    if issubclass(worker_class, RedisWorker) is True:
+        args = worker_class.parse_args()
+        if args.work_tag is None:
+            args.work_tag = default_work_tag
+        plus = worker_class(conf_path=args.conf_path, heartbeat_value=args.heartbeat_value, work_tag=args.work_tag,
+                            log_dir=args.log_dir)
+        if args.example_path is not None:
+            o = plus.test(key=args.key, params_path=args.example_path, sub_key=args.sub_key, report_tag=args.report_tag)
+            return 0, o
+        else:
+            plus.work(args.daemon)
+    return 0, None

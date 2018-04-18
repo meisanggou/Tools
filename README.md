@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.2.4
+JYTools.JYWorker worker_run方法
+
 ## 1.2.3
 fix RedisWorker parse_args解析-D --daemon bug
 
