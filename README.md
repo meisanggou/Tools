@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.2.3
+fix RedisWorker parse_args解析-D --daemon bug
+
 ## 1.2.2
 fix RedisWorker test时初始化任务sub_key report_tag bug
 
