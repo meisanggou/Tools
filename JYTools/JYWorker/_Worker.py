@@ -350,7 +350,7 @@ class Worker(WorkerConfig, _WorkerLog):
             with open(params_path, "r") as rp:
                 c = rp.read()
                 params = json.loads(c)
-        task_item = WorkerTask(task_key=key, sub_key=sub_key, report_tag=report_tag, work_tag=self.work_tag)
+        task_item = WorkerTask(task_key=key, task_sub_key=sub_key, task_report_tag=report_tag, work_tag=self.work_tag)
         if self.expect_params_type is not None:
             if not isinstance(params, self.expect_params_type):
                 raise TypeError("params should", self.expect_params_type)
