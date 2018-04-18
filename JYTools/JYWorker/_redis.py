@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # coding: utf-8
 import os
+import argparse
 import json
 import threading
 import re
@@ -376,6 +377,12 @@ class RedisWorker(RedisWorkerConfig, Worker):
         add in version 0.1.8
     """
     conf_path_environ_key = "REDIS_WORKER_CONF_PATH"
+    usage = "RedisWorker use redis to async execute"
+    description = "Please use follow arguments init worker"
+    init_parser = argparse.ArgumentParser(usage=usage, description=description)
+    test_parser = init_parser.add_argument_group("test arguments")
+    work_parser = init_parser.add_argument_group("work arguments")
+    other_parser = init_parser.add_argument_group("other arguments")
 
     def __init__(self, conf_path=None, heartbeat_value=None, is_brother=False, work_tag=None, log_dir=None,
                  redis_host=None, redis_password=None, redis_port=None, redis_db=None, section_name="Redis", **kwargs):
@@ -468,7 +475,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
             return t
         return next_task
 
-    def push_task(self, key, params, work_tag=None, sub_key=None, report_tag=None, is_report=False):
+    def _push_task(self, key, params, work_tag=None, sub_key=None, report_tag=None, is_report=False):
         if work_tag is None:
             queue_key = self.queue_key
             work_tag = self.work_tag
@@ -477,6 +484,9 @@ class RedisWorker(RedisWorkerConfig, Worker):
         task_info = RedisQueue.package_task_info(work_tag, key, params, sub_key=sub_key, report_tag=report_tag,
                                                  is_report=is_report)
         self.redis_man.rpush(queue_key, task_info)
+
+    def push_task(self, key, params, work_tag=None, sub_key=None, report_tag=None, is_report=False):
+        self._push_task(key, params, work_tag, sub_key, report_tag, is_report)
 
     def _task_item_key(self, item_index=None, key=None, sub_key=None):
         if key is None:
@@ -663,3 +673,20 @@ class RedisWorker(RedisWorkerConfig, Worker):
             else:
                 continue
             self._execute()
+
+    @classmethod
+    def parse_args(cls):
+        cls.init_parser.add_argument("-b", "--heartbeat-value", dest="heartbeat_value", help="heartbeat value")
+        cls.init_parser.add_argument("-c", "--worker-conf-path", dest="conf_path", help="worker conf path")
+        cls.init_parser.add_argument("-l", "--log-dir", dest="log_dir", help="worker log save dir")
+        cls.init_parser.add_argument("-w", "--work-tag", dest="work_tag", help="work tag")
+
+        cls.test_parser.add_argument("-e", "--example-path", dest="example_path", help="run an example use this file")
+        cls.test_parser.add_argument("-k", "--key", dest="key", help="task key")
+        cls.test_parser.add_argument("-r", "--report-tag", dest="report_tag", help="report tag")
+        cls.test_parser.add_argument("-s", "--sub-key", dest="sub_key", help="task sub key")
+
+        cls.work_parser.add_argument("-D", "--daemon", dest="daemon", help="work in daemon")
+
+        args = cls.init_parser.parse_args()
+        return args

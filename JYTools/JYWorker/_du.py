@@ -14,6 +14,19 @@ class DAGWorker(RedisWorker):
     expect_params_type = dict
     ref_compile = re.compile(r"^(\d{1,10})((&\d+|&*[a-z])\w{0,60})$", re.I)
 
+    def __init__(self, conf_path=None, heartbeat_value=None, is_brother=False, work_tag=None, log_dir=None,
+                 redis_host=None, redis_password=None, redis_port=None, redis_db=None, section_name="Redis", **kwargs):
+        self.agent_tag = kwargs.pop("agent_tag", None)
+        RedisWorker.__init__(self, conf_path, heartbeat_value, is_brother, work_tag, log_dir, redis_host,
+                             redis_password, redis_port, redis_db, section_name, **kwargs)
+
+    def push_task(self, key, params, work_tag=None, sub_key=None, report_tag=None, is_report=False):
+        if self.agent_tag is not None:
+            if work_tag is not None and work_tag not in (self.work_tag, self.upload_log_tag) and is_report is False:
+                params = dict(work_tag=work_tag, params=params)
+                work_tag = self.agent_tag
+        self._push_task(key, params, work_tag, sub_key, report_tag, is_report=is_report)
+
     @staticmethod
     def split_ref(ref_str):
         """
