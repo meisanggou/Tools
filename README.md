@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.2.5
+fix JYTools.JYWorker.DAG 启动问题
+
 ## 1.2.4
 JYTools.JYWorker worker_run方法
 

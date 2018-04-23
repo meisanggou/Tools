@@ -17,7 +17,7 @@ __author__ = '鹛桑够'
 sys_tmp_dir = tempfile.gettempdir()
 
 log_dir = os.environ.get("JINGD_LOG_DIR", sys_tmp_dir)
-agent_dir = StringTool.path_join(log_dir, "psb_agent")
+agent_dir = StringTool.path_join(log_dir, "pbs_agent")
 if os.path.isdir(agent_dir) is False:
     os.mkdir(agent_dir)
 example_dir = StringTool.path_join(agent_dir, "example")
