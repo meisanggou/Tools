@@ -5,16 +5,23 @@ import sys
 import os
 import time
 import json
+import uuid
+import tempfile
+import ConfigParser
 from JYTools import StringTool
 from JYTools.JYWorker import RedisWorker, worker_run
 
 
 __author__ = '鹛桑够'
 
+sys_tmp_dir = tempfile.gettempdir()
 
-agent_tmp_dir = "/mnt/glusterfs/public/agent_tmp"
-example_dir = StringTool.path_join(agent_tmp_dir, "example")
-pbs_task_dir = StringTool.path_join(agent_tmp_dir, "pbs")
+log_dir = os.environ.get("JINGD_LOG_DIR", sys_tmp_dir)
+agent_dir = StringTool.path_join(log_dir, "psb_agent")
+if os.path.isdir(agent_dir) is False:
+    os.mkdir(agent_dir)
+example_dir = StringTool.path_join(agent_dir, "example")
+pbs_task_dir = StringTool.path_join(agent_dir, "pbs")
 if os.path.isdir(example_dir) is False:
     os.mkdir(example_dir)
 if os.path.isdir(pbs_task_dir) is False:
@@ -24,6 +31,20 @@ pbs_template = """#PBS -S /bin/bash
 #PBS -m n
 #PBS -M <zhouheng@gene.ac>
 """
+
+pw_info = os.environ.get("JY_PBS_WORKER_INFO", "pbs_worker.info")
+with open(pw_info) as pwr:
+    c_info = pwr.read()
+    nc_info = c_info % os.environ
+
+info_dir, info_name = os.path.split(pw_info)
+temp_info_name = StringTool.join_encode([".", uuid.uuid4().hex, info_name], join_str="")
+temp_info_path = StringTool.path_join(info_dir, temp_info_name)
+with open(temp_info_path, "w") as tiw:
+    tiw.write(StringTool.encode(nc_info))
+pbs_worker_config = ConfigParser.ConfigParser()
+pbs_worker_config.read(temp_info_path)
+os.remove(temp_info_path)
 
 
 class PBSAgentWorker(RedisWorker):
@@ -63,15 +84,18 @@ class PBSAgentWorker(RedisWorker):
         return cmd
 
     def package_cmd(self, work_tag, report_tag, example_path):
-        py_path = "/mnt/glusterfs/public/worker/Plus2Worker.py"
+        py_path = pbs_worker_config.get(work_tag, "file")
         key = self.current_task.task_key
-        cmd = ["python", py_path, "-c", "/mnt/glusterfs/public/conf/redis_worker.conf", "-w", work_tag, "-e", example_path, "-k", key]
+        cmd = ["python", py_path, "-c", self.conf_path, "-w", work_tag, "-e",
+               example_path, "-k", key]
 
         sub_key = self.current_task.task_sub_key
         if sub_key is not None:
             cmd.extend(["-s", sub_key])
         if report_tag is not None:
             cmd.extend(["-r", report_tag])
+
+        cmd.append(pbs_worker_config.get(work_tag, "cmd"))
         return cmd
 
     def handle_task(self, key, params):

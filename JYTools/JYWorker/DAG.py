@@ -28,7 +28,5 @@ if __name__ == "__main__":
             app.msg_manager = mns_topic
     except Exception as e:
         print(e)
-    if args.daemon is not None:
-        app.work(daemon=True)
-    else:
-        app.work()
+    app.work(daemon=args.daemon)
+
