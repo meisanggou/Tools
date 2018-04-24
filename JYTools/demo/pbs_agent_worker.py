@@ -22,10 +22,14 @@ if os.path.isdir(agent_dir) is False:
     os.mkdir(agent_dir)
 example_dir = StringTool.path_join(agent_dir, "example")
 pbs_task_dir = StringTool.path_join(agent_dir, "pbs")
+pbs_log_dir = StringTool.path_join(agent_dir, "log")
 if os.path.isdir(example_dir) is False:
     os.mkdir(example_dir)
 if os.path.isdir(pbs_task_dir) is False:
     os.mkdir(pbs_task_dir)
+if os.path.isdir(pbs_log_dir) is False:
+    os.mkdir(pbs_log_dir)
+
 
 pbs_template = """#PBS -S /bin/bash
 #PBS -m n
@@ -86,7 +90,7 @@ class PBSAgentWorker(RedisWorker):
     def package_cmd(self, work_tag, report_tag, example_path):
         py_path = pbs_worker_config.get(work_tag, "file")
         key = self.current_task.task_key
-        cmd = ["python", py_path, "-c", self.conf_path, "-w", work_tag, "-e",
+        cmd = ["python", py_path, "-c", self.conf_path, "-l", self.log_dir, "-w", work_tag, "-e",
                example_path, "-k", key]
 
         sub_key = self.current_task.task_sub_key
@@ -103,15 +107,19 @@ class PBSAgentWorker(RedisWorker):
 
         work_tag = params["work_tag"]
         n_params = params["params"]
-
-        example_path = self.write_example(work_tag, n_params)
-        exec_cmd = self.package_cmd(work_tag, report_tag, example_path)
-        print(exec_cmd)
-        # self.execute_subprocess(exec_cmd)
-        pbs_path = self.write_pbs_task(work_tag, exec_cmd)
-        self.execute_subprocess(["qsub", pbs_path])
+        if pbs_worker_config.has_section(work_tag) is True:
+            example_path = self.write_example(work_tag, n_params)
+            exec_cmd = self.package_cmd(work_tag, report_tag, example_path)
+            print(exec_cmd)
+            # self.execute_subprocess(exec_cmd)
+            pbs_path = self.write_pbs_task(work_tag, exec_cmd)
+            self.execute_subprocess(["qsub", pbs_path])
+        else:
+            self.push_task(key, n_params, work_tag=work_tag, sub_key=self.current_task.task_sub_key,
+                           report_tag=report_tag)
         self.current_task.task_report_tag = None
 
 
 if __name__ == "__main__":
+    os.chdir(pbs_log_dir)
     sys.exit(worker_run(PBSAgentWorker, default_work_tag="PBSAgent"))

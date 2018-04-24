@@ -441,6 +441,7 @@ class DAGWorker(RedisWorker):
         self.current_task.sub_task_detail = pipeline_task["task_list"]
 
     def clear_task_item(self, task_len):
+        self.task_log("Start Clear Pipeline Task Item, Task Len Is ", task_len)
         for index in range(task_len + 1):
             self.del_task_item(index)
 

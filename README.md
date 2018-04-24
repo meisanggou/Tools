@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.2.6
+JYTools.JYWorker.DAG清理任务属性时 打印日志
+
 ## 1.2.5
 fix JYTools.JYWorker.DAG 启动问题
 
