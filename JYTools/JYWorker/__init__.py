@@ -86,11 +86,11 @@ def worker_run(worker_class, default_work_tag=None):
         args = worker_class.parse_args()
         if args.work_tag is None:
             args.work_tag = default_work_tag
-        plus = worker_class(conf_path=args.conf_path, heartbeat_value=args.heartbeat_value, work_tag=args.work_tag,
-                            log_dir=args.log_dir)
+        app = worker_class(conf_path=args.conf_path, heartbeat_value=args.heartbeat_value, work_tag=args.work_tag,
+                           log_dir=args.log_dir)
         if args.example_path is not None:
-            o = plus.test(key=args.key, params_path=args.example_path, sub_key=args.sub_key, report_tag=args.report_tag)
+            o = app.test(key=args.key, params_path=args.example_path, sub_key=args.sub_key, report_tag=args.report_tag)
             return 0, o
         else:
-            plus.work(args.daemon)
+            app.work(args.daemon)
     return 0, None
