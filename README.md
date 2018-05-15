@@ -3,6 +3,8 @@ jingyun tools
 
 ## 1.2.6
 JYTools.JYWorker.DAG清理任务属性时 打印日志
+JYTools.DB 改为使用myqldb_rich中的DB
+JYTools.JYFlask 改为使用flask_helper中的
 
 ## 1.2.5
 fix JYTools.JYWorker.DAG 启动问题

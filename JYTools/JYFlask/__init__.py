@@ -1,7 +1,11 @@
 #! /usr/bin/env python
 # coding: utf-8
 
-from ._cross_domain import CrossDomain, JYFlaskCrossDomain
-from ._flask import MFlask
+from flask_helper import Flask2 as MFlask
+from flask_helper import FlaskCrossDomain as CrossDomain
+
 
 __author__ = 'meisanggou'
+
+
+JYFlaskCrossDomain = CrossDomain
