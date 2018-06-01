@@ -16,7 +16,7 @@ if sys.version_info <= (2, 7):
     sys.exit(1)
 
 name = "JYTools"
-version = "1.2.7"
+version = "1.2.8"
 url = "https://github.com/meisanggou/Tools"
 author = __author__
 short_description = "Jing Yun Tools Library"
@@ -34,5 +34,8 @@ setup(name=name,
       description=short_description,
       long_description=long_description,
       keywords=keywords,
-      install_requires=install_requires
+      install_requires=install_requires,
+      entry_points='''[console_scripts]
+            dag-worker=JYTools.JYWorker.DAG:main
+      '''
       )

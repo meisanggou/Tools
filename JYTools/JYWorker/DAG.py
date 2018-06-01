@@ -5,11 +5,8 @@ from JYTools.JYWorker import DAGWorker
 
 __author__ = 'meisanggou'
 
-help_message = """
 
-"""
-
-if __name__ == "__main__":
+def main():
     DAGWorker.init_parser.add_argument("-a", "--agent-tag", dest="agent_tag", help="agent tag")
     DAGWorker.other_parser.add_argument("-m", "--mns-conf-path", dest="mns_conf_path", help="mns conf path")
     args = DAGWorker.parse_args()
@@ -29,4 +26,7 @@ if __name__ == "__main__":
     except Exception as e:
         print(e)
     app.work(daemon=args.daemon)
+
+if __name__ == "__main__":
+    main()
 
