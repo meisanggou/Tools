@@ -15,8 +15,6 @@ r_queue = RedisQueue()
 def list_queue():
     arg_man = argparse.ArgumentParser()
     arg_man.add_argument("-w", "--work-tag", dest="work_tag", help="work tag", metavar="")
-    if len(sys.argv) <= 1:
-        sys.argv.append("-h")
     args = arg_man.parse_args()
     if args.work_tag is None:
         rs.list_queue()
