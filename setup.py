@@ -16,13 +16,13 @@ if sys.version_info <= (2, 7):
     sys.exit(1)
 
 name = "JYTools"
-version = "1.2.9"
+version = "1.2.10"
 url = "https://github.com/meisanggou/Tools"
 author = __author__
 short_description = "Jing Yun Tools Library"
 long_description = """Jing Yun Tools Library."""
 keywords = "JYTools"
-install_requires = ["redis", "six", "Flask-Helper"]
+install_requires = ["redis", "six"]
 
 setup(name=name,
       version=version,
