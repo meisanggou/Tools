@@ -1,6 +1,10 @@
 # Tools
 jingyun tools
 
+
+## 1.3.2
+fix not print
+
 ## 1.3.1
 add jyworker.stop-worker jyworker.del-heartbeat
 

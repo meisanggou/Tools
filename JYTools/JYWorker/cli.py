@@ -19,19 +19,27 @@ def list_queue():
     arg_man.add_argument("-w", "--work-tag", dest="work_tag", help="work tag", metavar="")
     args = arg_man.parse_args()
     if args.work_tag is None:
-        rs.list_queue()
+        qd = rs.list_queue()
+        for key in qd:
+            print(key)
     else:
-        rs.list_queue_detail(args.work_tag)
+        lqd = rs.list_queue_detail(args.work_tag)
+        for item in lqd:
+            print(item)
 
 
 def list_worry_queue():
     rs = RedisStat()
-    rs.list_worry_queue()
+    wq = rs.list_worry_queue()
+    for item in wq:
+        print(item)
 
 
 def list_heartbeat():
     rs = RedisStat()
-    rs.list_heartbeat()
+    ws = rs.list_heartbeat()
+    for item in ws:
+        print(item)
 
 
 def delete_heartbeat():
@@ -51,3 +59,7 @@ def wash_worker():
     args = arg_man.parse_args()
     r_queue = RedisQueue()
     r_queue.wash_worker(args.work_tag, args.num)
+
+
+if __name__ == "__main__":
+    list_heartbeat()
