@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # coding: utf-8
 import os
+import logging
 import tempfile
 try:
     import ConfigParser as configparser
@@ -117,16 +118,16 @@ class WorkerLogConfig(object):
         self.log_dir = None
         if log_dir is not None:
             self.log_dir = log_dir
-            print("User %s as log directory" % self.log_dir)
+            logging.debug("User %s as log directory" % self.log_dir)
         elif os.environ.get(self.log_dir_environ_key) is not None:
             self.log_dir = os.environ.get(self.log_dir_environ_key)
-            print("Use %s as log directory. from env %s" % (self.log_dir, self.log_dir_environ_key))
+            logging.debug("Use %s as log directory. from env %s" % (self.log_dir, self.log_dir_environ_key))
         else:
             self.log_dir = tempfile.gettempdir()
-            print("Use temp dir %s as log directory" % self.log_dir)
+            logging.debug("Use temp dir %s as log directory" % self.log_dir)
         if no_logging is True:
             self.log_dir = None
-            print("Not Allow logging")
+            logging.debug("Not Allow logging")
 
 
 class RedisWorkerConfig(object):

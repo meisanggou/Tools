@@ -3,7 +3,7 @@
 
 import uuid
 from time import sleep
-from JYTools.JYWorker import RedisWorker
+from JYTools.JYWorker import RedisWorker, worker_run
 
 __author__ = 'meisanggou'
 
@@ -26,7 +26,10 @@ class PlusWorker(RedisWorker):
         print("End Mult Task")
 
 
-p_w = PlusWorker(conf_path="redis_worker.conf", heartbeat_value="FFFFFF", log_dir="/tmp", work_tag="Mult")
-p_w.work()
-p_w.debug = True
-p_w.test(1, {"a": 21})
+# p_w = PlusWorker(conf_path="redis_worker.conf", heartbeat_value="FFFFFF", log_dir="/tmp", work_tag="Mult")
+# p_w.work()
+# p_w.debug = True
+# p_w.test(1, {"a": 21})
+import sys
+sys.argv.append("--debug")
+worker_run(PlusWorker, default_work_tag="Plus")

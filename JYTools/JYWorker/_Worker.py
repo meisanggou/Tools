@@ -10,6 +10,7 @@ import types
 import subprocess
 from time import time, sleep
 import threading
+import logging
 import traceback
 from JYTools import StringTool
 from ._exception import TaskErrorException, InvalidTaskException, WorkerTaskParamsKeyNotFound
@@ -339,7 +340,7 @@ class Worker(WorkerConfig, _WorkerLog):
         try:
             self.msg_manager.publish_message(message, self.work_tag)
         except Exception as e:
-            print(e)
+            logging.error(e)
 
     def run(self):
         pass

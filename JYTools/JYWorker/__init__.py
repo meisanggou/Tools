@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import os
+import logging
 import types
 from ._redis import RedisWorker, RedisQueue, RedisStat
 from ._Worker import ReadWorkerLog
@@ -84,6 +85,8 @@ def worker_run(worker_class, default_work_tag=None):
         return 1, None
     if issubclass(worker_class, RedisWorker) is True:
         args = worker_class.parse_args()
+        if args.debug is True:
+            logging.basicConfig(level=logging.DEBUG)
         if args.work_tag is None:
             args.work_tag = default_work_tag
         app = worker_class(conf_path=args.conf_path, heartbeat_value=args.heartbeat_value, work_tag=args.work_tag,

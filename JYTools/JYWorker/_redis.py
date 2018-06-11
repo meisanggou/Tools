@@ -4,6 +4,7 @@ import os
 import argparse
 import json
 import threading
+import logging
 import re
 import six
 from time import sleep, time
@@ -84,16 +85,16 @@ class RedisQueue(RedisWorkerConfig, WorkerConfig):
                  redis_db=None, section_name="Redis", **kwargs):
         self.conf_path = conf_path
         if self.conf_path is None or os.path.exists(self.conf_path) is False:
-            print("Conf Path Not Exist ", self.conf_path)
-            print("Read os environ :", self.conf_path_environ_key, " ")
+            logging.debug("Conf Path %s Not Exist ", self.conf_path)
+            logging.debug("Read os environ : %s", self.conf_path_environ_key)
             env_conf_path = os.environ.get(self.conf_path_environ_key)
-            print("os environ ", self.conf_path_environ_key, " is ", env_conf_path)
+            logging.debug("os environ %s %s", self.conf_path_environ_key, env_conf_path)
             if env_conf_path is not None:
                 if os.path.exists(env_conf_path) is True:
                     self.conf_path = env_conf_path
-                    print("Use ", env_conf_path, " As conf path")
+                    logging.debug("Use %s As conf path", env_conf_path)
                 else:
-                    print("Path ", env_conf_path, " Not Exist")
+                    logging.debug("Path %s Not Exist", env_conf_path)
         RedisWorkerConfig.__init__(self, self.conf_path, redis_host=redis_host, redis_password=redis_password,
                                    redis_port=redis_port, redis_db=redis_db, section_name=section_name)
         WorkerConfig.__init__(self, self.conf_path, work_tag=work_tag, **kwargs)
@@ -173,16 +174,16 @@ class RedisStat(RedisWorkerConfig, WorkerConfig):
                  redis_db=None, section_name="Redis", **kwargs):
         self.conf_path = conf_path
         if self.conf_path is None or os.path.exists(self.conf_path) is False:
-            print("Conf Path Not Exist ", self.conf_path)
-            print("Read os environ :", self.conf_path_environ_key, " ")
+            logging.debug("Conf Path %s Not Exist ", self.conf_path)
+            logging.debug("Read os environ : %s", self.conf_path_environ_key)
             env_conf_path = os.environ.get(self.conf_path_environ_key)
-            print("os environ ", self.conf_path_environ_key, " is ", env_conf_path)
+            logging.debug("os environ %s %s", self.conf_path_environ_key, env_conf_path)
             if env_conf_path is not None:
                 if os.path.exists(env_conf_path) is True:
                     self.conf_path = env_conf_path
-                    print("Use ", env_conf_path, " As conf path")
+                    logging.debug("Use %s As conf path", env_conf_path)
                 else:
-                    print("Path ", env_conf_path, " Not Exist")
+                    logging.debug("Path %s Not Exist", env_conf_path)
         RedisWorkerConfig.__init__(self, self.conf_path, redis_host=redis_host, redis_password=redis_password,
                                    redis_port=redis_port, redis_db=redis_db, section_name=section_name)
         WorkerConfig.__init__(self, self.conf_path, work_tag=work_tag, is_queue=True, **kwargs)
@@ -388,16 +389,16 @@ class RedisWorker(RedisWorkerConfig, Worker):
                  redis_host=None, redis_password=None, redis_port=None, redis_db=None, section_name="Redis", **kwargs):
         self.conf_path = conf_path
         if self.conf_path is None or is_string(self.conf_path) is False or os.path.exists(self.conf_path) is False:
-            print("Conf Path Not Exist ", self.conf_path)
-            print("Read os environ :", self.conf_path_environ_key, " ")
+            logging.debug("Conf Path %s Not Exist ", self.conf_path)
+            logging.debug("Read os environ : %s", self.conf_path_environ_key)
             env_conf_path = os.environ.get(self.conf_path_environ_key)
-            print("os environ ", self.conf_path_environ_key, " is ", env_conf_path)
+            logging.debug("os environ %s %s", self.conf_path_environ_key, env_conf_path)
             if env_conf_path is not None:
                 if os.path.exists(env_conf_path) is True:
                     self.conf_path = env_conf_path
-                    print("Use ", env_conf_path, " As conf path")
+                    logging.debug("Use %s As conf path", env_conf_path)
                 else:
-                    print("Path ", env_conf_path, " Not Exist")
+                    logging.debug("Path %s Not Exist", env_conf_path)
         RedisWorkerConfig.__init__(self, self.conf_path, redis_host=redis_host, redis_password=redis_password,
                                    redis_port=redis_port, redis_db=redis_db, section_name=section_name)
         Worker.__init__(self, conf_path=self.conf_path, work_tag=work_tag, log_dir=log_dir, **kwargs)
@@ -545,7 +546,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
             wl.write(s)
             if self.redirect_stdout is False and self.debug is True:
                 try:
-                    print(s)
+                    logging.info(s)
                 except Exception as e:
                     pass
 
@@ -579,7 +580,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
             wl.write(s)
             if self.redirect_stdout is False and self.debug is True:
                 try:
-                    print(s)
+                    logging.info(s)
                 except Exception as e:
                     pass
 
@@ -681,7 +682,8 @@ class RedisWorker(RedisWorkerConfig, Worker):
                                      help="redis worker conf path")
         cls.init_parser.add_argument("-l", "--log-dir", dest="log_dir", help="worker log save dir")
         cls.init_parser.add_argument("-w", "--work-tag", dest="work_tag", help="work tag")
-
+        cls.init_parser.add_argument("--debug", dest="debug", help="debug mode, print debug msg", action="store_true",
+                                     default=False)
         cls.test_parser.add_argument("-e", "--example-path", dest="example_path", help="run an example use this file")
         cls.test_parser.add_argument("-k", "--key", dest="key", help="task key")
         cls.test_parser.add_argument("-r", "--report-tag", dest="report_tag", help="report tag")
