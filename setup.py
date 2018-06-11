@@ -16,7 +16,7 @@ if sys.version_info <= (2, 7):
     sys.exit(1)
 
 name = "JYTools"
-version = "1.2.10"
+version = "1.3.1"
 url = "https://github.com/meisanggou/Tools"
 author = __author__
 short_description = "Jing Yun Tools Library"
@@ -40,6 +40,8 @@ setup(name=name,
             jyworker.list-queue=JYTools.JYWorker.cli:list_queue
             jyworker.list-worry-queue=JYTools.JYWorker.cli:list_worry_queue
             jyworker.list-heartbeat=JYTools.JYWorker.cli:list_heartbeat
+            jyworker.del-heartbeat=JYTools.JYWorker.cli:delete_heartbeat
+            jyworker.stop-worker=JYTools.JYWorker.cli:delete_heartbeat
             jyworker.wash-worker=JYTools.JYWorker.cli:wash_worker
       '''
       )

@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.3.1
+add jyworker.stop-worker jyworker.del-heartbeat
+
 ## 1.2.6
 JYTools.JYWorker.DAG清理任务属性时 打印日志
 JYTools.DB 改为使用myqldb_rich中的DB
