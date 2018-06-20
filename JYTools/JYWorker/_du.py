@@ -12,7 +12,7 @@ __author__ = 'meisanggou'
 
 class DAGWorker(RedisWorker):
     expect_params_type = dict
-    ref_compile = re.compile(r"^(\d{1,10})((&\d+|&*[a-z])\w{0,60})$", re.I)
+    ref_compile = re.compile(r"^(\d{1,10})((&\d+|&*[a-z])\w{0,60})(\**)$", re.I)
 
     def __init__(self, conf_path=None, heartbeat_value=None, is_brother=False, work_tag=None, log_dir=None,
                  redis_host=None, redis_password=None, redis_port=None, redis_db=None, section_name="Redis", **kwargs):
@@ -32,6 +32,7 @@ class DAGWorker(RedisWorker):
         """
 
         :param ref_str: index+字母开头的key index+&+数字开头的key index+&+字母开头的key
+                        最后可以加入*结尾，也可以不加入，暂时定义为required
         :return:
         """
         if ref_str[0] == "&":
@@ -41,9 +42,14 @@ class DAGWorker(RedisWorker):
             return None
         ref_index = int(match_r.groups()[0])
         ref_key = match_r.groups()[1]
+        required = match_r.groups()[2]
         if ref_key[0] == "&":
             ref_key = ref_key[1:]
-        return dict(index=ref_index, key=ref_key)
+        if required == "*":
+            required = False
+        else:
+            required = True
+        return dict(index=ref_index, key=ref_key, required=required)
 
     @staticmethod
     def exist_loop(params):
