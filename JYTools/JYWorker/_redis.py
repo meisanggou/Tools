@@ -422,7 +422,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
             raise ValueError("heartbeat only allow 0-9 a-z and length between 3 and 50.")
 
         self.t_clock = threading.Thread(target=self.hang_up_clock)
-        self.t_clock.daemon = True
+        self.t_clock.daemon = True  # 主进程退出时，随主进程一起退出
         if "upload_log_tag" in kwargs:
             self.upload_log_tag = kwargs["upload_log_tag"]
         else:
