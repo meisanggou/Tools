@@ -49,10 +49,16 @@ def list_worry_queue():
 
 
 def list_heartbeat():
+    arg_man.add_argument("-w", "--work-tag", dest="work_tag", help="work tag", metavar="")
     rs = RedisStat()
-    ws = rs.list_heartbeat()
-    for item in ws:
-        print(item)
+    args = parse_args()
+    if args.work_tag is None:
+        ws = rs.list_heartbeat()
+        for item in ws:
+            print(item)
+    else:
+        hd = rs.list_heartbeat_detail(args.work_tag)
+        print(hd)
 
 
 def delete_heartbeat():
@@ -61,6 +67,19 @@ def delete_heartbeat():
     arg_man.add_argument("-w", "--work-tag", dest="work_tag", help="work tag", metavar="")
     args = parse_args()
     rs.delete_heartbeat(args.work_tag)
+
+
+def list_worker():
+    arg_man.add_argument("-w", "--work-tag", dest="work_tag", help="work tag", metavar="")
+    rs = RedisStat()
+    args = parse_args()
+    if args.work_tag is None:
+        ws = rs.list_worker()
+        for item in ws:
+            print(item)
+    else:
+        hd = rs.list_worker_detail(args.work_tag)
+        print(hd)
 
 
 def wash_worker():
@@ -74,6 +93,7 @@ def wash_worker():
 
 if __name__ == "__main__":
     sys.argv.append("--debug")
-    sys.argv.extend(["-w", "APP7"])
+    sys.argv.extend(["-w", "JYAnalysisDAG"])
     # wash_worker()
     logging.info("ssd")
+    list_worker()

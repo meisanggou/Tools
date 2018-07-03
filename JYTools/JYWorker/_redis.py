@@ -7,7 +7,7 @@ import threading
 import logging
 import re
 import six
-from time import sleep, time
+import time
 from datetime import datetime
 from redis import RedisError
 from JYTools import TIME_FORMAT
@@ -283,6 +283,12 @@ class RedisStat(RedisWorkerConfig, WorkerConfig):
                 continue
             p["heartbeat_value"] = vs[0]
             p["clock_time"] = vs[1]
+            try:
+                p["clock_time"] = int(p["clock_time"])
+                x = time.localtime(p["clock_time"])
+                p["clock_time2"] = time.strftime("%Y-%m-%d %H:%M:%S", x)
+            except ValueError:
+                pass
             if len(vs) > 2:
                 p["current_task"] = vs[2]
                 p["working"] = True
@@ -311,6 +317,7 @@ class RedisStat(RedisWorkerConfig, WorkerConfig):
         add in version 1.0.6
         """
         key = StringTool.join_encode([self.heartbeat_prefix_key, "_", work_tag])
+        print(key)
         return self.redis_man.get(key)
 
     def delete_heartbeat(self, work_tag):
@@ -441,19 +448,19 @@ class RedisWorker(RedisWorkerConfig, Worker):
         hang_freq = 0
         while True:
             if self.is_running is False and loop_run is True:
-                sleep(5)
+                time.sleep(5)
                 continue
             try:
                 if self.current_task is not None and self.current_task.task_key is not None:
-                    v = StringTool.join([self.heartbeat_value, int(time()), self.current_task.task_key], "_").strip("_")
+                    v = StringTool.join([self.heartbeat_value, int(time.time()), self.current_task.task_key], "_").strip("_")
                 else:
-                    v = StringTool.join([self.heartbeat_value, int(time())], "_").strip("_")
+                    v = StringTool.join([self.heartbeat_value, int(time.time())], "_").strip("_")
                 self.redis_man.setex(key, v, 60)
             except RedisError:
                 pass
             hang_freq += 1
             if hang_freq < freq or loop_run is True:
-                sleep(55)
+                time.sleep(55)
             else:
                 break
 
@@ -469,7 +476,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
                 self.worker_log(e, level="ERROR")
                 raise e
             freq += 1
-            sleep(10 * freq)
+            time.sleep(10 * freq)
             return self.pop_task(freq)
         if next_task is not None:
             t = StringTool.decode(next_task[1])
@@ -563,7 +570,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
             p_msg = StringTool.join([p_msg_a, "\n", msg], "")
             self.publish_message(p_msg)
             if self.upload_log_tag is not None:
-                upload_info = dict(log_path=self.current_task.log_path, timestamp=int(time()))
+                upload_info = dict(log_path=self.current_task.log_path, timestamp=int(time.time()))
                 self.push_task(StringTool.join_decode([self.current_task.task_key, self.work_tag], join_str="_"),
                                upload_info, work_tag=self.upload_log_tag)
         log_file = self.current_task.log_path
