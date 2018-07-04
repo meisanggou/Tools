@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.3.4
+jyworekr.del-heartbeat 支持一次删除多个
+
 ## 1.3.3
 DAG参数引用格式更改, 最后可以加入*结尾，也可以不加入，暂时定义为required
 

@@ -64,9 +64,11 @@ def list_heartbeat():
 def delete_heartbeat():
     empty_help()
     rs = RedisStat()
-    arg_man.add_argument("-w", "--work-tag", dest="work_tag", help="work tag", metavar="")
+    arg_man.add_argument("-w", "--work-tag", dest="work_tag", help="work tag", metavar="", nargs="*", default=[])
     args = parse_args()
-    rs.delete_heartbeat(args.work_tag)
+    for item in args.work_tag:
+        print("delete heartbeat %s" % item)
+        rs.delete_heartbeat(item)
 
 
 def list_worker():
@@ -93,7 +95,7 @@ def wash_worker():
 
 if __name__ == "__main__":
     sys.argv.append("--debug")
-    sys.argv.extend(["-w", "JYAnalysisDAG"])
+    sys.argv.extend(["-w", "JYAnalysisDAG", "APP7"])
     # wash_worker()
     logging.info("ssd")
-    list_worker()
+    delete_heartbeat()
