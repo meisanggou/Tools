@@ -439,6 +439,9 @@ class RedisWorker(RedisWorkerConfig, Worker):
         return True
 
     def hang_up_clock(self, freq=None):
+        # test模式下或者还没有运行，is_running为False不进行打卡
+        if self.is_running is False:
+            return
         loop_run = True
         if isinstance(freq, int) and freq >= 1:
             loop_run = False
@@ -447,9 +450,10 @@ class RedisWorker(RedisWorkerConfig, Worker):
         key = self.clock_key
         hang_freq = 0
         while True:
-            if self.is_running is False and loop_run is True:
-                time.sleep(5)
-                continue
+            # run以后才启动线程，所以此判断可以不用了
+            # if self.is_running is False and loop_run is True:
+            #     time.sleep(5)
+            #     continue
             try:
                 if self.current_task is not None and self.current_task.task_key is not None:
                     v = StringTool.join([self.heartbeat_value, int(time.time()), self.current_task.task_key], "_").strip("_")

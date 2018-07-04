@@ -53,7 +53,7 @@ class Worker(WorkerConfig, _WorkerLog):
             raise TypeError(msg.format(class_name))
         self._id = uuid.uuid4().hex  # add in 0.9.11
         self._msg_manager = None
-        self.is_running = False
+        self.is_running = False  # 表示worker是否已经开始运行，并不断接收任务,一旦运行起来，不可再进入test模式即调用test方法
         self._debug = False
         self.before_handler_funcs = []
         self.after_handler_funcs = []
@@ -346,6 +346,8 @@ class Worker(WorkerConfig, _WorkerLog):
         pass
 
     def test(self, key, params=None, params_path=None, sub_key=None, report_tag=None, debug=True):
+        if self.is_running is True:  # 一旦运行起来，不可再进入test模式即调用test方法
+            raise RuntimeError("Can not test, current is running")
         self.debug = debug
         if params is None and params_path is not None:
             with open(params_path, "r") as rp:
