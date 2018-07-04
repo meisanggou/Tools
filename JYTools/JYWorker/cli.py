@@ -86,11 +86,13 @@ def list_worker():
 
 def wash_worker():
     empty_help()
-    arg_man.add_argument("-w", "--work-tag", dest="work_tag", help="work tag", metavar="", required=True)
+    arg_man.add_argument("-w", "--work-tag", dest="work_tag", help="work tag", metavar="", nargs="*", default=[])
     arg_man.add_argument("-n", "--num", dest="num", help="num of wash package to send", metavar="", type=int, default=1)
     args = parse_args()
     r_queue = RedisQueue()
-    r_queue.wash_worker(args.work_tag, args.num)
+    for item in args.work_tag:
+        print("wash work tag %s" % item)
+        r_queue.wash_worker(args.work_tag, args.num)
 
 
 if __name__ == "__main__":

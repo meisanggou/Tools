@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.3.5
+jyworker.wash-worker 支持一次清洗多个
+
 ## 1.3.4
 jyworekr.del-heartbeat 支持一次删除多个
 
