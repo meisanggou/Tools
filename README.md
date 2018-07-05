@@ -1,7 +1,7 @@
 # Tools
 jingyun tools
 
-## 1.3.5
+## 1.3.6
 jyworker.wash-worker 支持一次清洗多个
 
 ## 1.3.4

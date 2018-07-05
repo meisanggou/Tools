@@ -92,12 +92,12 @@ def wash_worker():
     r_queue = RedisQueue()
     for item in args.work_tag:
         print("wash work tag %s" % item)
-        r_queue.wash_worker(args.work_tag, args.num)
+        r_queue.wash_worker(item, args.num)
 
 
 if __name__ == "__main__":
     sys.argv.append("--debug")
-    sys.argv.extend(["-w", "JYAnalysisDAG", "APP7"])
+    sys.argv.extend(["-w", "JYAnalysisDAG", "AnalysisScheduling"])
     # wash_worker()
     logging.info("ssd")
-    delete_heartbeat()
+    wash_worker()
