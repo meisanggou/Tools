@@ -140,7 +140,7 @@ class RedisWorkerConfig(object):
     """
 
     def __init__(self, conf_path=None, redis_host=None, redis_password=None, redis_port=None, redis_db=None,
-                 section_name="Redis"):
+                 section_name="Redis", redis_man=None):
         self.redis_host = "localhost"
         self.redis_port = 6379
         self.redis_password = None
@@ -158,9 +158,13 @@ class RedisWorkerConfig(object):
             self.redis_port = redis_port
         if redis_db is not None:
             self.redis_db = redis_db
-        self.redis_man = None
-        self.connected = False
-        self._connect()
+
+        self.redis_man = redis_man
+        if self.redis_man is None:
+            self.connected = False
+            self._connect()
+        else:
+            self.connected = True
 
     def _connect(self):
         self.redis_man = Redis(host=self.redis_host, port=self.redis_port, db=self.redis_db,

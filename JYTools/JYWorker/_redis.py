@@ -82,7 +82,7 @@ class RedisQueue(RedisWorkerConfig, WorkerConfig):
     conf_path_environ_key = "REDIS_WORKER_CONF_PATH"
 
     def __init__(self, conf_path=None, work_tag=None, redis_host=None, redis_password=None, redis_port=None,
-                 redis_db=None, section_name="Redis", **kwargs):
+                 redis_db=None, section_name="Redis", redis_man=None, **kwargs):
         self.conf_path = conf_path
         if self.conf_path is None or os.path.exists(self.conf_path) is False:
             logging.debug("Conf Path %s Not Exist ", self.conf_path)
@@ -96,7 +96,8 @@ class RedisQueue(RedisWorkerConfig, WorkerConfig):
                 else:
                     logging.debug("Path %s Not Exist", env_conf_path)
         RedisWorkerConfig.__init__(self, self.conf_path, redis_host=redis_host, redis_password=redis_password,
-                                   redis_port=redis_port, redis_db=redis_db, section_name=section_name)
+                                   redis_port=redis_port, redis_db=redis_db, section_name=section_name,
+                                   redis_man=redis_man)
         WorkerConfig.__init__(self, self.conf_path, work_tag=work_tag, **kwargs)
 
     @staticmethod
@@ -171,7 +172,7 @@ class RedisStat(RedisWorkerConfig, WorkerConfig):
     conf_path_environ_key = "REDIS_WORKER_CONF_PATH"
 
     def __init__(self, conf_path=None, work_tag=None, redis_host=None, redis_password=None, redis_port=None,
-                 redis_db=None, section_name="Redis", **kwargs):
+                 redis_db=None, section_name="Redis", redis_man=None, **kwargs):
         self.conf_path = conf_path
         if self.conf_path is None or os.path.exists(self.conf_path) is False:
             logging.debug("Conf Path %s Not Exist ", self.conf_path)
@@ -185,7 +186,8 @@ class RedisStat(RedisWorkerConfig, WorkerConfig):
                 else:
                     logging.debug("Path %s Not Exist", env_conf_path)
         RedisWorkerConfig.__init__(self, self.conf_path, redis_host=redis_host, redis_password=redis_password,
-                                   redis_port=redis_port, redis_db=redis_db, section_name=section_name)
+                                   redis_port=redis_port, redis_db=redis_db, section_name=section_name,
+                                   redis_man=redis_man)
         WorkerConfig.__init__(self, self.conf_path, work_tag=work_tag, is_queue=True, **kwargs)
 
     def list_queue(self):

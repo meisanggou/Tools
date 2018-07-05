@@ -84,6 +84,12 @@ def list_worker():
         print(hd)
 
 
+def auto_wash_worker_func(work_tag):
+    # 获取当前队列中是否任务
+    # 获取当前多少个Worker
+    rs = RedisStat()
+
+
 def wash_worker():
     empty_help()
     arg_man.add_argument("-w", "--work-tag", dest="work_tag", help="work tag", metavar="", nargs="*", default=[])
