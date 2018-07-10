@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.3.7
+DAG worker 支持 输入 引用时最后加上*，表示为非必须引用，若引用不到，则不将该输入传给任务
+
 ## 1.3.6
 jyworker.wash-worker 支持一次清洗多个
 
