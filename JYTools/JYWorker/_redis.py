@@ -535,9 +535,13 @@ class RedisWorker(RedisWorkerConfig, Worker):
             return item
         return RedisData.unpack_data(self.redis_man.hget(item_key, hash_key))
 
-    def del_task_item(self, item_index, key=None, sub_key=None):
+    def del_task_item(self, item_index, hash_key=None, key=None, sub_key=None):
         item_key = self._task_item_key(item_index, key, sub_key)
-        return self.redis_man.delete(item_key)
+        if hash_key is not None:
+            l = self.redis_man.hdel(item_key, hash_key)
+        else:
+            l = self.redis_man.delete(item_key)
+        return l
 
     def worker_log(self, *args, **kwargs):
         if self.log_dir is None or is_string(self.log_dir) is False:
