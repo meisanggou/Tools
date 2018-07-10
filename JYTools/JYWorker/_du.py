@@ -469,7 +469,8 @@ class DAGWorker(RedisWorker):
         ref_key = split_d["key"]
         required = split_d["required"]
         if required is False and allow_non_required is False:
-            return False, ""
+            return False, "Input Not Standard Ref Result Format %s, Not Allow * In The End." % ref_str
+
         if isinstance(current_index, int):
             if ref_index == current_index + 1:
                 return False, "Input Can Not Ref Self %s" % ref_str
@@ -481,10 +482,14 @@ class DAGWorker(RedisWorker):
         ana_data = dict(ref_index=ref_index, ref_key=ref_key)
         if ref_index == 0:
             if self.has_task_item(ref_index, hash_key="input_%s" % ref_key) is False:
+                if required is False:
+                    return True, ana_data
                 return False, "Input Ref %s Not In Task %s Input. %s" % (ref_key, ref_index, ref_str)
             ref_output = self.get_task_item(ref_index, hash_key="input_%s" % ref_key)
         else:
             if self.has_task_item(ref_index, hash_key="output_%s" % ref_key) is False:
+                if required is False:
+                    return True, ana_data
                 work_tag = self.get_task_item(ref_index, hash_key="work_tag")
                 return False, "Input Ref %s Not In Task %s %s Output. [%s]" % (ref_key, ref_index, work_tag, ref_str)
             ref_output = self.get_task_item(ref_index, hash_key="output_%s" % ref_key)
