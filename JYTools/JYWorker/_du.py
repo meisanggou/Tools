@@ -451,13 +451,25 @@ class DAGWorker(RedisWorker):
         for index in range(task_len + 1):
             self.del_task_item(index)
 
-    def analysis_ref(self, ref_str, current_index, task_len):
+    def analysis_ref(self, ref_str, current_index, task_len, allow_non_required=False):
+        """
+
+        :param ref_str:
+        :param current_index:
+        :param task_len:
+        :param allow_non_required:
+        :return:
+        若allow_non_required为False，返回的第一个参数为True，第二个参数肯定包含ref_output
+        若allow_non_required为True，返回的第一个参数为True，第二个参数可以不包含ref_output
+        """
         split_d = self.split_ref(ref_str)
         if split_d is None:
             return False, "Input Not Standard Ref Result Format %s" % ref_str
         ref_index = split_d["index"]
         ref_key = split_d["key"]
         required = split_d["required"]
+        if required is False and allow_non_required is False:
+            return False, ""
         if isinstance(current_index, int):
             if ref_index == current_index + 1:
                 return False, "Input Can Not Ref Self %s" % ref_str
@@ -568,7 +580,7 @@ class DAGWorker(RedisWorker):
                 inp = task_item[item_key]
                 if is_string(inp) is True and inp.startswith("&"):
                     self.task_log("Task ", index + 1, " Handle Input ", item_key)
-                    ref_r, ref_info = self.analysis_ref(inp[1:], index, task_len)
+                    ref_r, ref_info = self.analysis_ref(inp[1:], index, task_len, allow_non_required=True)
                     if ref_r is False:
                         self.fail_pipeline("Task ", index + 1, " ", ref_info)
                     if ref_info is None:
