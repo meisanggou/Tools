@@ -42,7 +42,7 @@ class DAGWorker(RedisWorker):
             return None
         ref_index = int(match_r.groups()[0])
         ref_key = match_r.groups()[1]
-        required = match_r.groups()[2]
+        required = match_r.groups()[3]
         if ref_key[0] == "&":
             ref_key = ref_key[1:]
         if required == "*":
@@ -602,7 +602,7 @@ class DAGWorker(RedisWorker):
                     else:
                         self.task_log("Task ", index + 1, " Input ", item_key, " Ref Task", ref_index, " ", ref_key,
                                       " , But not found and the input is not required, so delete this input", )
-                        self.del_task_item(index + 1, item_key)
+                        self.del_task_item(index + 1, hash_key=item_key)
                 elif isinstance(inp, list):
                     for sub_i in range(len(inp)):
                         sub_inp = inp[sub_i]
