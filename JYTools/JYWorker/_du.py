@@ -457,6 +457,7 @@ class DAGWorker(RedisWorker):
             return False, "Input Not Standard Ref Result Format %s" % ref_str
         ref_index = split_d["index"]
         ref_key = split_d["key"]
+        required = split_d["required"]
         if isinstance(current_index, int):
             if ref_index == current_index + 1:
                 return False, "Input Can Not Ref Self %s" % ref_str
@@ -465,6 +466,7 @@ class DAGWorker(RedisWorker):
         if self.get_task_item(ref_index, "task_status") != TaskStatus.SUCCESS and ref_index > 0:
             return True, None
         # 判断 是获得 input 还是 output
+        ana_data = dict(ref_index=ref_index, ref_key=ref_key)
         if ref_index == 0:
             if self.has_task_item(ref_index, hash_key="input_%s" % ref_key) is False:
                 return False, "Input Ref %s Not In Task %s Input. %s" % (ref_key, ref_index, ref_str)
@@ -483,7 +485,8 @@ class DAGWorker(RedisWorker):
                     msg = "Ref task %s %s output %s value is list, each item can not start with &, but exist item " \
                           "value is %s" % (ref_index, work_tag, ref_key, item)
                     return False, msg
-        return True, dict(ref_output=ref_output, ref_index=ref_index, ref_key=ref_key)
+        ana_data["ref_output"] = ref_output
+        return True, ana_data
 
     def convert_repeat(self, task_item, index):
         input_list_keys = []
@@ -570,12 +573,19 @@ class DAGWorker(RedisWorker):
                         self.fail_pipeline("Task ", index + 1, " ", ref_info)
                     if ref_info is None:
                         continue
-                    ref_output = ref_info["ref_output"]
+                    # 若ref_output在返回中说明，拿到了引用值。
+                    # 若不在返回中说明，未拿到引用值并且该引用为可选引用.将该输入从该任务中删除
                     ref_index = ref_info["ref_index"]
                     ref_key = ref_info["ref_key"]
-                    self.task_log("Task ", index + 1, " Input ", item_key, " Ref Task", ref_index, " ", ref_key, " ",
-                                  ref_output)
-                    self.set_task_item(index + 1, item_key, ref_output)
+                    if "ref_output" in ref_info:
+                        ref_output = ref_info["ref_output"]
+                        self.task_log("Task ", index + 1, " Input ", item_key, " Ref Task", ref_index, " ", ref_key,
+                                      " ", ref_output)
+                        self.set_task_item(index + 1, item_key, ref_output)
+                    else:
+                        self.task_log("Task ", index + 1, " Input ", item_key, " Ref Task", ref_index, " ", ref_key,
+                                      " , But not found and the input is not required, so delete this input", )
+                        self.del_task_item(index + 1, item_key)
                 elif isinstance(inp, list):
                     for sub_i in range(len(inp)):
                         sub_inp = inp[sub_i]
