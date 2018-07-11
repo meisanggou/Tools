@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.3.8
+EmailManger 通过ssl服务器发送邮件
+
 ## 1.3.7
 DAG worker 支持 输入 引用时最后加上*，表示为非必须引用，若引用不到，则不将该输入传给任务
 jyworker.wash-worker support -a/--auto
@@ -38,7 +41,7 @@ fix RedisWorker parse_args解析-D --daemon bug
 ## 1.2.2
 fix RedisWorker test时初始化任务sub_key report_tag bug
 
-## 1.2.1
+##1.2.1
 DAGWorker支持Agent Push Task
 RedisWorker增加方法parse_args解析命令行参数
 
