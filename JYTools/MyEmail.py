@@ -40,7 +40,7 @@ class EmailManager(object):
             encoding = 'utf-8'
             SMTP = smtplib.SMTP_SSL
             smtp = SMTP("smtp.%s" % self.email_server, 465)
-            smtp.set_debuglevel(True)
+            # smtp.set_debuglevel(True)
             user = self.m_user
             smtp.login(user, self.m_password)
             user = self.encoded(user, encoding)
