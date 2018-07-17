@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.3.9
+EmailManager 去除debug
+
 ## 1.3.8
 EmailManger 通过ssl服务器发送邮件
 
