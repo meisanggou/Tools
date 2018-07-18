@@ -273,6 +273,7 @@ class DAGWorker(RedisWorker):
         # 获取当前pipeline状态
         pipeline_status = self.get_task_item(0, hash_key="task_status")
         if pipeline_status == TaskStatus.FAIL:
+            self.task_log("Current Task Status Is ", pipeline_status)
             return self.try_finish_pipeline()
         self.handle_task(self.current_task.task_key, None)
 
@@ -387,6 +388,7 @@ class DAGWorker(RedisWorker):
         若有正在运行的任务。返回False
         :return:
         """
+        self.task_log("Try Finish Pipeline")
         task_len = self.get_task_item(0, hash_key="task_len")
         if task_len is None:
             self.set_current_task_error("Not Found Pipeline Task Len")
