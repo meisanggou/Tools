@@ -4,6 +4,7 @@
 import sys
 import logging
 import argparse
+from JYTools import jy_input, StringTool
 from JYTools.JYWorker import RedisStat, RedisQueue
 
 __author__ = '鹛桑够'
@@ -112,9 +113,66 @@ def wash_worker():
             r_queue.wash_worker(item, args.num)
 
 
+def look_task_item():
+    arg_man.add_argument("-w", "--work-tag", dest="work_tag", help="work tag", metavar="")
+    args = parse_args()
+    rs = RedisStat()
+    values = []
+    if args.work_tag is not None:
+        values.append(args.work_tag)
+    while True:
+        prompt_prefix = ""
+        if len(values) <= 0:
+            work_tag = jy_input("Please Input Work_tag", prompt_prefix=prompt_prefix)
+            work_tag = work_tag.strip()
+            if work_tag.lower() in ("e", "exit"):
+                sys.exit(0)
+            values.append(work_tag)
+            continue
+        if len(values) == 1:
+            prompt_prefix += "[work_tag:%s]" % values[0]
+            key = jy_input("Please Input Task Key", prompt_prefix=prompt_prefix)
+            key = key.strip()
+            if key.lower() in ("e", "exit"):
+                values.remove(values[-1])
+                continue
+            values.append(key)
+            values.append(None)
+            continue
+        elif len(values) >= 2:
+            sub_key = None
+            prompt_prefix += "[work_tag:%s][key:%s]" % (values[0], values[1])
+            if len(values) >= 3:
+                sub_key = StringTool.join_decode(values[2:], "_")
+                prompt_prefix += "[sub_key:%s]" % sub_key
+            task_items = rs.list_task_item(values[0], values[1], sub_key)
+            prompt = ""
+            if len(task_items["sub"].keys()) > 0:
+                prompt += "Input follow value look sub item\n"
+                prompt += "\n".join(task_items["sub"])
+                prompt += "\n"
+            if len(task_items["values"].keys()) > 0:
+                prompt += "Input follow value look item value\n"
+                prompt += "\n".join(task_items["values"])
+            while True:
+                item_key = jy_input(prompt, prompt_prefix=prompt_prefix)
+                item_key = item_key.strip()
+                if item_key.lower() in ("e", "exit"):
+                    values.remove(values[-1])
+                    break
+                if item_key in task_items["sub"]:
+                    values.append(item_key)
+                    break
+                elif item_key in task_items["values"]:
+                    print(task_items["values"][item_key])
+                    continue
+                else:
+                    continue
+
+
 if __name__ == "__main__":
     sys.argv.append("--debug")
-    sys.argv.extend(["-a", "-w", "BatchComputer", "AnalysisScheduling2"])
+    sys.argv.extend(["-w", "BatchComputer"])
     # wash_worker()
     logging.info("ssd")
-    wash_worker()
+    look_task_item()

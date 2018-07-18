@@ -318,6 +318,40 @@ class RedisStat(_RedisHelper):
                 w_q[k] = v
         return w_q
 
+    def list_task_item(self, work_tag, key, sub_key=None):
+        k_l = [self.queue_prefix_key, work_tag, key]
+        if sub_key is not None:
+            k_l.append(sub_key)
+        task_item_compile = re.compile(re.escape(StringTool.join_decode(k_l, "_")) + "_(\\d+)$")
+        get_key = StringTool.join_decode([k_l], "_")
+        k_l.append("*")
+        key_prefix = StringTool.join_decode(k_l, "_")
+        hs = self.redis_man.keys(key_prefix)
+        task_items = dict(sub=dict(), values=dict())
+        for item in hs:
+            if self.redis_man.type(item) != "hash":
+                continue
+            m_r = task_item_compile.match(item)
+            if m_r is None:
+                continue
+            task_items["sub"][m_r.groups()[0]] = item
+        if self.redis_man.type(get_key) == "hash":
+            item = self.redis_man.hgetall(get_key)
+            for key in item.keys():
+                task_items["values"][key] = RedisData.unpack_data(item[key])
+        return task_items
+
+    def clear_task_item(self, work_tag, key):
+        k_l = [self.queue_prefix_key, work_tag, key, "*"]
+        key_prefix = StringTool.join_decode(k_l, "_")
+        hs = self.redis_man.keys(key_prefix)
+        task_items = dict(sub=dict(), values=dict())
+        for item in hs:
+            if self.redis_man.type(item) != "hash":
+                continue
+            self.redis_man.delete(item)
+        return task_items
+
 
 class RedisData(object):
     BOOL_VALUE = [False, True]

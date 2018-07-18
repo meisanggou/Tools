@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.4.0
+add jyworker.look-item
+
 ## 1.3.9
 EmailManager 去除debug
 
