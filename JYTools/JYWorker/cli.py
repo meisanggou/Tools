@@ -137,7 +137,6 @@ def look_task_item():
                 values.remove(values[-1])
                 continue
             values.append(key)
-            values.append(None)
             continue
         elif len(values) >= 2:
             sub_key = None
@@ -172,7 +171,7 @@ def look_task_item():
 
 if __name__ == "__main__":
     sys.argv.append("--debug")
-    sys.argv.extend(["-w", "BatchComputer"])
+    sys.argv.extend(["-w", "Pipeline"])
     # wash_worker()
     logging.info("ssd")
     look_task_item()
