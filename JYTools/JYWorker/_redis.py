@@ -145,6 +145,12 @@ class RedisQueue(_RedisHelper):
             raise InvalidTaskKey()
         self._push(key, params, work_tag, sub_key=sub_key, report_tag=report_tag, is_head=is_head)
 
+    def push_file(self, key, file_path, work_tag=None, sub_key=None, report_tag=None, is_head=False):
+        with open(file_path) as r:
+            c = r.read()
+            params = json.loads(c)
+        return self.push(key, params, work_tag, sub_key=sub_key, report_tag=report_tag, is_head=is_head)
+
     def push_head(self, key, params, work_tag=None, sub_key=None, report_tag=None):
         self.push(key, params, work_tag, sub_key=sub_key, report_tag=report_tag, is_head=True)
 

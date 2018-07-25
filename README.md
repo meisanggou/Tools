@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.4.2
+RedisQueue add push_file
+
 ## 1.4.1
 add jyworker.look-item
 
