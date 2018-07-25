@@ -259,7 +259,7 @@ class DAGWorker(RedisWorker):
         self.set_task_item(reporter_sub_key, "task_message", task_message)
         if r_task["sub_task_detail"] is not None:
             self.set_task_item(reporter_sub_key, "task_list", r_task.sub_task_detail)
-        if task_status != TaskStatus.SUCCESS:
+        if TaskStatus.is_success(task_status) is False:
             self.set_task_item(0, "task_message", task_message)
             self.set_task_item(0, "task_fail_index", reporter_sub_key)
             self.task_log("Sub Task ", r_task.task_sub_key, " ", r_task.work_tag, " Failed", level="ERROR")
@@ -272,7 +272,7 @@ class DAGWorker(RedisWorker):
         self.set_task_item(reporter_sub_key, "finished_time", time())
         # 获取当前pipeline状态
         pipeline_status = self.get_task_item(0, hash_key="task_status")
-        if pipeline_status == TaskStatus.FAIL:
+        if TaskStatus.is_fail(pipeline_status):
             self.task_log("Current Task Status Is ", pipeline_status)
             return self.try_finish_pipeline()
         self.handle_task(self.current_task.task_key, None)
@@ -302,7 +302,7 @@ class DAGWorker(RedisWorker):
             if "work_tag" not in task_item:
                 self.set_current_task_invalid("Task ", index + 1, " work_tag Not Found")
             if "task_status" in task_item:
-                if task_item["task_status"] != TaskStatus.SUCCESS:
+                if TaskStatus.is_success(task_item["task_status"]) is False:
                     del task_item["task_status"]
             if "task_output" in task_item:
                 if isinstance(task_item["task_output"], dict):
@@ -372,7 +372,7 @@ class DAGWorker(RedisWorker):
             return False
         for index in range(task_len):
             task_index = index + 1
-            if self.get_task_item(task_index, "task_status") != TaskStatus.RUNNING:
+            if TaskStatus.is_running(self.get_task_item(task_index, "task_status")) is False:
                 continue
             work_tag = self.get_task_item(task_index, "work_tag")
             self.task_log("Try to remove task %s %s" % (task_index, work_tag))
@@ -395,7 +395,7 @@ class DAGWorker(RedisWorker):
             return False
         running_count = 0
         for index in range(task_len):
-            if self.get_task_item(index + 1, "task_status") == TaskStatus.RUNNING:
+            if TaskStatus.is_running(self.get_task_item(index + 1, "task_status")) is True:
                 running_count += 1
         if running_count != 0:
             return False
@@ -478,7 +478,7 @@ class DAGWorker(RedisWorker):
                 return False, "Input Can Not Ref Self %s" % ref_str
         if ref_index > task_len:
             return False, "Input Ref Task %s Out Of Index %s" % (ref_index, ref_str)
-        if self.get_task_item(ref_index, "task_status") != TaskStatus.SUCCESS and ref_index > 0:
+        if TaskStatus.is_success(self.get_task_item(ref_index, "task_status")) is False and ref_index > 0:
             return True, None
         # 判断 是获得 input 还是 output
         ana_data = dict(ref_index=ref_index, ref_key=ref_key)
@@ -623,10 +623,10 @@ class DAGWorker(RedisWorker):
         for index in range(task_len):
             task_item = self.get_task_item(index + 1)
             if "task_status" in task_item:
-                if task_item["task_status"] == TaskStatus.SUCCESS:
+                if TaskStatus.is_success(task_item["task_status"]):
                     success_count += 1
                     continue
-                elif task_item["task_status"] == TaskStatus.RUNNING:
+                elif TaskStatus.is_running(task_item["task_status"]):
                     running_count += 1
                     continue
                 else:

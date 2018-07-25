@@ -18,6 +18,18 @@ class TaskStatus(object):
     INVALID = "Invalid"
     RUNNING = "Running"
 
+    @staticmethod
+    def is_success(status):
+        return TaskStatus.SUCCESS.lower() == status.lower()
+
+    @staticmethod
+    def is_running(status):
+        return TaskStatus.RUNNING.lower() == status.lower()
+
+    @staticmethod
+    def is_fail(status):
+        return TaskStatus.FAIL.lower() == status.lower()
+
 
 class WorkerTaskParams(dict):
     """
@@ -161,3 +173,5 @@ if __name__ == "__main__":
     # print wp.keys()
     # print(wp["a"])
     # print(wp["c"])
+    if TaskStatus.is_success("succEss"):
+        print("q")

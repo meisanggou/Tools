@@ -3,6 +3,7 @@ jingyun tools
 
 ## 1.4.2
 RedisQueue add push_file
+TaskStatus add is_success is_running is_fail
 
 ## 1.4.1
 add jyworker.look-item
