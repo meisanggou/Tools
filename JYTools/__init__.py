@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import sys
+import logging
 from MyEmail import EmailManager
 import StringTool
 
@@ -13,6 +14,15 @@ TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 DEFAULT_ENCODING = "utf-8"
 SECOND_ENCODING = "gbk"
+
+logger_name = "JYWorker"
+logger = logging.getLogger(logger_name)
+if len(logger.handlers) <= 0:
+    sh = logging.StreamHandler()
+    fmt = logging.Formatter(fmt="%(levelname)s: %(message)s")
+    sh.setFormatter(fmt)
+    logger.addHandler(sh)
+    logger.setLevel(logging.INFO)
 
 
 def jy_input(prompt, prompt_prefix=None):

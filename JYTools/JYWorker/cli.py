@@ -6,13 +6,11 @@ import json
 import sys
 import logging
 import argparse
-from JYTools import jy_input, StringTool
+from JYTools import jy_input, StringTool, logger
 from JYTools.JYWorker import RedisStat, RedisQueue, DAGTools
 
 __author__ = '鹛桑够'
 
-# logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-# logging.basicConfig()
 
 arg_man = argparse.ArgumentParser()
 arg_man.add_argument("--debug", dest="debug", help="debug mode, print debug msg", action="store_true", default=False)
@@ -21,7 +19,7 @@ arg_man.add_argument("--debug", dest="debug", help="debug mode, print debug msg"
 def parse_args():
     args = arg_man.parse_args()
     if args.debug is True:
-        logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)s %(message)s")
+        logger.setLevel(logging.DEBUG)
     return args
 
 
@@ -177,14 +175,14 @@ def verify_pipeline():
     args = parse_args()
     p_file = args.file
     if os.path.isfile(p_file) is False:
-        logging.error("file %s not exist" % p_file)
+        logger.error("file %s not exist" % p_file)
         sys.exit(1)
     with open(p_file) as rp:
         c = rp.read()
     try:
         c_o = json.loads(c)
     except ValueError:
-        logging.error(" The content of the file is not legal, not the json content")
+        logger.error(" The content of the file is not legal, not the json content")
         sys.exit(1)
     r, data = DAGTools.ip_verify_pipeline(c_o)
     sys.exit(data["code"])
@@ -194,6 +192,6 @@ if __name__ == "__main__":
     # sys.argv.append("--debug")
     # sys.argv.extend(["-w", "Pipeline"])
     # wash_worker()
-    logging.info("ssd")
+    logger.info("ssd")
     sys.argv.append("/mnt/data/Tools/JYTools/demo/example.json")
     verify_pipeline()

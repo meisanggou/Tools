@@ -2,20 +2,13 @@
 # coding: utf-8
 
 import re
-import logging
 from time import time
-from JYTools import is_num
+from JYTools import is_num, logger
 from JYTools.StringTool import is_string, join_decode
 from ._Task import TaskStatus
 from ._redis import RedisWorker
 
 __author__ = 'meisanggou'
-
-logger = logging.getLogger("DAGWorker")
-sh = logging.StreamHandler()
-logger.addHandler(sh)
-logger.setLevel(logging.INFO)
-logging.basicConfig(level=logging.INFO)
 
 
 class DAGTools(object):
