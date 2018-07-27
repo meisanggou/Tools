@@ -12,9 +12,10 @@ from ._redis import RedisWorker
 __author__ = 'meisanggou'
 
 logger = logging.getLogger("DAGWorker")
-# sh = logging.StreamHandler()
-# logger.addHandler(sh)
-# logger.setLevel(logging.INFO)
+sh = logging.StreamHandler()
+logger.addHandler(sh)
+logger.setLevel(logging.INFO)
+logging.basicConfig(level=logging.INFO)
 
 
 class DAGTools(object):
@@ -23,7 +24,7 @@ class DAGTools(object):
     @classmethod
     def _verify_pipeline_attribute(cls, p_params):
         if "task_list" not in p_params:
-            error_msg = "pipeline应该包含task_list属性"
+            error_msg = join_decode("pipeline应该包含task_list属性")
             logger.error(error_msg)
             return False, dict(code=2, data="task_list", message=error_msg)
         tl = p_params["task_list"]
@@ -32,7 +33,7 @@ class DAGTools(object):
             logger.error(error_msg)
             return False, dict(code=3, data="task_list", message=error_msg)
         if len(tl) <= 0:
-            error_msg = "pipeline应该至少包含一个任务"
+            error_msg = join_decode("pipeline应该至少包含一个任务")
             logger.error(error_msg)
             return False, dict(code=4, data=len(tl), message=error_msg)
         if "task_output" in p_params:
@@ -306,7 +307,7 @@ class DAGTools(object):
         21 pipeline子任务的输入为字符串且以&开头，但不是一个合法引用格式
 
         """
-        logger.warning("你正在调用一个处于试用阶段的方法，测试结果仅供参考，请勿用于生产环境")
+        logger.warning(u"你正在调用一个处于试用阶段的方法，测试结果仅供参考，请勿用于生产环境")
         if isinstance(p_params, dict) is False:
             error_msg = join_decode(["pipeline结构应该是个字典类型，现在是", type(p_params)])
             return False, dict(code=1, data=None, message=error_msg)
