@@ -12,7 +12,7 @@ from JYTools.JYWorker import RedisStat, RedisQueue, DAGTools
 __author__ = '鹛桑够'
 
 # logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-logging.basicConfig()
+# logging.basicConfig()
 
 arg_man = argparse.ArgumentParser()
 arg_man.add_argument("--debug", dest="debug", help="debug mode, print debug msg", action="store_true", default=False)

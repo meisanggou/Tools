@@ -11,8 +11,10 @@ from ._redis import RedisWorker
 
 __author__ = 'meisanggou'
 
-
 logger = logging.getLogger("DAGWorker")
+# sh = logging.StreamHandler()
+# logger.addHandler(sh)
+# logger.setLevel(logging.INFO)
 
 
 class DAGTools(object):
@@ -41,6 +43,11 @@ class DAGTools(object):
                 return False, dict(code=5, data="task_output", message=error_msg)
             for key in task_output.keys():
                 p_params["output_%s" % key] = task_output[key]
+        return True, dict(code=0, data=None, message="success")
+
+    @classmethod
+    def _verify_pipeline_input_output(cls, p_params):
+        tl = p_params["task_list"]
         output_keys = filter(lambda x: x.startswith("output_"), p_params.keys())
         if len(output_keys) <= 0:
             # warn 7 pipeline未设置一个输出
@@ -303,6 +310,11 @@ class DAGTools(object):
         if isinstance(p_params, dict) is False:
             error_msg = join_decode(["pipeline结构应该是个字典类型，现在是", type(p_params)])
             return False, dict(code=1, data=None, message=error_msg)
+        # 格式化pipeline的属性
+        r, data = cls._verify_pipeline_attribute(p_params)
+        if r is False:
+            return r, data
+
         # format子任务 检测pipeline子任务的格式
         tl = p_params["task_list"]
         for index in range(len(tl)):
@@ -310,9 +322,11 @@ class DAGTools(object):
             r, data = cls._verify_pipeline_item(index, item)
             if r is False:
                 return r, data
-        r, data = cls._verify_pipeline_attribute(p_params)
+
+        r, data = cls._verify_pipeline_input_output(p_params)
         if r is False:
             return r, data
+
         r, data = cls._verify_ref(p_params)
         if r is False:
             return r, data
