@@ -1,6 +1,10 @@
 # Tools
 jingyun tools
 
+## 1.4.3
+解决DAGTools不能打印警告信息问题
+更新DAGTools的验证顺序
+
 ## 1.4.2
 RedisQueue add push_file
 TaskStatus add is_success is_running is_fail
