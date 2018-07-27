@@ -15,7 +15,7 @@ __author__ = 'meisanggou'
 logger = logging.getLogger("DAGWorker")
 
 
-class DAGTool(object):
+class DAGTools(object):
     RIGHT_TASK_TYPE = ("app", "pipeline", "repeat-app", "repeat-pipeline")
 
     @classmethod

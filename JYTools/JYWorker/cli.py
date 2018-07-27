@@ -7,7 +7,7 @@ import sys
 import logging
 import argparse
 from JYTools import jy_input, StringTool
-from JYTools.JYWorker import RedisStat, RedisQueue, DAGTool
+from JYTools.JYWorker import RedisStat, RedisQueue, DAGTools
 
 __author__ = '鹛桑够'
 
@@ -186,7 +186,7 @@ def verify_pipeline():
     except ValueError:
         logging.error(" The content of the file is not legal, not the json content")
         sys.exit(1)
-    r, data = DAGTool.ip_verify_pipeline(c_o)
+    r, data = DAGTools.ip_verify_pipeline(c_o)
     sys.exit(data["code"])
 
 
