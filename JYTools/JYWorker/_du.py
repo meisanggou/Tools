@@ -279,8 +279,8 @@ class DAGTool(object):
         error_code:
         1 pipeline结构应该是个字典类型
         2 pipeline中必须存在一个属性task_list，但是没有存在
-        2 pipeline的属性值task_list的类型不正确。应该是list，传入的不是list类型
-        3 pipeline至少包含一个任务
+        3 pipeline的属性值task_list的类型不正确。应该是list，传入的不是list类型
+        4 pipeline至少包含一个任务
         5 pipeline的task_output属性值的类型不正确。应该是dict，传入的不是dict类型
         6 pipeline结构中包含回路
         7 pipeline设置的输出无法找到对应的子任务
