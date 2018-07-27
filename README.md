@@ -5,6 +5,7 @@ jingyun tools
 RedisQueue add push_file
 TaskStatus add is_success is_running is_fail
 add DAGTools
+add jyworker.dag-verify
 
 ## 1.4.1
 add jyworker.look-item

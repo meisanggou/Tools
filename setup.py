@@ -34,7 +34,8 @@ entry_points = {'console_scripts': [
     'jyworker.stop-worker=JYTools.JYWorker.cli:delete_heartbeat',
     'jyworker.wash-worker=JYTools.JYWorker.cli:wash_worker',
     'jyworker.list-worker=JYTools.JYWorker.cli:list_worker',
-    'jyworker.look-item=JYTools.JYWorker.cli:look_task_item'
+    'jyworker.look-item=JYTools.JYWorker.cli:look_task_item',
+    'jyworker.dag-verify=JYTools.JYWorker.cli:verify_pipeline'
 ]}
 
 setup(name=name,
