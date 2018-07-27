@@ -60,7 +60,7 @@ class DAGTool(object):
                 return False, dict(code=7, data="%s|%s" % (key, ref_task), message=error_msg)
             ref_index = ref_task - 1
             ref_key = ref_d["key"]
-            if TaskStatus.is_success(tl[ref_index]["task_status"]) or tl[ref_index] != "app":
+            if TaskStatus.is_success(tl[ref_index]["task_status"]) or tl[ref_index]["task_type"] != "app":
                 output_key = "output_" + ref_d["key"]
                 if output_key not in tl[ref_index]:
                     error_msg = join_decode(["pipeline的输出[", key, "]在试图引用子任务[", ref_task, "]的输出[", ref_key,
@@ -224,7 +224,7 @@ class DAGTool(object):
                     logger.error(error_msg)
                     return False, dict(code=19, data="%s|%s|%s" % (task_no, k, ref_d["key"]), message=error_msg)
                 ref_index = ref_d["ref_task"] - 1
-                if TaskStatus.is_success(tl[ref_index]["task_status"]) or tl[ref_index] != "app":
+                if TaskStatus.is_success(tl[ref_index]["task_status"]) or tl[ref_index]["task_type"] != "app":
                     output_key = "output_" + ref_d["key"]
                     if output_key not in tl[ref_index]:
                         error_msg = join_decode(["子任务[", task_no, "]的输入[", k, "]在试图引用子任务[", ref_task,

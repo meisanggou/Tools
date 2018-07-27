@@ -1,11 +1,13 @@
 #! /usr/bin/env python
 # coding: utf-8
 
+import os
+import json
 import sys
 import logging
 import argparse
 from JYTools import jy_input, StringTool
-from JYTools.JYWorker import RedisStat, RedisQueue
+from JYTools.JYWorker import RedisStat, RedisQueue, DAGTool
 
 __author__ = '鹛桑够'
 
@@ -169,9 +171,29 @@ def look_task_item():
                     continue
 
 
+def verify_pipeline():
+    arg_man.add_argument("file", help="pipeline file", metavar="file")
+    empty_help()
+    args = parse_args()
+    p_file = args.file
+    if os.path.isfile(p_file) is False:
+        logging.error("file %s not exist" % p_file)
+        sys.exit(1)
+    with open(p_file) as rp:
+        c = rp.read()
+    try:
+        c_o = json.loads(c)
+    except ValueError:
+        logging.error(" The content of the file is not legal, not the json content")
+        sys.exit(1)
+    r, data = DAGTool.ip_verify_pipeline(c_o)
+    sys.exit(data["code"])
+
+
 if __name__ == "__main__":
-    sys.argv.append("--debug")
-    sys.argv.extend(["-w", "Pipeline"])
+    # sys.argv.append("--debug")
+    # sys.argv.extend(["-w", "Pipeline"])
     # wash_worker()
     logging.info("ssd")
-    look_task_item()
+    sys.argv.append("/mnt/data/Tools/JYTools/demo/example.json")
+    verify_pipeline()
