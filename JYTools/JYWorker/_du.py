@@ -2,12 +2,321 @@
 # coding: utf-8
 
 import re
+import logging
 from time import time
+from JYTools import is_num
 from JYTools.StringTool import is_string, join_decode
 from ._Task import TaskStatus
 from ._redis import RedisWorker
 
 __author__ = 'meisanggou'
+
+
+logger = logging.getLogger("DAGWorker")
+
+
+class DAGTool(object):
+    RIGHT_TASK_TYPE = ("app", "pipeline", "repeat-app", "repeat-pipeline")
+
+    @classmethod
+    def _verify_pipeline_attribute(cls, p_params):
+        if "task_list" not in p_params:
+            error_msg = "pipeline应该包含task_list属性"
+            logger.error(error_msg)
+            return False, dict(code=2, data="task_list", message=error_msg)
+        tl = p_params["task_list"]
+        if isinstance(tl, list) is False:
+            error_msg = join_decode(["task_list属性值的类型不正确。应该是list，传入的不是list类型，现在是", type(tl)])
+            logger.error(error_msg)
+            return False, dict(code=3, data="task_list", message=error_msg)
+        if len(tl) <= 0:
+            error_msg = "pipeline应该至少包含一个任务"
+            logger.error(error_msg)
+            return False, dict(code=4, data=len(tl), message=error_msg)
+        if "task_output" in p_params:
+            task_output = p_params["task_output"]
+            if isinstance(task_output, dict) is False:
+                error_msg = join_decode(["task_output属性值的类型不正确。应该是dict，传入的不是dict类型，现在是",
+                                         type(task_output)])
+                return False, dict(code=5, data="task_output", message=error_msg)
+            for key in task_output.keys():
+                p_params["output_%s" % key] = task_output[key]
+        output_keys = filter(lambda x: x.startswith("output_"), p_params.keys())
+        if len(output_keys) <= 0:
+            # warn 7 pipeline未设置一个输出
+            warn_msg = "pipeline未设置一个输出，一般不会这样设置"
+            logger.warning(warn_msg)
+        for key in output_keys:
+            if is_string(p_params[key]) is False:
+                continue
+            if p_params[key].startswith("&") is False:
+                continue
+            ref_d = DAGWorker.split_ref(p_params[key])
+            ref_task = ref_d["ref_task"]
+            if ref_task <= 0 or ref_task > len(tl):
+                error_msg = join_decode(["pipeline的输出[", key, "]在视图引用子任务[", ref_task,
+                                         "]的输出，但是这个子任务不存在"])
+                logger.error(error_msg)
+                return False, dict(code=7, data="%s|%s" % (key, ref_task), message=error_msg)
+            ref_index = ref_task - 1
+            ref_key = ref_d["key"]
+            if TaskStatus.is_success(tl[ref_index]["task_status"]) or tl[ref_index] != "app":
+                output_key = "output_" + ref_d["key"]
+                if output_key not in tl[ref_index]:
+                    error_msg = join_decode(["pipeline的输出[", key, "]在试图引用子任务[", ref_task, "]的输出[", ref_key,
+                                             "]，但是在这个子任务中并没有发现这个输出"])
+                    logger.error(error_msg)
+                    return False, dict(code=8, data="%s|%s|%s" % (key, ref_task, ref_key), message=error_msg)
+        input_keys = filter(lambda x: x.startswith("input_"), p_params.keys())
+        for key in input_keys:
+            if is_string(p_params[key]) is False:
+                continue
+            if p_params[key].startswith("&") is False:
+                continue
+            # warn 6 pipeline输入为字符串类型，而且以&开头
+            warn_msg = join_decode(["父任务的输入[", key, "]是个以&开头的字符串[", p_params[key],
+                                    "]，如果子任务引用到将会出错"])
+            logger.warning(warn_msg)
+        return True, dict(code=0, data=None, message="success")
+
+    @classmethod
+    def _verify_pipeline_item(cls, index, item):
+        task_no = index + 1
+        if "task_type" not in item:
+            item["task_type"] = "app"
+        if "task_status" not in item:
+            item["task_status"] = TaskStatus.NONE
+        if item["task_type"] not in cls.RIGHT_TASK_TYPE:
+            error_msg = "invalid task_type, now index is %s, task_type is %s" % (index, item["task_type"])
+            logger.error(error_msg)
+            return False, dict(code=11, data=item["task_type"], message=error_msg)
+        if "task_output" in item:
+            task_output = item["task_output"]
+            if isinstance(task_output, dict) is False:
+                error_msg = "task_output need dict type, now index is %s, task_output type is %s" \
+                            % (index, type(task_output))
+                logger.error(error_msg)
+                return False, dict(code=12, data=type(task_output), message=error_msg)
+            for key in task_output.keys():
+                item["output_%s" % key] = task_output[key]
+
+        # 检查work_tag -------------------------------------------------------------------------------------------------
+        if item["task_type"] in ["app", "repeat-app"]:
+            if "work_tag" not in item:
+                error_msg = join_decode(["app类型的子任务需要包含work_tag属性，任务[", task_no, "]不符合要求"])
+                logger.error(error_msg)
+                return False, dict(code=13, data="work_tag", message=error_msg)
+            work_tag = item["work_tag"]
+            if is_string(work_tag) is False:
+                error_msg = join_decode(["work_tag属性对应值，必须是字符串类型的，子任务[", task_no, "]的work_tag是[",
+                                         type(work_tag) ,"]类型的"])
+                logger.error(error_msg)
+                return False, dict(code=14, data=type(work_tag), message=error_msg)
+
+        item_keys = item.keys()
+        # 检查输出 ------------------------------------------------------------------------------------------------------
+        output_keys = filter(lambda x: x.startswith("output_"), item_keys)
+        if TaskStatus.is_success(item["task_status"]):
+            if len(output_keys) <= 0:
+                # warn 2 某个子任务的状态为success时，没有设置一个输出
+                warn_msg = "子任务[%s]已经是完成状态，但是没有发现输出参数，一般应该有输出参数的" % task_no
+                logger.warning(warn_msg)
+            else:
+                for key in output_keys:
+                    # warn 3 某个子任务的状态为success时，输出值为&开头的字符串
+                    if is_string(item[key]) and item[key].startswith("&"):
+                        warn_msg = join_decode(["子任务[", task_no, "]的一个输出[", key, "]输出值为[", item[key],
+                                                "]，不应该以&开头，如果其他任务引用了该输出将会报错"])
+                        logger.warning(warn_msg)
+        elif item["task_type"] == "app":
+            # warn 1 某个app类型的子任务的状态不为success时，但是设置了task_output
+            if len(output_keys) > 0:
+                warn_msg = "子任务[%s]的状态还未成功，但发现了输出设置，我们一般不这么干" % task_no
+                logger.warning(warn_msg)
+        else:
+            # warn 4 某个非app类型的子任务没有设置一个输出
+            if len(output_keys) <= 0:
+                warn_msg = join_decode(["子任务[", task_no, "],任务类型为[", item["task_type"],
+                                        "]，没有发现一个输出参数，一般应该有输出参数"])
+                logger.warning(warn_msg)
+        # 检查repeat_freq
+        if item["task_type"].startswith("repeat-") is True:
+            if "repeat_freq" in item:
+                repeat_freq = item["repeat_freq"]
+                if is_num(repeat_freq) is False or repeat_freq <= 0:
+                    error_msg = join_decode(["子任务[", task_no, "]设置了repeat_freq,设置为[", repeat_freq,
+                                             "]，不是数字或者不大于0"])
+                    return False, dict(code=15, data=repeat_freq, message=error_msg)
+
+        # 检查是否有多余的key---------------------------------------------------------------------------------------------
+        avail_keys = ["task_type", "task_output", "task_status"]
+        if item["task_type"].endswith("pipeline") is True:
+            avail_keys.append("task_list")
+        else:
+            avail_keys.append("work_tag")
+        if item["task_type"].startswith("repeat-") is True:
+            avail_keys.append("repeat_freq")
+        surplus_keys = filter(lambda x: x not in avail_keys, item_keys)
+        surplus_keys = filter(lambda x: x.startswith("input_") is False, surplus_keys)
+        surplus_keys = filter(lambda x: x.startswith("output_") is False, surplus_keys)
+        for key in surplus_keys:
+            warn_msg = join_decode(["子任务[", task_no, "]包含一个无用的属性[", key, "]"])
+            logger.warning(warn_msg)
+        return True, dict(code=0, data=None, message="success")
+
+    @staticmethod
+    def _verify_ref(p_params):
+        tl = p_params["task_list"]
+        task_len = len(tl)
+        rs_l = [dict(quotes=list(), next=list(), index=i) for i in range(task_len)]
+
+        completed_queue = [0]
+
+        for index in range(task_len):
+            task_item = tl[index]
+            task_no = index + 1
+            if TaskStatus.is_success(task_item["task_status"]) is True:
+                completed_queue.append(task_no)
+                continue
+            for k, v in task_item.items():
+                if k.startswith("input_") is False:
+                    continue
+                if is_string(v) is False:
+                    continue
+                if v.startswith("&") is False:
+                    continue
+                ref_d = DAGWorker.split_ref(v)
+                if ref_d is None:
+                    error_msg = join_decode(["子任务[", task_no, "]的输入[", k,
+                                             "]为字符串且以&开头，但不是一个合法引用格式"])
+                    logger.error(error_msg)
+                    return False, dict(code=21, data=k, message=error_msg)
+                ref_key = ref_d["key"]
+                ref_task = ref_d["ref_task"]
+                if ref_d["index"] < 0 or ref_d["index"] > task_len:
+                    error_msg = join_decode(["子任务[", task_no, "]的输入[", k, "]在试图引用子任务[", ref_d["index"],
+                                             "]的输出，但是这个子任务不存在"])
+                    logger.error(error_msg)
+                    return False, dict(code=16, data="", message=error_msg)
+                if ref_d["index"] not in rs_l[index]["quotes"]:
+                    rs_l[index]["quotes"].append(ref_d["index"])
+                    if ref_d["index"] > 0:
+                        rs_l[ref_d["index"] - 1]["next"].append(index)
+                if ref_d["required"] is False:
+                    continue
+                if ref_d["ref_task"] == 0:
+                    input_key = "input_" + ref_d["key"]
+                    if input_key not in p_params:
+                        error_msg = join_decode(["子任务[", task_no, "]的输入[", k, "]在试图引用父任务的输入[",
+                                                 ref_d["key"], "]，但是在父任务中并没有发现这个输入"])
+                        logger.error(error_msg)
+                        return False, dict(code=17, data="%s|%s|%s" % (task_no, k, ref_d["key"]), message=error_msg)
+                    input_v = p_params[input_key]
+                    if is_string(input_v) and input_v.startswith("&"):
+                        error_msg = join_decode(["子任务[", task_no, "]的输入[", k, "]在试图引用父任务的输入[", ref_key,
+                                                 "]，但是在父任务的输入为字符串类型，而且以&开头，这是不被允许的"])
+                        logger.error(error_msg)
+                        return False, dict(code=18, data="%s|%s|%s" % (task_no, k, ref_key), message=error_msg)
+                    continue
+                if ref_d["ref_task"] == task_no:
+                    error_msg = join_decode(["子任务[", task_no, "]的输入[", k, "]在试图引用自己的输出[", ref_d["key"],
+                                             "]，这是很搞笑的"])
+                    logger.error(error_msg)
+                    return False, dict(code=19, data="%s|%s|%s" % (task_no, k, ref_d["key"]), message=error_msg)
+                ref_index = ref_d["ref_task"] - 1
+                if TaskStatus.is_success(tl[ref_index]["task_status"]) or tl[ref_index] != "app":
+                    output_key = "output_" + ref_d["key"]
+                    if output_key not in tl[ref_index]:
+                        error_msg = join_decode(["子任务[", task_no, "]的输入[", k, "]在试图引用子任务[", ref_task,
+                                                 "]的输出[", ref_key, "]，但是在这个子任务中并没有发现这个输出"])
+                        logger.error(error_msg)
+                        return False, dict(code=20, data="%s|%s|%s|%s" % (task_no, k, ref_task, ref_key),
+                                           message=error_msg)
+
+        while True:
+            completed_num = 0
+            for index in range(task_len):
+                if index + 1 in completed_queue:
+                    continue
+                rs_item = rs_l[index]
+                q_len = len(rs_item["quotes"])
+                for i in range(q_len - 1, -1, -1):
+                    if rs_item["quotes"][i] in completed_queue:
+                        rs_item["quotes"].remove(rs_item["quotes"][i])
+                if len(rs_item["quotes"]) <= 0:
+                    completed_queue.append(index + 1)
+                    completed_num += 1
+                    continue
+            if len(completed_queue) == task_len + 1:
+                return True, dict()
+            if completed_num == 0:
+                error_msg = "各个子任务之间引用存在回路"
+                logger.error(error_msg)
+                return False, dict(code=6, data=None, message=error_msg)
+        return True, dict(code=0, data=None, message="success")
+
+    @classmethod
+    def ip_verify_pipeline(cls, p_params):
+        """
+        1 校验pipeline中是否有引用过界
+        2 校验pipeline结构中是否包含回路
+        3 引用为pipeline输入时，校验输入是否存在
+        4 引用为某个pipeline类型的子任务时，校验输出是否存在
+        5 引用为某个app类型的子任务的输出，且该任务状态为success时，校验输出是否存在
+        6 Pipeline输出引用子任务不存在
+
+        以下情况给出警告
+        1 某个app类型的子任务的状态不为success时，但是设置了task_output
+        2 某个子任务的状态为success时，没有设置一个输出
+        3 某个子任务的状态为success时，输出值为&开头的字符串
+        4 某个非app类型的子任务没有设置一个输出
+        5 子任务包含无用的属性
+        6 pipeline输入为字符串类型，而且以&开头
+        7 pipeline未设置一个输出
+        8 pipeline设置的输出无法在子任务中找到
+        :param p_params:
+        :return:
+        error_code:
+        1 pipeline结构应该是个字典类型
+        2 pipeline中必须存在一个属性task_list，但是没有存在
+        2 pipeline的属性值task_list的类型不正确。应该是list，传入的不是list类型
+        3 pipeline至少包含一个任务
+        5 pipeline的task_output属性值的类型不正确。应该是dict，传入的不是dict类型
+        6 pipeline结构中包含回路
+        7 pipeline设置的输出无法找到对应的子任务
+        8 pipeline设置的输出无法在对应子任务中找到引用的输出
+
+        11 pipeline子任务的任务类型task_type不合法
+        12 pipeline子任务的task_output应该是字典dict类型的
+        13 pipeline中app和repeat-app类型子任务必须设置work_tag
+        14 pipeline中app和repeat-app类型子任务属性work_tag类型必须是字符串类型的
+        15 pipeline中repeat-app和repeat-pipeline类型子任务属性repeat_freq必须是数字类型，而且必须大于0
+        16 pipeline子任务的输入引用了一个不存在的任务的输出
+        17 pipeline子任务的输入引用了一个父任务不存在的输入
+        18 pipeline子任务的输入引用了一个父任务的输入，但是这个父任务的输入为字符串类型，而且以&开头
+        19 pipeline子任务的输入引用了自己的输出
+        20 pipeline子任务的输入引用了另一个子任务的输出，但是该输出不存在
+        21 pipeline子任务的输入为字符串且以&开头，但不是一个合法引用格式
+
+        """
+        logger.warning("你正在调用一个处于试用阶段的方法，测试结果仅供参考，请勿用于生产环境")
+        if isinstance(p_params, dict) is False:
+            error_msg = join_decode(["pipeline结构应该是个字典类型，现在是", type(p_params)])
+            return False, dict(code=1, data=None, message=error_msg)
+        # format子任务 检测pipeline子任务的格式
+        tl = p_params["task_list"]
+        for index in range(len(tl)):
+            item = tl[index]
+            r, data = cls._verify_pipeline_item(index, item)
+            if r is False:
+                return r, data
+        r, data = cls._verify_pipeline_attribute(p_params)
+        if r is False:
+            return r, data
+        r, data = cls._verify_ref(p_params)
+        if r is False:
+            return r, data
+        return True, dict(code=0, data=p_params, message="success")
 
 
 class DAGWorker(RedisWorker):
@@ -49,7 +358,7 @@ class DAGWorker(RedisWorker):
             required = False
         else:
             required = True
-        return dict(index=ref_index, key=ref_key, required=required)
+        return dict(index=ref_index, key=ref_key, required=required, ref_task=ref_index)
 
     @staticmethod
     def exist_loop(params):
@@ -66,9 +375,11 @@ class DAGWorker(RedisWorker):
                     continue
                 if is_string(v) is False:
                     continue
+                if v.startswith("&") is False:
+                    continue
                 ref_d = DAGWorker.split_ref(v)
                 if ref_d is None:
-                    continue
+                    raise ValueError("")  # invalid ref str
                 if ref_d["index"] < 0 or ref_d["index"] > task_len:
                     raise ValueError("")  # out of index
                 if ref_d["index"] not in rs_l[index]["quotes"]:

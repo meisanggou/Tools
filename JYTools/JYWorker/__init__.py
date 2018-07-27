@@ -8,7 +8,7 @@ from ._redis import RedisWorker, RedisQueue, RedisStat
 from ._Worker import ReadWorkerLog
 from ._async import AsyncRedisWorker, AsyncStatRedisWorker
 from ._Task import TaskStatus
-from ._du import DAGWorker
+from ._du import DAGWorker, DAGTool
 from .UploadLog import UploadLogWorker
 
 __author__ = 'meisanggou'
