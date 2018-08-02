@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.4.5
+fix TaskStatus判断None状态时报错
+
 ## 1.4.4
 解决debug模式下 不能将信息打印到标准输出
 

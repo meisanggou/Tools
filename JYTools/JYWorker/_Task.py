@@ -22,14 +22,20 @@ class TaskStatus(object):
 
     @staticmethod
     def is_success(status):
+        if status is None:
+            return False
         return TaskStatus.SUCCESS.lower() == status.lower()
 
     @staticmethod
     def is_running(status):
+        if status is None:
+            return False
         return TaskStatus.RUNNING.lower() == status.lower()
 
     @staticmethod
     def is_fail(status):
+        if status is None:
+            return False
         return TaskStatus.FAIL.lower() == status.lower()
 
 
