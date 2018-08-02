@@ -14,6 +14,9 @@ from .UploadLog import UploadLogWorker
 __author__ = 'meisanggou'
 
 
+logging.basicConfig(level=logging.INFO, format="%(message)s")
+
+
 def _print():
     print()
 

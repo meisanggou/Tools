@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.4.4
+解决debug模式下 不能将信息打印到标准输出
+
 ## 1.4.3
 解决DAGTools不能打印警告信息问题
 更新DAGTools的验证顺序
