@@ -52,3 +52,7 @@ class WorkerTaskParamsValueTypeError(Exception):
         self.key = k
         self.value = v
         self.except_type = t
+
+    def __str__(self):
+        return StringTool.join_decode(["The Key", self.key, "Except Type Is", self.except_type, "But The Value Is",
+                                       self.value, "Not Match"], join_str=" ")

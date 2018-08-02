@@ -14,6 +14,7 @@ import logging
 import traceback
 from JYTools import StringTool
 from ._exception import TaskErrorException, InvalidTaskException, WorkerTaskParamsKeyNotFound
+from ._exception import WorkerTaskParamsValueTypeError
 from ._Task import TaskStatus, WorkerTask, WorkerTaskParams
 from ._config import WorkerConfig, WorkerLogConfig
 
@@ -215,6 +216,11 @@ class Worker(WorkerConfig, _WorkerLog):
         except WorkerTaskParamsKeyNotFound as pk:
             self.current_task.task_status = TaskStatus.FAIL
             self.current_task.task_message = "Need Key %s, Not Found." % pk.missing_key
+            self.task_log(self.current_task.task_message, level="ERROR")
+            self.num_invalid_job += 1
+        except WorkerTaskParamsValueTypeError as pvt:
+            self.current_task.task_status = TaskStatus.FAIL
+            self.current_task.task_message = "Need Value Type %s, Not Match." % pvt.except_type
             self.task_log(self.current_task.task_message, level="ERROR")
             self.num_invalid_job += 1
         except TaskErrorException as te:

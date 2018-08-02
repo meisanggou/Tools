@@ -1,7 +1,9 @@
 #! /usr/bin/env python
 # coding: utf-8
 
+import os
 import types
+from JYTools import StringTool
 from ._exception import WorkerTaskParamsKeyNotFound, WorkerTaskParamsValueTypeError
 
 __author__ = '鹛桑够'
@@ -74,6 +76,16 @@ class WorkerTaskParams(dict):
         v = self.get(k, d)
         if isinstance(v, list) is False:
             raise WorkerTaskParamsValueTypeError(k, v, list)
+        return v
+
+    def getpath(self, k, d=None):
+        """
+        add in version 1.4.5
+        """
+        v = self.get(k, d)
+        v = StringTool.encode(v)
+        if os.path.exists(v) is False:
+            raise WorkerTaskParamsValueTypeError(k, v, "path")
         return v
 
     def __getitem__(self, item):
