@@ -128,6 +128,7 @@ class WorkerLogConfig(object):
         if no_logging is True:
             self.log_dir = None
             logging.debug("Not Allow logging")
+        self.origin_log_dir = self.log_dir
 
 
 class RedisWorkerConfig(object):

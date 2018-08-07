@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.4.6
+WorkerLogConfig add origin_log_dir
+
 ## 1.4.5
 fix TaskStatus判断None状态时报错
 
