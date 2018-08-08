@@ -855,6 +855,7 @@ class DAGWorker(RedisWorker):
             k_l = len(task_item[list_key])
             if repeat_freq % k_l != 0:
                 self.set_task_item(index + 1, "task_status", TaskStatus.INVALID)
+                self.set_task_item(index + 1, "task_message", "list input length different")
                 self.fail_pipeline("Task ", index + 1, " list input length different")
             task_item[list_key] *= repeat_freq / k_l
         pipeline_task = dict(task_list=[], task_output=dict(), task_type="pipeline", work_tag=self.work_tag)
@@ -908,6 +909,8 @@ class DAGWorker(RedisWorker):
                     self.task_log("Task ", index + 1, " Handle Input ", item_key)
                     ref_r, ref_info = self.analysis_ref(inp[1:], index, task_len, allow_non_required=True)
                     if ref_r is False:
+                        self.set_task_item(index + 1, "task_status", TaskStatus.FAIL)
+                        self.set_task_item(index + 1, "task_message", ref_info)
                         self.fail_pipeline("Task ", index + 1, " ", ref_info)
                     if ref_info is None:
                         continue
@@ -931,6 +934,8 @@ class DAGWorker(RedisWorker):
                             continue
                         ref_r, ref_info = self.analysis_ref(sub_inp[1:], index, task_len)
                         if ref_r is False:
+                            self.set_task_item(index + 1, "task_status", TaskStatus.FAIL)
+                            self.set_task_item(index + 1, "task_message", ref_info)
                             self.fail_pipeline("Task ", index + 1, " ", ref_info)
                         if ref_info is None:
                             continue
