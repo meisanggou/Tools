@@ -1,7 +1,7 @@
 # Tools
 jingyun tools
 
-## 1.4.9
+## 1.5.0
 ReadWorkerLog返回日志可设置最多读取多少日志（不是返回多少日志）
 
 ## 1.4.7

@@ -440,7 +440,6 @@ class ReadWorkerLog(WorkerLogConfig):
         with open(log_path, "r") as rl:
             rl.seek(read_seek)
             c = rl.read()
-            print(len(c))
             all_lines = c.split("\n")
             for line in all_lines:
                 rl = self.log_compile.match(line)
