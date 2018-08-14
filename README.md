@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.4.8
+ReadWorkerLog返回日志可设置最多多少行日志
+
 ## 1.4.7
 pipeline调度时，子任务的输入无法满足时（引用不存在等），同时将子任务的状态置成FAIL
 

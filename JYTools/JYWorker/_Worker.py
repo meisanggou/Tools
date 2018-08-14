@@ -407,7 +407,7 @@ class ReadWorkerLog(WorkerLogConfig):
     log_level = dict(DEBUG=("DEBUG", "INFO", "WARING", "WARNING", "ERROR"), INFO=("INFO", "WARING", "WARNING", "ERROR"),
                      WARNING=("WARING", "WARNING", "ERROR"), ERROR=("ERROR", ))
 
-    def read_task_log(self, work_tag, key, sub_key=None, sub_key_prefix=None, level="INFO"):
+    def read_task_log(self, work_tag, key, sub_key=None, sub_key_prefix=None, level="INFO", max_lines=1000):
         """
 
         :param work_tag:
@@ -459,4 +459,4 @@ class ReadWorkerLog(WorkerLogConfig):
                     logs_list.append(map(StringTool.decode, [line_sub_key, log_time, line_level, log_msg]))
                 elif last_save is True:
                     logs_list[-1][3] = StringTool.join_decode([logs_list[-1][3], line])
-        return True, logs_list
+        return True, logs_list[0 - max_lines:]
