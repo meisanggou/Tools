@@ -407,7 +407,7 @@ class ReadWorkerLog(WorkerLogConfig):
     log_level = dict(DEBUG=("DEBUG", "INFO", "WARING", "WARNING", "ERROR"), INFO=("INFO", "WARING", "WARNING", "ERROR"),
                      WARNING=("WARING", "WARNING", "ERROR"), ERROR=("ERROR", ))
 
-    def read_task_log(self, work_tag, key, sub_key=None, sub_key_prefix=None, level="INFO", max_lines=1000):
+    def read_task_log(self, work_tag, key, sub_key=None, sub_key_prefix=None, level="INFO", max_length=1000000):
         """
 
         :param work_tag:
@@ -422,6 +422,8 @@ class ReadWorkerLog(WorkerLogConfig):
             log_path = StringTool.path_join(self.log_dir, name)
             if os.path.exists(log_path) is False:
                 return False, None
+        s_log = os.stat(log_path)
+        read_seek = s_log.st_size - max_length if max_length < s_log.st_size else 0
         # 处理参数
         if sub_key is not None:
             sub_key = StringTool.encode(sub_key)
@@ -436,7 +438,10 @@ class ReadWorkerLog(WorkerLogConfig):
         logs_list = []
         last_save = False
         with open(log_path, "r") as rl:
-            all_lines = rl.readlines()
+            rl.seek(read_seek)
+            c = rl.read()
+            print(len(c))
+            all_lines = c.split("\n")
             for line in all_lines:
                 rl = self.log_compile.match(line)
                 if rl is not None:
@@ -459,4 +464,4 @@ class ReadWorkerLog(WorkerLogConfig):
                     logs_list.append(map(StringTool.decode, [line_sub_key, log_time, line_level, log_msg]))
                 elif last_save is True:
                     logs_list[-1][3] = StringTool.join_decode([logs_list[-1][3], line])
-        return True, logs_list[0 - max_lines:]
+        return True, logs_list
