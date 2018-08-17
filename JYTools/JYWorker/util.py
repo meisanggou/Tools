@@ -5,9 +5,6 @@ import re
 __author__ = '鹛桑够'
 
 
-valid_tag = ""
-
-
 class ReportScene(object):
 
     BEGIN = 1
