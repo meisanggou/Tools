@@ -5,6 +5,7 @@ import re
 from time import time
 from JYTools import is_num, logger
 from JYTools.StringTool import is_string, join_decode
+from JYTools.JYWorker.util import ValueVerify
 from ._Task import TaskStatus
 from ._redis import RedisWorker
 
@@ -113,7 +114,11 @@ class DAGTools(object):
                                          type(work_tag), "]类型的"])
                 logger.error(error_msg)
                 return False, dict(code=14, data=type(work_tag), message=error_msg)
-
+            if ValueVerify.v_work_tag(work_tag) is False:
+                error_msg = join_decode(["work_tag属性对应值，仅允许包含数字字母下划线短横线，子任务[", task_no,
+                                         "]的work_tag是[", work_tag, "]"])
+                logger.error(error_msg)
+                return False, dict(code=14, data=type(work_tag), message=error_msg)
         item_keys = item.keys()
         # 检查输出 ------------------------------------------------------------------------------------------------------
         output_keys = filter(lambda x: x.startswith("output_"), item_keys)
@@ -290,7 +295,7 @@ class DAGTools(object):
         11 pipeline子任务的任务类型task_type不合法
         12 pipeline子任务的task_output应该是字典dict类型的
         13 pipeline中app和repeat-app类型子任务必须设置work_tag
-        14 pipeline中app和repeat-app类型子任务属性work_tag类型必须是字符串类型的
+        14 pipeline中app和repeat-app类型子任务属性work_tag类型必须是字符串类型的而且仅允许包含数字字母下划线短横线
         15 pipeline中repeat-app和repeat-pipeline类型子任务属性repeat_freq必须是数字类型，而且必须大于0
         16 pipeline子任务的输入引用了一个不存在的任务的输出
         17 pipeline子任务的输入引用了一个父任务不存在的输入
