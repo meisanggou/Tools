@@ -18,6 +18,7 @@ class TaskStatus(object):
     FAIL = "Fail"
     ERROR = "Fail"
     INVALID = "Invalid"
+    READY = "Ready"
     RUNNING = "Running"
 
     @staticmethod
@@ -37,6 +38,14 @@ class TaskStatus(object):
         if status is None:
             return False
         return TaskStatus.FAIL.lower() == status.lower()
+
+    @staticmethod
+    def is_ready(status):
+        if status is None:
+            return False
+        elif status.lower() == TaskStatus.NONE:
+            return False
+        return True
 
 
 class WorkerTaskParams(dict):
