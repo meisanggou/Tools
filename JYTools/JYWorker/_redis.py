@@ -66,9 +66,9 @@ class RedisQueue(_RedisHelper):
             raise InvalidWorkTag()
         if ValueVerify.v_work_tag(work_tag) is False:
             raise InvalidWorkTag()
-        if ValueVerify.v_report_tag(report_tag) is False:
-            raise InvalidWorkTag()
         if report_tag is not None:
+            if ValueVerify.v_report_tag(report_tag) is False:
+                raise InvalidWorkTag()
             work_tag = "%s|%s:%s" % (work_tag, report_tag, report_scene)
         v = "%s,%s," % (work_tag, key)
         if isinstance(params, dict):
