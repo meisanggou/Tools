@@ -43,9 +43,17 @@ class TaskStatus(object):
     def is_ready(status):
         if status is None:
             return False
-        elif status.lower() == TaskStatus.NONE:
-            return False
-        return True
+        if status.lower() == TaskStatus.READY.lower():
+            return True
+        return False
+
+    @staticmethod
+    def is_none(status):
+        if status is None:
+            return True
+        if status.lower() == TaskStatus.NONE.lower():
+            return True
+        return False
 
 
 class WorkerTaskParams(dict):

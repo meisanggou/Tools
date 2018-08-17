@@ -683,15 +683,15 @@ class DAGWorker(RedisWorker):
             self.current_task.task_report_tag = pipeline_report_tag
         self.clear_task_item(task_len)
 
-    def try_remove_running_task(self):
-        self.task_log("Try to remove or stop running task")
+    def try_remove_ready_or_running_task(self):
+        self.task_log("Try to remove or stop ready or running task")
         task_len = self.get_task_item(0, hash_key="task_len")
         if task_len is None:
             self.set_current_task_error("Not Found Pipeline Task Len")
             return False
         for index in range(task_len):
             task_index = index + 1
-            if TaskStatus.is_running(self.get_task_item(task_index, "task_status")) is False:
+            if TaskStatus.is_ready(self.get_task_item(task_index, "task_status")) is False:
                 continue
             work_tag = self.get_task_item(task_index, "work_tag")
             self.task_log("Try to remove task %s %s" % (task_index, work_tag))
@@ -713,10 +713,14 @@ class DAGWorker(RedisWorker):
             self.set_current_task_error("Not Found Pipeline Task Len")
             return False
         running_count = 0
+        ready_count = 0
         for index in range(task_len):
-            if TaskStatus.is_running(self.get_task_item(index + 1, "task_status")) is True:
+            task_status = self.get_task_item(index + 1, "task_status")
+            if TaskStatus.is_running(task_status) is True:
                 running_count += 1
-        if running_count != 0:
+            if TaskStatus.is_ready(task_status) is True:
+                ready_count += 1
+        if running_count + ready_count != 0:
             return False
         self.package_task_item(task_len)
         pipeline_report_tag = self.get_task_item(0, hash_key="report_tag")
@@ -746,7 +750,7 @@ class DAGWorker(RedisWorker):
         # 若error_continue为False尽最大可能删除正在运行的任务
         error_continue = self.get_task_item(0, hash_key="error_continue")
         if error_continue is not True:  # 如果任务设置error_continue不为True Pipeline有失败时，尝试删除已放入队列的任务
-            self.try_remove_running_task()
+            self.try_remove_ready_or_running_task()
         self.try_finish_pipeline()
         self.set_current_task_error(*args)
 
@@ -898,7 +902,8 @@ class DAGWorker(RedisWorker):
         for index in range(task_len):
             self.task_log("Start Set Input For Task ", index + 1)
             task_item = self.get_task_item(index + 1)
-            if "task_status" in task_item:
+            task_status = task_item.get("task_status", None)
+            if TaskStatus.is_none(task_status) is False:
                 self.task_log("Task ", index + 1, " Not Need Set Input, Status Is ", task_item["task_status"])
                 continue
             for item_key in task_item.keys():
@@ -942,7 +947,7 @@ class DAGWorker(RedisWorker):
                         ref_output = ref_info["ref_output"]
                         self.set_task_item(index + 1, "%s_%s" % (item_key, sub_i), ref_output)
 
-        running_count = 0
+        ready_count = 0
         success_count = 0
         for index in range(task_len):
             task_item = self.get_task_item(index + 1)
@@ -951,7 +956,10 @@ class DAGWorker(RedisWorker):
                     success_count += 1
                     continue
                 elif TaskStatus.is_running(task_item["task_status"]):
-                    running_count += 1
+                    ready_count += 1
+                    continue
+                elif TaskStatus.is_ready(task_item["task_status"]):
+                    ready_count += 1
                     continue
                 else:
                     continue
@@ -978,7 +986,7 @@ class DAGWorker(RedisWorker):
                     if is_ready is False:
                         break
             if is_ready is True:
-                l = self.set_task_item(index + 1, "task_status", TaskStatus.RUNNING, nx=True)
+                l = self.set_task_item(index + 1, "task_status", TaskStatus.READY, nx=True)
                 if l == 1:
                     if task_item["task_type"].startswith("repeat-"):
                         sub_task_params = self.convert_repeat(task_item, index)
@@ -990,15 +998,15 @@ class DAGWorker(RedisWorker):
                         sub_key = index + 1
                     else:
                         sub_key = "%s_%s" % (self.current_task.task_sub_key, index + 1)
-                    self.task_log("Push Task ", index + 1, " ", task_item["work_tag"], " Run")
+                    self.task_log("Task ", index + 1, " ", task_item["work_tag"], " Is Ready, Push to Queue")
                     self.set_task_item(index + 1, "begin_time", time())
                     self.push_task(key, sub_task_params, sub_key=sub_key, work_tag=sub_task_params["work_tag"],
                                    report_tag=self.work_tag)
-                running_count += 1
+                ready_count += 1
         if success_count == task_len:
             self.task_log("Task All Success")
             self.completed_pipeline()
-        elif running_count == 0:
+        elif ready_count == 0:
             task_status = self.get_task_item(0, "task_status")
             if task_status is None:
                 self.task_log("Pipeline Has Endless Loop Waiting")
