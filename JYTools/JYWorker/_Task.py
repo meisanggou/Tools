@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import os
+import re
 import types
 from JYTools import StringTool
 from ._exception import WorkerTaskParamsKeyNotFound, WorkerTaskParamsValueTypeError
@@ -127,7 +128,7 @@ class WorkerTask(object):
     """
     __slots__ = ("task_key", "task_name", "task_sub_key", "task_info", "task_params", "task_status", "task_report_tag",
                  "is_report_task", "task_output", "task_message", "task_errors", "work_tag", "start_time", "end_time",
-                 "sub_task_detail", "log_path")
+                 "sub_task_detail", "log_path", "task_report_scene")
 
     def __init__(self, **kwargs):
         self.task_key = None
@@ -137,6 +138,7 @@ class WorkerTask(object):
         self.task_params = None
         self.task_status = TaskStatus.NONE
         self.task_report_tag = None  # 任务结束后汇报的的work_tag
+        self.task_report_scene = 2  # 仅任务结束后汇报
         self.is_report_task = False
         self.task_output = dict()
         self.task_message = None  # 保存任务的执行结果的综述
@@ -148,12 +150,23 @@ class WorkerTask(object):
         self.log_path = None  # add in 1.1.8
         self.set(**kwargs)
 
+    def _set_report_tag(self, report_tag):
+        m_r = re.match("^([^:]+):(\d+)$", report_tag)
+        if m_r is not None:
+            self.task_report_tag = m_r.groups()[0]
+            self.task_report_scene = m_r.groups()[1]
+        else:
+            self.task_report_tag = report_tag
+
     def set(self, **kwargs):
         allow_keys = ["task_key", "task_status", "task_name", "sub_task_detail", "task_sub_key", "task_info",
                       "task_params", "task_report_tag", "is_report_task", "work_tag", "task_message", "start_time",
                       "end_time", "task_output", "task_errors"]
         for k, v in kwargs.items():
             if k not in allow_keys:
+                continue
+            if k == "task_report_tag":
+                self._set_report_tag(v)
                 continue
             self.__setattr__(k, v)
 
@@ -210,3 +223,7 @@ if __name__ == "__main__":
     # print(wp["c"])
     if TaskStatus.is_success("succEss"):
         print("q")
+
+    wt = WorkerTask(**dict(task_report_tag="Plus:1"))
+    print(wt.task_report_tag)
+    print(wt.task_report_scene)
