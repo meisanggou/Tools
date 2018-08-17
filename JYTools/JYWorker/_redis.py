@@ -14,7 +14,7 @@ from JYTools import TIME_FORMAT
 from JYTools import StringTool
 from JYTools.StringTool import is_string
 from ._config import RedisWorkerConfig, WorkerConfig
-from .util import ValueVerify
+from .util import ValueVerify, ReportScene
 from ._Worker import Worker
 from ._Task import WorkerTask, WorkerTaskParams
 from ._exception import InvalidTaskKey, InvalidWorkTag
@@ -52,7 +52,8 @@ class RedisQueue(_RedisHelper):
     """
 
     @staticmethod
-    def package_task_info(work_tag, key, params, sub_key=None, report_tag=None, is_report=False):
+    def package_task_info(work_tag, key, params, sub_key=None, report_tag=None, report_scene=ReportScene.END,
+                          is_report=False):
         """
         info format: work_tag[|report_tag[:report_scene]],key[|sub_key],args_type,args
         args_type: json
@@ -68,7 +69,7 @@ class RedisQueue(_RedisHelper):
         if ValueVerify.v_report_tag(report_tag) is False:
             raise InvalidWorkTag()
         if report_tag is not None:
-            work_tag = "%s|%s" % (work_tag, report_tag)
+            work_tag = "%s|%s:%s" % (work_tag, report_tag, report_scene)
         v = "%s,%s," % (work_tag, key)
         if isinstance(params, dict):
             if is_report is False:
