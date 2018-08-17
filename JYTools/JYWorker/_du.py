@@ -905,7 +905,7 @@ class DAGWorker(RedisWorker):
             sh.setFormatter(fmt)
             logger_level = logger.level
             logger.addHandler(sh)
-            logger.setLevel(logging.ERROR)
+            logger.setLevel(logging.WARNING)
             # 检测pipeline结构，仅做参考暂不真实应用
             DAGTools.ip_verify_pipeline(params)
 

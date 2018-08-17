@@ -1,6 +1,11 @@
 # Tools
 jingyun tools
 
+## 1.5.1
+pipeline调度时检查pipeline结构，但仅做参考
+pipeline发现子任务所有参数就绪时，设置状态为Ready（原来为Running）
+
+
 ## 1.5.0
 ReadWorkerLog返回日志可设置最多读取多少日志（不是返回多少日志）
 
