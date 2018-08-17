@@ -14,6 +14,7 @@ from JYTools import TIME_FORMAT
 from JYTools import StringTool
 from JYTools.StringTool import is_string
 from ._config import RedisWorkerConfig, WorkerConfig
+from .util import ValueVerify
 from ._Worker import Worker
 from ._Task import WorkerTask, WorkerTaskParams
 from ._exception import InvalidTaskKey, InvalidWorkerTag
@@ -447,7 +448,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
         if heartbeat_value is None:
             heartbeat_value = StringTool.random_str(str_len=12, upper_s=False)
         self.heartbeat_value = StringTool.decode(heartbeat_value)
-        if re.match(r"^[\da-zA-Z]{3,50}$", self.heartbeat_value) is None:
+        if ValueVerify.v_heartbeat(self.heartbeat_value) is False:
             raise ValueError("heartbeat only allow 0-9 a-z and length between 3 and 50.")
 
         self.t_clock = threading.Thread(target=self.hang_up_clock)

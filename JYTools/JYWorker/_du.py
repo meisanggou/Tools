@@ -110,7 +110,7 @@ class DAGTools(object):
             work_tag = item["work_tag"]
             if is_string(work_tag) is False:
                 error_msg = join_decode(["work_tag属性对应值，必须是字符串类型的，子任务[", task_no, "]的work_tag是[",
-                                         type(work_tag) ,"]类型的"])
+                                         type(work_tag), "]类型的"])
                 logger.error(error_msg)
                 return False, dict(code=14, data=type(work_tag), message=error_msg)
 
