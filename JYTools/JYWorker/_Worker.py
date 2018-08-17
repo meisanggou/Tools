@@ -13,6 +13,7 @@ import threading
 import logging
 import traceback
 from JYTools import StringTool
+from JYTools.JYWorker.util import ValueVerify
 from ._exception import TaskErrorException, InvalidTaskException, WorkerTaskParamsKeyNotFound
 from ._exception import WorkerTaskParamsValueTypeError
 from ._Task import TaskStatus, WorkerTask, WorkerTaskParams
@@ -52,6 +53,8 @@ class Worker(WorkerConfig, _WorkerLog):
             class_name = self.__class__.__name__
             msg = "Need String work_tag. Please Set {0}.DEFAULT_WORK_TAG=yourWorkTag Or {0}(work_tag=yourWorkTag)"
             raise TypeError(msg.format(class_name))
+        if ValueVerify.v_work_tag(self.work_tag) is False:
+            raise ValueError("Invalid work_tag format")
         self._id = uuid.uuid4().hex  # add in 0.9.11
         self._msg_manager = None
         self.is_running = False  # 表示worker是否已经开始运行，并不断接收任务,一旦运行起来，不可再进入test模式即调用test方法

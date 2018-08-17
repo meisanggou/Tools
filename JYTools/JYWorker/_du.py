@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import re
+import logging
 from time import time
 from JYTools import is_num, logger
 from JYTools.StringTool import is_string, join_decode
@@ -899,6 +900,17 @@ class DAGWorker(RedisWorker):
     def handle_task(self, key, params):
         if self.current_task.is_report_task is False:
             self.task_log("Start Format Pipeline")
+            sh = logging.StreamHandler(self)
+            fmt = logging.Formatter(fmt="%(levelname)s: %(message)s")
+            sh.setFormatter(fmt)
+            logger_level = logger.level
+            logger.addHandler(sh)
+            logger.setLevel(logging.ERROR)
+            # 检测pipeline结构，仅做参考暂不真实应用
+            DAGTools.ip_verify_pipeline(params)
+
+            logger.removeHandler(sh)
+            logger.setLevel(logger_level)
             self.format_pipeline(key, params)
 
         # 获得task_len

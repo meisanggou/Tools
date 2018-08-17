@@ -151,6 +151,9 @@ class WorkerTask(object):
         self.set(**kwargs)
 
     def _set_report_tag(self, report_tag):
+        if report_tag is None:
+            self.task_report_tag = None
+            return
         m_r = re.match("^([^:]+):(\d+)$", report_tag)
         if m_r is not None:
             self.task_report_tag = m_r.groups()[0]

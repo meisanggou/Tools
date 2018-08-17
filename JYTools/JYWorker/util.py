@@ -26,7 +26,7 @@ class ReportScene(object):
 
 
 class ValueVerify(object):
-    comp_tag = re.compile(r"^[\w\-]+$]", re.I)
+    comp_tag = re.compile(r"^[\w\-]+$", re.I)
     comp_heartbeat = re.compile(r"^[\da-zA-Z]{3,50}$", re.I)
 
     @classmethod
