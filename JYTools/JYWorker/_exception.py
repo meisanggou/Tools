@@ -31,7 +31,7 @@ class InvalidTaskKey(Exception):
         return "Task Key Length Must Be Greater Than 0"
 
 
-class InvalidWorkerTag(Exception):
+class InvalidWorkTag(Exception):
 
     def __str__(self):
         return "Worker Tag Must Be String And Length Greater Than 0"

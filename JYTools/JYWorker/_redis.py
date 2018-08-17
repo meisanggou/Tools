@@ -17,62 +17,9 @@ from ._config import RedisWorkerConfig, WorkerConfig
 from .util import ValueVerify
 from ._Worker import Worker
 from ._Task import WorkerTask, WorkerTaskParams
-from ._exception import InvalidTaskKey, InvalidWorkerTag
+from ._exception import InvalidTaskKey, InvalidWorkTag
 
 __author__ = '鹛桑够'
-
-
-class RedisQueueData(object):
-    """
-    add in version 0.9.8
-    """
-
-    @staticmethod
-    def parse_task_info(task_info, work_tag=None, expect_params_type=None):
-        task_item = WorkerTask(task_info=task_info)
-
-        partition_task = task_info.split(",", 3)
-        if len(partition_task) != 4:
-            error_msg = "Invalid task %s, task partition length is not 3" % task_info
-            return False, error_msg
-
-        work_tags = partition_task[0].split("|")  # 0 work tag 1 return tag
-        if work_tag is not None and work_tags[0] != work_tag:
-            error_msg = "Invalid task %s, task not match work tag %s" % (task_info, work_tag)
-            return False, error_msg
-        task_item.set(work_tag=work_tags[0])
-        if len(work_tags) > 1:
-            task_item.set(task_report_tag=work_tags[1])
-
-        keys = partition_task[1].split("|")
-        if len(keys[0]) <= 0:
-            return True, None
-        task_item.set(task_key=keys[0])
-        if len(keys) > 1:
-            task_item.set(task_sub_key=keys[1])
-
-        if partition_task[2] not in ("string", "json", "report"):
-            error_msg = "Invalid task %s, task args type invalid" % task_info
-            return False, error_msg
-        params = partition_task[3]
-        if partition_task[2] in ("json", "report"):
-            try:
-                params = json.loads(params)
-            except ValueError:
-                error_msg = "Invalid task %s, task args type and args not uniform" % task_info
-                return False, error_msg
-        if partition_task[2] == "report":
-            task_item.set(is_report_task=True)
-            task_item.set(task_params=WorkerTask(**params))
-        else:
-            if expect_params_type is not None:
-                if not isinstance(params, expect_params_type):
-                    return False, "Invalid task, not expect param type"
-            if expect_params_type == dict:
-                task_item.set(task_params=WorkerTaskParams(**params))
-            else:
-                task_item.set(task_params=params)
-        return True, task_item
 
 
 class _RedisHelper(RedisWorkerConfig, WorkerConfig):
@@ -105,10 +52,6 @@ class RedisQueue(_RedisHelper):
     """
 
     @staticmethod
-    def is_valid_tag(tag):
-        pass
-
-    @staticmethod
     def package_task_info(work_tag, key, params, sub_key=None, report_tag=None, is_report=False):
         """
         info format: work_tag[|report_tag[:report_scene]],key[|sub_key],args_type,args
@@ -119,9 +62,11 @@ class RedisQueue(_RedisHelper):
         if sub_key is not None:
             key = "%s|%s" % (key, sub_key)
         if is_string(work_tag) is False:
-            raise InvalidWorkerTag()
-        if len(work_tag) <= 0:
-            raise InvalidWorkerTag()
+            raise InvalidWorkTag()
+        if ValueVerify.v_work_tag(work_tag) is False:
+            raise InvalidWorkTag()
+        if ValueVerify.v_report_tag(report_tag) is False:
+            raise InvalidWorkTag()
         if report_tag is not None:
             work_tag = "%s|%s" % (work_tag, report_tag)
         v = "%s,%s," % (work_tag, key)
