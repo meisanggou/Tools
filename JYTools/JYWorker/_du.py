@@ -588,7 +588,7 @@ class DAGWorker(RedisWorker):
             self.set_task_item(0, "task_message", task_message)
             self.set_task_item(0, "task_fail_index", reporter_sub_key)
             self.task_log("Sub Task ", r_task.task_sub_key, " ", r_task.work_tag, " Failed", level="ERROR")
-            self.fail_pipeline("Sub Task ", r_task.task_sub_key, " ", r_task.work_tag, " Failed")
+            self.fail_pipeline("Sub Task ", r_task.task_sub_key, " ", r_task.work_tag, " Failed,", task_message)
         if isinstance(r_task.task_output, dict):
             for output_key in r_task.task_output.keys():
                 self.set_task_item(reporter_sub_key, "output_%s" % output_key, r_task.task_output[output_key])

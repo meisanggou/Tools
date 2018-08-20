@@ -63,19 +63,20 @@ def push_task():
 
 
 def report_task():
+    arg_man.add_argument("-w", "--work-tag", dest="work_tag", help="work tag", metavar="WorkTag")
     arg_man.add_argument("-c", "--config", dest="conf_path", help="configure file path")
     arg_man.add_argument("-r", "--report-tag", dest="report_tag", help="work tag", metavar="ReportTag", required=True)
     arg_man.add_argument("-k", "--key", dest="key", help="task key", metavar="KEY", required=True)
     arg_man.add_argument("-s", "--sub-key", dest="sub_key", metavar="SubKey", help="task sub key")
     arg_man.add_argument("--start-time", dest="start_time", metavar="StartTime", help="start time. timestamp")
-    arg_man.add_argument("--task-status", dest="task_status", metavar="TaskStatus", help="task status",
+    arg_man.add_argument("--task-status", dest="task_status", metavar="TaskStatus",
                          choices=[TaskStatus.SUCCESS, TaskStatus.FAIL], required=True)
     arg_man.add_argument("message", help="task message")
     empty_help()
     args = parse_args()
     rq = RedisQueue(conf_path=args.conf_path, work_tag=args.report_tag)
     params = dict(end_time=int(time.time()), task_key=args.key, task_sub_key=args.sub_key, start_time=int(time.time()),
-                  task_status=args.task_status, task_message=args.message)
+                  task_status=args.task_status, task_message=args.message, work_tag=args.work_tag)
     if args.start_time is not None:
         params["start_time"] = args.start_time
     rq.push(args.key, params, sub_key=args.sub_key, is_report=True)
