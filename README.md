@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.5.4
+add jyworker.report-task
+
 ## 1.5.3
 add jyworker.push-task
 

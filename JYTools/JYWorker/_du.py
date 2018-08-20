@@ -582,7 +582,7 @@ class DAGWorker(RedisWorker):
         self.task_log("Task ", reporter_sub_key, " Status Is ", task_status)
         self.set_task_item(reporter_sub_key, "task_status", task_status)
         self.set_task_item(reporter_sub_key, "task_message", task_message)
-        if r_task["sub_task_detail"] is not None:
+        if r_task.sub_task_detail is not None:
             self.set_task_item(reporter_sub_key, "task_list", r_task.sub_task_detail)
         if TaskStatus.is_success(task_status) is False:
             self.set_task_item(0, "task_message", task_message)

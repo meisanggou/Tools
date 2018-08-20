@@ -36,7 +36,8 @@ entry_points = {'console_scripts': [
     'jyworker.list-worker=JYTools.JYWorker.cli:list_worker',
     'jyworker.look-item=JYTools.JYWorker.cli:look_task_item',
     'jyworker.dag-verify=JYTools.JYWorker.cli:verify_pipeline',
-    'jyworker.push-task=JYTools.JYWorker.cli:push_task'
+    'jyworker.push-task=JYTools.JYWorker.cli:push_task',
+    'jyworker.report-task=JYTools.JYWorker.cli:report_task'
 ]}
 
 setup(name=name,
