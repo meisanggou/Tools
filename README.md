@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.5.3
+add jyworker.push-task
+
 ## 1.5.2
 pipeline调度时检查pipeline结构，但仅做参考
 pipeline发现子任务所有参数就绪时，设置状态为Ready（原来为Running）

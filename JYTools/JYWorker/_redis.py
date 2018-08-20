@@ -80,21 +80,21 @@ class RedisQueue(_RedisHelper):
             v += "string," + params
         return v
 
-    def _push(self, key, params, work_tag, sub_key=None, report_tag=None, is_head=False):
+    def _push(self, key, params, work_tag, sub_key=None, report_tag=None, is_head=False, is_report=False):
         if work_tag is None:
             work_tag = self.work_tag
-        v = self.package_task_info(work_tag, key, params, sub_key=sub_key, report_tag=report_tag)
+        v = self.package_task_info(work_tag, key, params, sub_key=sub_key, report_tag=report_tag, is_report=is_report)
         queue_key = self.queue_prefix_key + "_" + work_tag
         if is_head is True:
             self.redis_man.lpush(queue_key, v)
         else:
             self.redis_man.rpush(queue_key, v)
 
-    def push(self, key, params, work_tag=None, sub_key=None, report_tag=None, is_head=False):
+    def push(self, key, params, work_tag=None, sub_key=None, report_tag=None, is_head=False, is_report=False):
         key = "%s" % key
         if len(key) <= 0:
             raise InvalidTaskKey()
-        self._push(key, params, work_tag, sub_key=sub_key, report_tag=report_tag, is_head=is_head)
+        self._push(key, params, work_tag, sub_key=sub_key, report_tag=report_tag, is_head=is_head, is_report=is_report)
 
     def push_file(self, key, file_path, work_tag=None, sub_key=None, report_tag=None, is_head=False):
         with open(file_path) as r:

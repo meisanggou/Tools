@@ -49,6 +49,18 @@ def list_worry_queue():
         print(item)
 
 
+def push_task():
+    arg_man.add_argument("-c", "--config", dest="conf_path", help="configure file path")
+    arg_man.add_argument("-w", "--work-tag", dest="work_tag", help="work tag", metavar="WorkTag", required=True)
+    arg_man.add_argument("-k", "--key", dest="key", help="task key", metavar="KEY", required=True)
+    arg_man.add_argument("-s", "--sub-key", dest="sub_key", metavar="SubKey", help="task sub key")
+    arg_man.add_argument("--is-report", dest="is_report", help="is report task", action="store_true", default=False)
+    arg_man.add_argument("params", help="task params")
+    args = parse_args()
+    rq = RedisQueue(conf_path=args.conf_path, work_tag=args.work_tag)
+    rq.push(args.key, args.params, sub_key=args.sub_key, is_report=args.is_report)
+
+
 def list_heartbeat():
     arg_man.add_argument("-w", "--work-tag", dest="work_tag", help="work tag", metavar="")
     rs = RedisStat()
@@ -190,8 +202,7 @@ def verify_pipeline():
 
 if __name__ == "__main__":
     # sys.argv.append("--debug")
-    # sys.argv.extend(["-w", "Pipeline"])
+    sys.argv.extend(["-w", "Pipeline"])
     # wash_worker()
-    logger.info("ssd")
     sys.argv.append("/mnt/data/Tools/JYTools/demo/example.json")
-    verify_pipeline()
+    push_task()
