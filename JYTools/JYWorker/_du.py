@@ -653,6 +653,7 @@ class DAGWorker(RedisWorker):
             self.current_task.task_report_tag = None  # 真正执行完后才进行report
         self.set_task_item(0, "task_output", task_output)
         self.set_task_item(0, "start_time", time())
+        self.set_task_item(0, "task_status", TaskStatus.RUNNING)
         for index in range(task_len):
             task_item = task_list[index]
             for key in task_item.keys():
