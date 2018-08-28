@@ -1049,5 +1049,6 @@ class DAGWorker(RedisWorker):
             report_scene = self.get_task_item(0, hash_key="report_scene")
             if ReportScene.include_real_time(report_scene):
                 self.package_task_item()
+                self.current_task.task_status = TaskStatus.RUNNING
                 self.current_task.is_report_task = False
                 self.current_task.task_report_tag = pipeline_report_tag
