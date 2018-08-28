@@ -157,7 +157,7 @@ class WorkerTask(object):
         m_r = re.match("^([^:]+):(\d+)$", report_tag)
         if m_r is not None:
             self.task_report_tag = m_r.groups()[0]
-            self.task_report_scene = m_r.groups()[1]
+            self.task_report_scene = int(m_r.groups()[1])
         else:
             self.task_report_tag = report_tag
 
