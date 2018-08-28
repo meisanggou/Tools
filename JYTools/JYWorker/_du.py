@@ -344,12 +344,15 @@ class DAGWorker(RedisWorker):
                              redis_password, redis_port, redis_db, section_name, **kwargs)
         self.after_handler_funcs.append(self.after_handle)
 
-    def push_task(self, key, params, work_tag=None, sub_key=None, report_tag=None, is_report=False):
+    def push_task(self, key, params, work_tag=None, sub_key=None, report_tag=None, is_report=False,
+                  report_scene=None):
         if self.agent_tag is not None:
             if work_tag is not None and work_tag not in (self.work_tag, self.upload_log_tag) and is_report is False:
                 params = dict(work_tag=work_tag, params=params)
                 work_tag = self.agent_tag
-        self._push_task(key, params, work_tag, sub_key, report_tag, is_report=is_report)
+        if report_scene is None:
+            report_scene = ReportScene.Begin | ReportScene.End
+        self._push_task(key, params, work_tag, sub_key, report_tag, is_report=is_report, report_scene=report_scene)
 
     @staticmethod
     def split_ref(ref_str):
@@ -1043,7 +1046,7 @@ class DAGWorker(RedisWorker):
         pipeline_report_tag = self.get_task_item(0, hash_key="report_tag")
         if pipeline_report_tag is not None:
             report_scene = self.get_task_item(0, hash_key="report_scene")
-            if ReportScene.Begin & report_scene == ReportScene.Begin:
+            if ReportScene.include_real_time(report_scene):
                 self.package_task_item()
                 self.current_task.is_report_task = False
                 self.current_task.task_report_tag = pipeline_report_tag

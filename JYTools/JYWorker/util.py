@@ -11,16 +11,29 @@ class ReportScene(object):
     Begin = 1
     END = 2
     End = 2
+    RealTime = 4
 
     @classmethod
     def include_begin(cls, scene):
+        if scene is None:
+            return False
         if scene & cls.Begin == cls.Begin:
             return True
         return False
 
     @classmethod
     def include_end(cls, scene):
+        if scene is None:
+            return False
         if scene & cls.End == cls.End:
+            return True
+        return False
+
+    @classmethod
+    def include_real_time(cls, scene):
+        if scene is None:
+            return False
+        if scene & cls.RealTime == cls.RealTime:
             return True
         return False
 
