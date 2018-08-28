@@ -6,7 +6,7 @@ import logging
 from time import time
 from JYTools import is_num, logger
 from JYTools.StringTool import is_string, join_decode
-from JYTools.JYWorker.util import ValueVerify
+from JYTools.JYWorker.util import ValueVerify, ReportScene
 from ._Task import TaskStatus
 from ._redis import RedisWorker
 
@@ -342,6 +342,7 @@ class DAGWorker(RedisWorker):
         self.agent_tag = kwargs.pop("agent_tag", None)
         RedisWorker.__init__(self, conf_path, heartbeat_value, is_brother, work_tag, log_dir, redis_host,
                              redis_password, redis_port, redis_db, section_name, **kwargs)
+        self.after_handler_funcs.append(self.after_handle)
 
     def push_task(self, key, params, work_tag=None, sub_key=None, report_tag=None, is_report=False):
         if self.agent_tag is not None:
@@ -584,6 +585,8 @@ class DAGWorker(RedisWorker):
         self.set_task_item(reporter_sub_key, "task_message", task_message)
         if r_task.sub_task_detail is not None:
             self.set_task_item(reporter_sub_key, "task_list", r_task.sub_task_detail)
+        if TaskStatus.is_running(task_status) is True:
+            return
         if TaskStatus.is_success(task_status) is False:
             self.set_task_item(0, "task_message", task_message)
             self.set_task_item(0, "task_fail_index", reporter_sub_key)
@@ -643,6 +646,7 @@ class DAGWorker(RedisWorker):
         self.set_task_item(0, "task_len", task_len)
         if self.current_task.task_report_tag is not None:
             self.set_task_item(0, "report_tag", self.current_task.task_report_tag)
+            self.set_task_item(0, "report_scene", self.current_task.task_report_scene)
             self.current_task.task_report_tag = None  # 真正执行完后才进行report
         self.set_task_item(0, "task_output", task_output)
         self.set_task_item(0, "start_time", time())
@@ -1029,3 +1033,17 @@ class DAGWorker(RedisWorker):
                 self.task_log("Pipeline Has Endless Loop Waiting")
                 self.fail_pipeline("Pipeline Has Endless Loop Waiting")
             return self.try_finish_pipeline()
+
+    def after_handle(self):
+        self.task_debug_log("enter after handle")
+        pipeline_status = self.get_task_item(0, hash_key="task_status")
+        if TaskStatus.is_running(pipeline_status) is False:
+            return
+        self.task_debug_log("Pipeline is Running.")
+        pipeline_report_tag = self.get_task_item(0, hash_key="report_tag")
+        if pipeline_report_tag is not None:
+            report_scene = self.get_task_item(0, hash_key="report_scene")
+            if ReportScene.Begin & report_scene == ReportScene.Begin:
+                self.package_task_item()
+                self.current_task.is_report_task = False
+                self.current_task.task_report_tag = pipeline_report_tag

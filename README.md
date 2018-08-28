@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.5.6
+DAG调度支持实时汇报
+
 ## 1.5.5
 add jyworker.report-task
 
