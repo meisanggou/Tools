@@ -1,7 +1,7 @@
 # Tools
 jingyun tools
 
-## 1.6.1
+## 1.6.2
 DAG调度支持实时汇报
 
 ## 1.5.5
