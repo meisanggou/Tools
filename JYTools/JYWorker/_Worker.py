@@ -59,8 +59,8 @@ class Worker(WorkerConfig, _WorkerLog):
         self._msg_manager = None
         self.is_running = False  # 表示worker是否已经开始运行，并不断接收任务,一旦运行起来，不可再进入test模式即调用test方法
         self._debug = False
-        self.before_handler_funcs = []
-        self.after_handler_funcs = []
+        self.before_handle_funcs = []
+        self.after_handle_funcs = []
         self.init_log_dir()
         self._handle_task_func = self.handle_task
         self.num_success_job = 0  # add in 0.8.1
@@ -199,7 +199,7 @@ class Worker(WorkerConfig, _WorkerLog):
         self.current_task.start_time = time()
         standard_out = None
         try:
-            for func in self.before_handler_funcs:
+            for func in self.before_handle_funcs:
                 func()
             if self.redirect_stdout is True:
                 standard_out = sys.stdout
@@ -219,7 +219,7 @@ class Worker(WorkerConfig, _WorkerLog):
                 self.current_task.task_status = TaskStatus.SUCCESS
             if standard_out is not None:
                 sys.stdout = standard_out
-            for func in reversed(self.after_handler_funcs):
+            for func in reversed(self.after_handle_funcs):
                 func()
             self.num_success_job += 1
         except WorkerTaskParamsKeyNotFound as pk:

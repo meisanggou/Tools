@@ -342,7 +342,7 @@ class DAGWorker(RedisWorker):
         self.agent_tag = kwargs.pop("agent_tag", None)
         RedisWorker.__init__(self, conf_path, heartbeat_value, is_brother, work_tag, log_dir, redis_host,
                              redis_password, redis_port, redis_db, section_name, **kwargs)
-        self.after_handler_funcs.append(self.after_handle)
+        self.after_handle_funcs.append(self.after_handle)
 
     def push_task(self, key, params, work_tag=None, sub_key=None, report_tag=None, is_report=False,
                   report_scene=None):
