@@ -198,12 +198,6 @@ class Worker(WorkerConfig, _WorkerLog):
         self.hang_up_clock(1)
         self.current_task.start_time = time()
         standard_out = None
-        if self.current_task.is_report_task is False and self.current_task.task_report_tag is not None:
-            if ReportScene.include_begin(self.current_task.task_report_scene) is True:
-                self.task_debug_log("Start Report Task Running Status")
-                self.push_task(self.current_task.task_key, self.current_task.to_dict(),
-                               work_tag=self.current_task.task_report_tag, sub_key=self.current_task.task_sub_key,
-                               is_report=True)
         try:
             for func in self.before_handler_funcs:
                 func()
@@ -211,6 +205,12 @@ class Worker(WorkerConfig, _WorkerLog):
                 standard_out = sys.stdout
                 sys.stdout = self
             self.current_task.task_status = TaskStatus.RUNNING
+            if self.current_task.is_report_task is False and self.current_task.task_report_tag is not None:
+                if ReportScene.include_begin(self.current_task.task_report_scene) is True:
+                    self.task_debug_log("Start Report Task Running Status")
+                    self.push_task(self.current_task.task_key, self.current_task.to_dict(),
+                                   work_tag=self.current_task.task_report_tag, sub_key=self.current_task.task_sub_key,
+                                   is_report=True)
             if self.current_task.is_report_task is False:
                 self._handle_task_func(self.current_task.task_key, self.current_task.task_params)
             else:
