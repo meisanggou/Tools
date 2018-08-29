@@ -70,7 +70,7 @@ def report_task():
     arg_man.add_argument("-s", "--sub-key", dest="sub_key", metavar="SubKey", help="task sub key")
     arg_man.add_argument("--start-time", dest="start_time", metavar="StartTime", help="start time. timestamp")
     arg_man.add_argument("--task-status", dest="task_status", metavar="TaskStatus",
-                         choices=[TaskStatus.SUCCESS, TaskStatus.FAIL], required=True)
+                         choices=[TaskStatus.SUCCESS, TaskStatus.FAIL, TaskStatus.RUNNING], required=True)
     arg_man.add_argument("message", help="task message")
     empty_help()
     args = parse_args()
