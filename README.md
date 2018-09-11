@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.6.5
+DAG放入调度的KEY 不允许与正在调度的KEY一样
+
 ## 1.6.4
 DAG调度支持实时汇报
 
