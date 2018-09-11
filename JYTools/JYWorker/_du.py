@@ -910,7 +910,8 @@ class DAGWorker(RedisWorker):
             # 检测是否有同样的KEY在调度
             task_len = self.get_task_item(0, "task_len")
             self.task_log("Task Len Is ", task_len)
-            self.set_current_task_invalid("Have the same key in scheduling, replace key is recommended")
+            if task_len is not None:
+                self.set_current_task_invalid("Have the same key in scheduling, replace key is recommended")
             self.task_log("Start Format Pipeline")
             sh = logging.StreamHandler(self)
             fmt = logging.Formatter(fmt="%(levelname)s: %(message)s")
