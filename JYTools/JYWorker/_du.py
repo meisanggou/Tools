@@ -580,7 +580,7 @@ class DAGWorker(RedisWorker):
         else:
             self.current_task.task_sub_key = None
         reporter_sub_key = int(sp_keys[-1])  # 子任务在父任务中的位置 位置从1开始
-        self.task_log("Task ", reporter_sub_key, " Report")
+        self.task_log("Task ", r_task.work_tag, reporter_sub_key, " Report")
         task_status = r_task.task_status
         task_message = r_task.task_message
         self.task_log("Task ", reporter_sub_key, " Status Is ", task_status)
