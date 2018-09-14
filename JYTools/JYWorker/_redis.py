@@ -464,7 +464,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
         return next_task
 
     def _push_task(self, key, params, work_tag=None, sub_key=None, report_tag=None, is_report=False,
-                   report_scene=ReportScene.END):
+                   report_scene=ReportScene.END, is_head=False):
         if work_tag is None:
             queue_key = self.queue_key
             work_tag = self.work_tag
@@ -472,7 +472,10 @@ class RedisWorker(RedisWorkerConfig, Worker):
             queue_key = self.queue_prefix_key + "_" + work_tag
         task_info = RedisQueue.package_task_info(work_tag, key, params, sub_key=sub_key, report_tag=report_tag,
                                                  is_report=is_report, report_scene=report_scene)
-        self.redis_man.rpush(queue_key, task_info)
+        if is_head is True:
+            self.redis_man.lpush(queue_key, task_info)
+        else:
+            self.redis_man.rpush(queue_key, task_info)
 
     def push_task(self, key, params, work_tag=None, sub_key=None, report_tag=None, is_report=False,
                   report_scene=ReportScene.END):
@@ -630,10 +633,12 @@ class RedisWorker(RedisWorkerConfig, Worker):
             task_item.log_path = StringTool.path_join(self.log_dir, log_name)
         return True, task_item
 
-    def run(self):
+    def run(self, wash_old=False):
         if self.is_running is True:
             self.worker_log("Is Running")
             return False
+        # 发送空包清洗旧的worker
+        self._push_task("", "", is_head=True)
         # 启动前其他辅助 运行起来：设置心跳值 打卡
         self.is_running = True
         self.t_clock.start()

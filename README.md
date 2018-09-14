@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.6.7
+worker启动时默认发送一个空包清洗旧的worker
+
 ## 1.6.6
 DAG放入调度的KEY 不允许与正在调度的KEY一样
 

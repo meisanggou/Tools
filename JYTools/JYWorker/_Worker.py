@@ -357,7 +357,7 @@ class Worker(WorkerConfig, _WorkerLog):
         except Exception as e:
             logging.error(e)
 
-    def run(self):
+    def run(self, wash_old=False):
         pass
 
     def test(self, key, params=None, params_path=None, sub_key=None, report_tag=None, debug=True):
@@ -383,7 +383,7 @@ class Worker(WorkerConfig, _WorkerLog):
         self.current_task = task_item
         return self._execute()
 
-    def work(self, daemon=False):
+    def work(self, daemon=False, wash_old=True):
         """
         add in version 0.1.8
         """
@@ -392,7 +392,7 @@ class Worker(WorkerConfig, _WorkerLog):
             try:
                 pid = os.fork()
                 if pid == 0:  # pid大于0代表是父进程 返回的是子进程的pid pid==0为子进程
-                    self.run()
+                    self.run(wash_old)
             except OSError:
                 sys.exit(1)
         else:
