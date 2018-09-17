@@ -582,6 +582,11 @@ class DAGWorker(RedisWorker):
         reporter_sub_key = int(sp_keys[-1])  # 子任务在父任务中的位置 位置从1开始
         self.task_log("Task ", r_task.work_tag, reporter_sub_key, " Report")
         task_status = r_task.task_status
+        # 防止重新汇报 只允许Running状态下可以多次汇报
+        old_status = self.get_task_item(reporter_sub_key, "task_status")
+        if old_status == task_status and not TaskStatus.is_running(task_status):
+            self.task_log("Task", reporter_sub_key, "Old Status is", old_status, ". This Report Is Same. IGNORE")
+            return
         task_message = r_task.task_message
         self.task_log("Task ", reporter_sub_key, " Status Is ", task_status)
         self.set_task_item(reporter_sub_key, "task_status", task_status)
