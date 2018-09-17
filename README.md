@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.6.8
+worker启动后可处理系统信号 signal.SIGINT signal.SIGTERM signal.SIGUSR1 signal.SIGUSR2,如有任务将任务重新放入队首
+
 ## 1.6.7
 worker启动时默认发送一个空包清洗旧的worker
 

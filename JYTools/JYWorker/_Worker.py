@@ -4,6 +4,7 @@
 import os
 import re
 import sys
+import signal
 import json
 import uuid
 import types
@@ -251,6 +252,8 @@ class Worker(WorkerConfig, _WorkerLog):
             self._execute_error(e)
             self.num_fail_job += 1
         except SystemExit as se:
+            if self.is_running is False:
+                sys.exit(se.code)
             self.current_task.task_status = TaskStatus.FAIL
             self.current_task.task_message = str(se)
             self.task_log(traceback.format_exc(), level="ERROR")
@@ -383,10 +386,22 @@ class Worker(WorkerConfig, _WorkerLog):
         self.current_task = task_item
         return self._execute()
 
+    def handle_sign(self, sign, frame):
+        self.task_log("Worker Receive SIGN", sign)
+        self.close(sign)
+
     def work(self, daemon=False, wash_old=True):
         """
         add in version 0.1.8
         """
+        # handle SIGINT 2 from ctrl+c
+        signal.signal(signal.SIGINT, self.handle_sign)
+        # handle SIGTERM 15 from kill
+        signal.signal(signal.SIGTERM, self.handle_sign)
+        # handle
+        signal.signal(signal.SIGUSR1, self.handle_sign)
+        signal.signal(signal.SIGUSR2, self.handle_sign)
+
         if daemon is not False:
             self.debug = False
             try:
@@ -402,7 +417,7 @@ class Worker(WorkerConfig, _WorkerLog):
         self.is_running = False
         self.hang_down_clock()
         self.worker_log("start close. exit code: %s" % exit_code)
-        exit(exit_code)
+        sys.exit(exit_code)
 
 """
     ReadWorkerLog Add In Version 1.0.4

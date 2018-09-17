@@ -453,15 +453,30 @@ class RedisWorker(RedisWorkerConfig, Worker):
             next_task = self.redis_man.blpop(self.queue_key, self.pop_time_out)
         except Exception as e:
             if freq > 5:
-                self.worker_log(e, level="ERROR")
+                self.worker_log("[REDIS POP ERROR MSG]", e, level="ERROR")
                 raise e
-            freq += 1
-            time.sleep(10 * freq)
-            return self.pop_task(freq)
+            time.sleep(5 * freq + 10)
+            return self.pop_task(freq=freq+1)
         if next_task is not None:
             t = StringTool.decode(next_task[1])
             return t
         return next_task
+
+    def _push_to_queue(self, task_info, queue_key=None, is_head=False, freq=0):
+        if queue_key is None:
+            queue_key = self.queue_key
+        try:
+            if is_head is True:
+                self.redis_man.lpush(queue_key, task_info)
+            else:
+                self.redis_man.rpush(queue_key, task_info)
+        except RedisError as error:
+            if freq > 5:
+                self.worker_log("[REDIS PUSH ERROR DATA]", task_info, level="ERROR")
+                self.worker_log("[REDIS PUSH ERROR MSG]", error, level="ERROR")
+                raise error
+            time.sleep(5 * freq + 10)
+            self._push_to_queue(task_info, queue_key, is_head, freq=freq+1)
 
     def _push_task(self, key, params, work_tag=None, sub_key=None, report_tag=None, is_report=False,
                    report_scene=ReportScene.END, is_head=False):
@@ -472,10 +487,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
             queue_key = self.queue_prefix_key + "_" + work_tag
         task_info = RedisQueue.package_task_info(work_tag, key, params, sub_key=sub_key, report_tag=report_tag,
                                                  is_report=is_report, report_scene=report_scene)
-        if is_head is True:
-            self.redis_man.lpush(queue_key, task_info)
-        else:
-            self.redis_man.rpush(queue_key, task_info)
+        self._push_to_queue(task_info, queue_key=queue_key, is_head=is_head)
 
     def push_task(self, key, params, work_tag=None, sub_key=None, report_tag=None, is_report=False,
                   report_scene=ReportScene.END):
@@ -672,6 +684,13 @@ class RedisWorker(RedisWorkerConfig, Worker):
             else:
                 continue
             self._execute()
+
+    def handle_sign(self, sign, frame):
+        self.task_log("Redis Worker Receive SIGN", sign)
+        if self.current_task is not None:
+            self._push_to_queue(self.current_task.task_info, is_head=True)
+        self.worker_log("call close, because receive sign", sign)
+        self.close(sign)
 
     @classmethod
     def parse_args(cls):
