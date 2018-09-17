@@ -221,6 +221,19 @@ def verify_pipeline():
     sys.exit(data["code"])
 
 
+def clear_worker():
+    rs = RedisStat()
+    r_queue = RedisQueue(redis_man=rs.redis_man)
+    ws = rs.list_worker()
+    for item in ws:
+        rs.delete_heartbeat(item)
+        data = rs.list_worker_detail(item)
+        num = len(data.keys())
+        r_queue.wash_worker(item, num)
+
+
+
+
 if __name__ == "__main__":
     # sys.argv.append("--debug")
     sys.argv.extend(["-w", "Pipeline"])
