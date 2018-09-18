@@ -262,4 +262,6 @@ if __name__ == "__main__":
     print(TaskStatus.ERROR == TaskStatus.RUNNING)
     print(TaskStatus.RUNNING == TaskStatus.RUNNING)
     print(TaskStatus.is_running("ABD"))
+    import json
+    print(json.dumps({"expected_status": TaskStatus.STOPPED}))
 

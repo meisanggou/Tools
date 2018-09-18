@@ -81,6 +81,46 @@ class RedisQueue(_RedisHelper):
             v += "string," + params
         return v
 
+    @staticmethod
+    def package_task(work_tag, key, params, sub_key=None, task_type=TaskType.Normal, **kwargs):
+        """
+        info format: work_tag[|report_tag[:report_scene]],key[|sub_key],args_type(task_type),args
+        args_type: json
+        example: jy_task,key_1,json,{"v":1}
+        example: jy_task|ping,key_1|first,json,{"v":1}
+        """
+        if sub_key is not None:
+            key = "%s|%s" % (key, sub_key)
+        if is_string(work_tag) is False:
+            raise InvalidWorkTag()
+        if ValueVerify.v_work_tag(work_tag) is False:
+            raise InvalidWorkTag()
+        if task_type == TaskType.Normal:
+            report_tag = kwargs.pop("report_tag", None)
+            if report_tag is not None:
+                if ValueVerify.v_report_tag(report_tag) is False:
+                    raise InvalidWorkTag()
+                report_scene = kwargs.pop("report_scene", ReportScene.END)
+                work_tag = "%s|%s:%s" % (work_tag, report_tag, report_scene)
+            if isinstance(params, dict):
+                args_s = "json," + json.dumps(params)
+            else:
+                args_s = "string," + json.dumps(params)
+        elif task_type == TaskType.Control:
+            if "expected_status" not in params:
+                raise RuntimeError("Not found expected_status in params")
+            expected_status = TaskStatus.parse(params["expected_status"])
+            if expected_status is None:
+                raise RuntimeError("Invalid expected_status")
+            params["expected_status"] = expected_status.value
+            args_s = "control," + json.dumps(params)
+        elif task_type == TaskType.Report:
+            args_s = "report," + json.dumps(params)
+        else:
+            raise RuntimeError("Invalid task type")
+        v = "%s,%s,%s" % (work_tag, key, args_s)
+        return v
+
     def _push(self, key, params, work_tag, sub_key=None, report_tag=None, is_head=False, is_report=False):
         if work_tag is None:
             work_tag = self.work_tag
