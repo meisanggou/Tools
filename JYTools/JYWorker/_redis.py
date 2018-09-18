@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # coding: utf-8
 import os
+import signal
 import argparse
 import json
 import threading
@@ -713,8 +714,9 @@ class RedisWorker(RedisWorkerConfig, Worker):
 
     def handle_sign(self, sign, frame):
         self.task_log("Redis Worker Receive SIGN", sign)
-        if self.current_task is not None:
-            self._push_to_delay_queue(self.current_task.task_info)
+        if sign not in (signal.SIGUSR1, signal.SIGUSR2):
+            if self.current_task is not None:
+                self._push_to_delay_queue(self.current_task.task_info)
         self.worker_log("call close, because receive sign", sign)
         self.close(sign)
 
