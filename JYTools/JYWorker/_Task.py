@@ -197,7 +197,7 @@ class WorkerTask(object):
     def set(self, **kwargs):
         allow_keys = ["task_key", "task_status", "task_name", "sub_task_detail", "task_sub_key", "task_info",
                       "task_params", "task_report_tag", "is_report_task", "work_tag", "task_message", "start_time",
-                      "end_time", "task_output", "task_errors"]
+                      "end_time", "task_output", "task_errors", "task_type"]
         for k, v in kwargs.items():
             if k not in allow_keys:
                 continue

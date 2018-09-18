@@ -131,6 +131,14 @@ class RedisQueue(_RedisHelper):
         else:
             self.redis_man.rpush(queue_key, v)
 
+    def push_control(self, key, work_tag, expected_status, sub_key=None, **params):
+        if work_tag is None:
+            work_tag = self.work_tag
+        params.update(expected_status=expected_status)
+        v = self.package_task(work_tag, key, params, sub_key=sub_key, task_type=TaskType.Control)
+        queue_key = self.queue_prefix_key + "_" + work_tag
+        self.redis_man.rpush(queue_key, v)
+
     def push(self, key, params, work_tag=None, sub_key=None, report_tag=None, is_head=False, is_report=False):
         key = "%s" % key
         if len(key) <= 0:
