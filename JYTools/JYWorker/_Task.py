@@ -14,13 +14,15 @@ class TaskStatus(object):
     """
         add in version 0.1.19
     """
-    NONE = "None"
-    SUCCESS = "Success"
-    FAIL = "Fail"
-    ERROR = "Fail"
-    INVALID = "Invalid"
-    READY = "Ready"
-    RUNNING = "Running"
+    NONE = "None"  # 任务未被设置状态或状态未知
+    SUCCESS = "Success"  # 任务执行成功
+    FAIL = "Fail"  # 任务执行失败 完全等同于ERROR
+    ERROR = "Fail"  # 任务执行失败 完全等同于FAIL
+    INVALID = "Invalid"  # 任务无效，缺少必须要的参数，或者参数不符合要求
+    READY = "Ready"  # 任务已具备运行的条件，等待执行，可能在排队或者硬件资源不足
+    RUNNING = "Running"  # 任务正在运行
+    STOPPING = "Stopping"  # 任务接收到终止信号 正在终止中
+    STOPPED = "Stopped"  # 任务接收到终止信号 已经终止
 
     @staticmethod
     def is_success(status):

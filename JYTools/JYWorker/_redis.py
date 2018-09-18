@@ -56,7 +56,7 @@ class RedisQueue(_RedisHelper):
     def package_task_info(work_tag, key, params, sub_key=None, report_tag=None, report_scene=ReportScene.END,
                           is_report=False):
         """
-        info format: work_tag[|report_tag[:report_scene]],key[|sub_key],args_type,args
+        info format: work_tag[|report_tag[:report_scene]],key[|sub_key],args_type(task_type),args
         args_type: json
         example: jy_task,key_1,json,{"v":1}
         example: jy_task|ping,key_1|first,json,{"v":1}
