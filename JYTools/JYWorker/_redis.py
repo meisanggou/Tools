@@ -138,6 +138,9 @@ class RedisStat(_RedisHelper):
             if self.redis_man.type(item) == "list":
                 l = self.redis_man.llen(item)
                 d_q[item[len_k:]] = l
+            elif self.redis_man.type(item) == "zset" and item.endswith("@delay"):
+                l = self.redis_man.zcard(item)
+                d_q[item[len_k:]] = l
         return d_q
 
     def list_queue_detail(self, work_tag, limit=None):
@@ -449,8 +452,20 @@ class RedisWorker(RedisWorkerConfig, Worker):
         self.redis_man.delete(key)
 
     def pop_task(self, freq=0):
+        self.num_pop_task += 1
+        next_task = None
         try:
-            next_task = self.redis_man.blpop(self.queue_key, self.pop_time_out)
+            if self.num_pop_task % 5 != 0:
+                tasks = self.redis_man.blpop(self.queue_key, self.pop_time_out)
+                if tasks is not None:
+                    next_task = tasks[1]
+            else:
+                tasks = self.redis_man.zrangebyscore(self.delay_queue_key, 0, time.time())
+                for item in tasks:
+                    l = self.redis_man.zrem(self.delay_queue_key, item)
+                    if l > 0:
+                        next_task = item
+                        break
         except Exception as e:
             if freq > 5:
                 self.worker_log("[REDIS POP ERROR MSG]", e, level="ERROR")
@@ -458,9 +473,14 @@ class RedisWorker(RedisWorkerConfig, Worker):
             time.sleep(5 * freq + 10)
             return self.pop_task(freq=freq+1)
         if next_task is not None:
-            t = StringTool.decode(next_task[1])
+            t = StringTool.decode(next_task)
             return t
         return next_task
+
+    def _push_to_delay_queue(self, task_info):
+        key = self.delay_queue_key
+        delay_second = 30
+        self.redis_man.zadd(key, task_info, time.time() + delay_second)
 
     def _push_to_queue(self, task_info, queue_key=None, is_head=False, freq=0):
         if queue_key is None:
@@ -649,6 +669,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
         if self.is_running is True:
             self.worker_log("Is Running")
             return False
+        self._worker_status = 10
         # 发送空包清洗旧的worker
         self._push_task("", "", is_head=True)
         # 启动前其他辅助 运行起来：设置心跳值 打卡
@@ -665,9 +686,12 @@ class RedisWorker(RedisWorkerConfig, Worker):
         self.worker_log("Worker Clock Key Is", self.clock_key)
 
         while True:
+            self._worker_status = 100
             if self.has_heartbeat() is False:
                 self.close()
+            self._worker_status = 110
             next_task = self.pop_task()
+            self._worker_status = 120
             if next_task is None:
                 continue
             parse_r, task_item = self.parse_task_info(next_task)
@@ -683,12 +707,14 @@ class RedisWorker(RedisWorkerConfig, Worker):
                 self.current_task = task_item
             else:
                 continue
+            self._worker_status = 150
             self._execute()
+            self._worker_status = 200
 
     def handle_sign(self, sign, frame):
         self.task_log("Redis Worker Receive SIGN", sign)
         if self.current_task is not None:
-            self._push_to_queue(self.current_task.task_info, is_head=True)
+            self._push_to_delay_queue(self.current_task.task_info)
         self.worker_log("call close, because receive sign", sign)
         self.close(sign)
 

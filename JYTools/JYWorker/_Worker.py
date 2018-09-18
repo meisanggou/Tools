@@ -69,14 +69,18 @@ class Worker(WorkerConfig, _WorkerLog):
         self.num_wrongful_job = 0  # add in 0.8.1
         self.num_invalid_job = 0  # add in 0.8.1
         self.num_null_job = 0  # add in 0.8.1
+        self.num_pop_task = 0  # add in 1.6.8 尝试去获得任务的次数（无论是否获得数据，无论从哪个队列中获得）
         if "worker_index" in kwargs:
             self.worker_index = kwargs["worker_index"]
         if "redirect_stdout" in kwargs:
             self.redirect_stdout = kwargs["redirect_stdout"]
         self.heartbeat_key = self.heartbeat_prefix_key + "_" + self.work_tag
         self.queue_key = self.queue_prefix_key + "_" + self.work_tag
+        # 延时队列，该队列和普通queue相对，访问一定次数的普通queue才会访问一次该队列
+        self.delay_queue_key = self.queue_prefix_key + "_" + self.work_tag + "@delay"
         self.clock_key = self.clock_prefix_key + "_" + self.work_tag + "_" + self._id
         self.current_task = WorkerTask()
+        self._worker_status = 0  # 内部运行状态。目前主要用于 当收到kill信号时的处理
 
     """
     add in 0.4.0

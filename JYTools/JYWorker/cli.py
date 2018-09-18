@@ -215,7 +215,7 @@ def verify_pipeline():
     try:
         c_o = json.loads(c)
     except ValueError:
-        logger.error(" The content of the file is not legal, not the json content")
+        logger.error("The content of the file is not legal, not the json content")
         sys.exit(1)
     r, data = DAGTools.ip_verify_pipeline(c_o)
     sys.exit(data["code"])
@@ -236,7 +236,7 @@ def clear_worker():
 
 if __name__ == "__main__":
     # sys.argv.append("--debug")
-    sys.argv.extend(["-w", "Pipeline"])
+    # sys.argv.extend(["-w", "Pipeline"])
     # wash_worker()
-    sys.argv.append("/mnt/data/Tools/JYTools/demo/example.json")
-    report_task()
+    # sys.argv.append("/mnt/data/Tools/JYTools/demo/example.json")
+    list_queue()
