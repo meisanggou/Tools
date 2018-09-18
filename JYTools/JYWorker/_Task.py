@@ -4,13 +4,14 @@
 import os
 import re
 import types
+from enum import Enum
 from JYTools import StringTool
-from ._exception import WorkerTaskParamsKeyNotFound, WorkerTaskParamsValueTypeError
+from _exception import WorkerTaskParamsKeyNotFound, WorkerTaskParamsValueTypeError
 
 __author__ = '鹛桑够'
 
 
-class TaskStatus(object):
+class TaskStatus(Enum):
     """
         add in version 0.1.19
     """
@@ -56,6 +57,28 @@ class TaskStatus(object):
             return True
         if status.lower() == TaskStatus.NONE.lower():
             return True
+        return False
+
+    @classmethod
+    def parse(cls, s):
+        if isinstance(s, TaskStatus):
+            return s
+        if StringTool.is_string(s) is False:
+            return None
+        for key, value in cls.__members__.items():
+            if value == s:
+                return value
+        return None
+
+    def lower(self):
+        return self.value.lower()
+
+    def __str__(self):
+        return self.value
+
+    def __eq__(self, other):
+        if StringTool.is_string(other) is True or isinstance(other, TaskStatus):
+            return self.lower() == other.lower()
         return False
 
 
@@ -217,18 +240,14 @@ class WorkerTask(object):
 
 
 if __name__ == "__main__":
-    a = dict({"a": "b"}, c="c")
-    print(a)
-    wp = WorkerTaskParams(dict(a=1, b=2), c=5)
-    print(wp)
-    # for key in wp:
-    #     print(key)
-    # print wp.keys()
-    # print(wp["a"])
-    # print(wp["c"])
-    if TaskStatus.is_success("succEss"):
-        print("q")
+    ts = TaskStatus.parse("Stopping")
+    print(ts)
+    print(TaskStatus.RUNNING)
+    print(TaskStatus.RUNNING == "Running")
+    print(TaskStatus.RUNNING == "RUNNING")
+    print(TaskStatus.RUNNING == "Running2")
+    print("Running" == TaskStatus.RUNNING)
 
-    wt = WorkerTask(**dict(task_report_tag="Plus:1"))
-    print(wt.task_report_tag)
-    print(wt.task_report_scene)
+    print(TaskStatus.ERROR == TaskStatus.RUNNING)
+    print(TaskStatus.RUNNING == TaskStatus.RUNNING)
+    print(TaskStatus.is_running("ABD"))
