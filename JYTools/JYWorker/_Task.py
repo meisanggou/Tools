@@ -160,9 +160,10 @@ class WorkerTask(object):
     """
     __slots__ = ("task_key", "task_name", "task_sub_key", "task_info", "task_params", "task_status", "task_report_tag",
                  "is_report_task", "task_output", "task_message", "task_errors", "work_tag", "start_time", "end_time",
-                 "sub_task_detail", "log_path", "task_report_scene")
+                 "sub_task_detail", "log_path", "task_report_scene", "task_type")
 
     def __init__(self, **kwargs):
+        self.task_type = TaskType.Normal
         self.task_key = None
         self.task_name = None
         self.task_sub_key = None
@@ -203,6 +204,9 @@ class WorkerTask(object):
             if k == "task_report_tag":
                 self._set_report_tag(v)
                 continue
+            if k == "is_report_task":
+                if v is True:
+                    self.task_type = TaskType.Report
             self.__setattr__(k, v)
 
     def to_dict(self):
