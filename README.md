@@ -5,6 +5,7 @@ jingyun tools
 worker启动后可处理系统信号 signal.SIGINT signal.SIGTERM signal.SIGUSR1 signal.SIGUSR2,如有任务将任务重新放入延时队列
 DAGWorker防止重新汇报 只允许Running状态下可以多次汇报
 记录 尝试去获得任务的次数（无论是否获得数据，无论从哪个队列中获得） num_pop_task
+支持接收控制任务
 
 ## 1.6.7
 worker启动时默认发送一个空包清洗旧的worker

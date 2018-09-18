@@ -17,7 +17,7 @@ from JYTools.StringTool import is_string
 from ._config import RedisWorkerConfig, WorkerConfig
 from .util import ValueVerify, ReportScene
 from ._Worker import Worker
-from ._Task import WorkerTask, WorkerTaskParams
+from ._Task import WorkerTask, WorkerTaskParams, TaskType, TaskStatus
 from ._exception import InvalidTaskKey, InvalidWorkTag
 
 __author__ = '鹛桑够'
@@ -639,11 +639,11 @@ class RedisWorker(RedisWorkerConfig, Worker):
         if len(keys) > 1:
             task_item.set(task_sub_key=keys[1])
 
-        if partition_task[2] not in ("string", "json", "report"):
+        if partition_task[2] not in ("string", "json", "report", "control"):
             error_msg = "Invalid task %s, task args type invalid" % task_info
             return False, error_msg
         params = partition_task[3]
-        if partition_task[2] in ("json", "report"):
+        if partition_task[2] in ("json", "report", "control"):
             try:
                 params = json.loads(params)
             except ValueError:
@@ -652,6 +652,15 @@ class RedisWorker(RedisWorkerConfig, Worker):
         if partition_task[2] == "report":
             task_item.set(is_report_task=True)
             task_item.set(task_params=WorkerTask(**params))
+        elif partition_task[2] == "control":
+            task_item.set(task_type=TaskType.Control)
+            if "expected_status" not in params:
+                return False, "Invalid Task, not found expected_status in params"
+            expected_status = TaskStatus.parse(params["expected_status"])
+            if expected_status is None:
+                return False, "Invalid Task, unknown expected status, %s" % params["expected_status"]
+            task_item.set(task_params=WorkerTaskParams(**params))
+            task_item.task_params.debug_func = self.task_debug_log
         else:
             if self.expect_params_type is not None:
                 if not isinstance(params, self.expect_params_type):

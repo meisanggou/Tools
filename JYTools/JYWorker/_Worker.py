@@ -17,7 +17,7 @@ from JYTools import StringTool
 from JYTools.JYWorker.util import ValueVerify, ReportScene
 from ._exception import TaskErrorException, InvalidTaskException, WorkerTaskParamsKeyNotFound
 from ._exception import WorkerTaskParamsValueTypeError
-from ._Task import TaskStatus, WorkerTask, WorkerTaskParams
+from ._Task import TaskStatus, WorkerTask, WorkerTaskParams, TaskType
 from ._config import WorkerConfig, WorkerLogConfig
 
 __author__ = 'meisanggou'
@@ -210,14 +210,16 @@ class Worker(WorkerConfig, _WorkerLog):
                 standard_out = sys.stdout
                 sys.stdout = self
             self.current_task.task_status = TaskStatus.RUNNING
-            if self.current_task.is_report_task is False and self.current_task.task_report_tag is not None:
+            if self.current_task.task_type == TaskType.Normal and self.current_task.task_report_tag is not None:
                 if ReportScene.include_begin(self.current_task.task_report_scene) is True:
                     self.task_debug_log("Start Report Task Running Status")
                     self.push_task(self.current_task.task_key, self.current_task.to_dict(),
                                    work_tag=self.current_task.task_report_tag, sub_key=self.current_task.task_sub_key,
                                    is_report=True)
-            if self.current_task.is_report_task is False:
+            if self.current_task.task_type == TaskType.Normal:
                 self._handle_task_func(self.current_task.task_key, self.current_task.task_params)
+            elif self.current_task.task_type == TaskType.Control:
+                self.handle_control(**self.current_task.task_params)
             else:
                 self.handle_report_task()
             if self.current_task.task_status == TaskStatus.RUNNING:
@@ -266,7 +268,7 @@ class Worker(WorkerConfig, _WorkerLog):
             if standard_out is not None:
                 sys.stdout = standard_out
             self.current_task.end_time = time()
-            if self.current_task.is_report_task is False and self.current_task.task_report_tag is not None:
+            if self.current_task.task_type == TaskType.Normal and self.current_task.task_report_tag is not None:
                 self.task_debug_log("Start Report Task Status")
                 self.push_task(self.current_task.task_key, self.current_task.to_dict(),
                                work_tag=self.current_task.task_report_tag, sub_key=self.current_task.task_sub_key,
@@ -306,7 +308,7 @@ class Worker(WorkerConfig, _WorkerLog):
         pass
 
     # 子类需重载的方法
-    def handle_control(self, expected_status):
+    def handle_control(self, expected_status, **params):
         self.set_current_task_invalid("Worker not support control task status")
 
     def handle_invalid_task(self, task_info, error_info):
