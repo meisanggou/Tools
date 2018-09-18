@@ -216,7 +216,7 @@ class WorkerTask(object):
         # d["task_info"] = self.task_info
         # d["task_params"] = self.task_params
         d["task_name"] = self.task_name
-        d["task_status"] = self.task_status
+        d["task_status"] = self.task_status.value
         d["task_output"] = self.task_output
         d["work_tag"] = self.work_tag
         d["task_message"] = self.task_message
