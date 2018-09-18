@@ -305,6 +305,10 @@ class Worker(WorkerConfig, _WorkerLog):
     def handler_task_exception(self, e):
         pass
 
+    # 子类需重载的方法
+    def handle_control(self, expected_status):
+        self.set_current_task_invalid("Worker not support control task status")
+
     def handle_invalid_task(self, task_info, error_info):
         pass
 

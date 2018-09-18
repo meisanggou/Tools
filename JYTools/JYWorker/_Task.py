@@ -82,6 +82,13 @@ class TaskStatus(Enum):
         return False
 
 
+class TaskType(Enum):
+
+    Normal = 1
+    Report = 2
+    Control = 3
+
+
 class WorkerTaskParams(dict):
     """
         add in version 0.5.0
@@ -251,3 +258,4 @@ if __name__ == "__main__":
     print(TaskStatus.ERROR == TaskStatus.RUNNING)
     print(TaskStatus.RUNNING == TaskStatus.RUNNING)
     print(TaskStatus.is_running("ABD"))
+
