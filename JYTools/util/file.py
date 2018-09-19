@@ -9,7 +9,7 @@ __author__ = '鹛桑够'
 class FileWriter(object):
 
     def __init__(self, file_path, mode="w"):
-        self.file_path = file_path
+        self.file_path = StringTool.encode(file_path)
         self.mode = mode
         self._w = None
         self._w = open(self.file_path, mode=self.mode)
@@ -31,12 +31,12 @@ class FileWriter(object):
         self._w.close()
 
 if __name__ == "__main__":
-    with FileWriter("test.txt") as fw:
+    with FileWriter("test鹛桑够.txt") as fw:
         fw.write("this 鹛桑够")
         fw.write(u"this 鹛桑够")
         fw.write_line("this 鹛桑够")
         fw.write_array(["this", "鹛桑够", u"鹛桑够"])
-    fw2 = FileWriter("test2.txt")
+    fw2 = FileWriter(u"test鹛桑够2.txt")
     fw2.write("this 鹛桑够")
     fw2.write(u"this 鹛桑够")
     fw2.write_line("this 鹛桑够")
