@@ -16,7 +16,7 @@ if sys.version_info <= (2, 7):
     sys.exit(1)
 
 name = "JYTools"
-version = "1.6.9"
+version = "1.7.0"
 url = "https://github.com/meisanggou/Tools"
 author = __author__
 short_description = "Jing Yun Tools Library"
@@ -45,7 +45,7 @@ setup(name=name,
       author=author,
       author_email="zhouheng@gene.ac",
       url=url,
-      packages=["JYTools", "JYTools/JYWorker", "JYTools/JYFlask"],
+      packages=["JYTools", "JYTools/JYWorker", "JYTools/JYFlask", "JYTools/util"],
       license="MIT",
       description=short_description,
       long_description=long_description,

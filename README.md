@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.7.0
+add util/file 写文件
+
 ## 1.6.9
 worker启动后可处理系统信号 signal.SIGINT signal.SIGTERM signal.SIGUSR1 signal.SIGUSR2,如有任务将任务重新放入延时队列
 DAGWorker防止重新汇报 只允许Running状态下可以多次汇报
