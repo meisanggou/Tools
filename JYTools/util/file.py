@@ -40,4 +40,4 @@ if __name__ == "__main__":
     fw2.write("this 鹛桑够")
     fw2.write(u"this 鹛桑够")
     fw2.write_line("this 鹛桑够")
-    fw2.write_array(["this", "鹛桑够", u"鹛桑够"])
+    fw2.write_array(["this", "鹛桑够", u"鹛桑够", 1])
