@@ -70,6 +70,8 @@ class TaskStatus(object):
                 continue
             if key.startswith("_") is True:
                 continue
+            if isinstance(value, SimpleString):
+                continue
             if value.lower() == s.lower():
                 return value
         return None
