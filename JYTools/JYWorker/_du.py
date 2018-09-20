@@ -7,7 +7,7 @@ from time import time
 from JYTools import is_num, logger
 from JYTools.StringTool import is_string, join_decode
 from JYTools.JYWorker.util import ValueVerify, ReportScene
-from ._Task import TaskStatus
+from ._Task import TaskStatus, TaskType
 from ._redis import RedisWorker
 
 __author__ = 'meisanggou'
@@ -700,6 +700,7 @@ class DAGWorker(RedisWorker):
         if pipeline_report_tag is not None:
             self.current_task.is_report_task = False
             self.current_task.task_report_tag = pipeline_report_tag
+            self.current_task.task_type = TaskType.Normal
         self.clear_task_item(task_len)
 
     def try_remove_ready_or_running_task(self):
