@@ -4,26 +4,26 @@
 import os
 import re
 import types
-from enum import Enum
+from JYTools.util.string import SimpleString
 from JYTools import StringTool
 from _exception import WorkerTaskParamsKeyNotFound, WorkerTaskParamsValueTypeError
 
 __author__ = '鹛桑够'
 
 
-class TaskStatus(Enum):
+class TaskStatus(object):
     """
         add in version 0.1.19
     """
-    NONE = "None"  # 任务未被设置状态或状态未知
-    SUCCESS = "Success"  # 任务执行成功
-    FAIL = "Fail"  # 任务执行失败 完全等同于ERROR
-    ERROR = "Fail"  # 任务执行失败 完全等同于FAIL
-    INVALID = "Invalid"  # 任务无效，缺少必须要的参数，或者参数不符合要求
-    READY = "Ready"  # 任务已具备运行的条件，等待执行，可能在排队或者硬件资源不足
-    RUNNING = "Running"  # 任务正在运行
-    STOPPING = "Stopping"  # 任务接收到终止信号 正在终止中
-    STOPPED = "Stopped"  # 任务接收到终止信号 已经终止
+    NONE = SimpleString("None")  # 任务未被设置状态或状态未知
+    SUCCESS = SimpleString("Success")  # 任务执行成功
+    FAIL = SimpleString("Fail")  # 任务执行失败 完全等同于ERROR
+    ERROR = SimpleString("Fail")  # 任务执行失败 完全等同于FAIL
+    INVALID = SimpleString("Invalid")  # 任务无效，缺少必须要的参数，或者参数不符合要求
+    READY = SimpleString("Ready")  # 任务已具备运行的条件，等待执行，可能在排队或者硬件资源不足
+    RUNNING = SimpleString("Running")  # 任务正在运行
+    STOPPING = SimpleString("Stopping")  # 任务接收到终止信号 正在终止中
+    STOPPED = SimpleString("Stopped")  # 任务接收到终止信号 已经终止
 
     @staticmethod
     def is_success(status):
@@ -65,24 +65,17 @@ class TaskStatus(Enum):
             return s
         if StringTool.is_string(s) is False:
             return None
-        for key, value in cls.__members__.items():
-            if value == s:
+        for key, value in cls.__dict__.items():
+            if StringTool.is_string(value) is False:
+                continue
+            if key.startswith("_") is True:
+                continue
+            if value.lower() == s.lower():
                 return value
         return None
 
-    def lower(self):
-        return self.value.lower()
 
-    def __str__(self):
-        return self.value
-
-    def __eq__(self, other):
-        if StringTool.is_string(other) is True or isinstance(other, TaskStatus):
-            return self.lower() == other.lower()
-        return False
-
-
-class TaskType(Enum):
+class TaskType(object):
 
     Normal = 1
     Report = 2
@@ -216,7 +209,7 @@ class WorkerTask(object):
         # d["task_info"] = self.task_info
         # d["task_params"] = self.task_params
         d["task_name"] = self.task_name
-        d["task_status"] = self.task_status.value
+        d["task_status"] = self.task_status
         d["task_output"] = self.task_output
         d["work_tag"] = self.work_tag
         d["task_message"] = self.task_message
@@ -251,7 +244,11 @@ class WorkerTask(object):
 
 
 if __name__ == "__main__":
-    ts = TaskStatus.parse("Stopping")
+    import json
+    print(json.dumps({"s": SimpleString("s")}))
+    print(SimpleString("Abc") == "abc")
+    StringTool.is_string(SimpleString("ddd"))
+    ts = TaskStatus.parse("Stopping2")
     print(ts)
     print(TaskStatus.RUNNING)
     print(TaskStatus.RUNNING == "Running")
@@ -260,7 +257,7 @@ if __name__ == "__main__":
     print("Running" == TaskStatus.RUNNING)
 
     print(TaskStatus.ERROR == TaskStatus.RUNNING)
-    print(TaskStatus.RUNNING == TaskStatus.RUNNING)
+    print(TaskStatus.RUNNING == TaskStatus.RUNNING.value)
     print(TaskStatus.is_running("ABD"))
     import json
     print(json.dumps({"expected_status": TaskStatus.STOPPED}))

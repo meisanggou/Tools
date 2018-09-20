@@ -112,7 +112,7 @@ class RedisQueue(_RedisHelper):
             expected_status = TaskStatus.parse(params["expected_status"])
             if expected_status is None:
                 raise RuntimeError("Invalid expected_status")
-            params["expected_status"] = expected_status.value
+            params["expected_status"] = expected_status
             args_s = "control," + json.dumps(params)
         elif task_type == TaskType.Report:
             args_s = "report," + json.dumps(params)

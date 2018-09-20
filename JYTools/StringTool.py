@@ -5,6 +5,7 @@ import os
 import string
 import six
 import random
+from JYTools.util.string import is_string
 
 # add in version 0.1.7
 
@@ -29,12 +30,6 @@ def encode(s):
     if isinstance(s, six.text_type):
         return s.encode(encoding)
     return s
-
-
-def is_string(s):
-    if isinstance(s, (six.binary_type, six.text_type)) is False:
-        return False
-    return True
 
 
 def join(a, join_str):
