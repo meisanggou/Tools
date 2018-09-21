@@ -238,10 +238,11 @@ def clear_worker():
 
 
 
-
 if __name__ == "__main__":
     # sys.argv.append("--debug")
     # sys.argv.extend(["-w", "Pipeline"])
     # wash_worker()
-    # sys.argv.append("/mnt/data/Tools/JYTools/demo/example.json")
-    list_queue()
+    sys.argv.extend(["--report-tag", "Pipeline", "-k", "100", "-s", "2", "--task-output", '{"a":"a"}', "--task-status", "Success", "success"])
+    print(" ".join(sys.argv))
+    # list_queue()
+    report_task()

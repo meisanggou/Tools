@@ -934,6 +934,8 @@ class DAGWorker(RedisWorker):
 
         # 获得task_len
         task_len = self.get_task_item(0, "task_len")
+        if task_len is None:
+            self.set_current_task_error("Task Len Is None.")
         self.task_log("Task Len Is ", task_len)
         for index in range(task_len):
             self.task_log("Start Set Input For Task ", index + 1)
