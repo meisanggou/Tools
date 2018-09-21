@@ -1,7 +1,7 @@
 # Tools
 jingyun tools
 
-## 1.7.3
+## 1.7.4
 report-task 可以设置task_output
 
 ## 1.7.2
