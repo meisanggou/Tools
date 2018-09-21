@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.7.3
+report-task 可以设置task_output
+
 ## 1.7.2
 worker启动后可处理系统信号 signal.SIGINT signal.SIGTERM signal.SIGUSR1 signal.SIGUSR2,如有任务将任务重新放入延时队列
 DAGWorker防止重新汇报 只允许Running状态下可以多次汇报
