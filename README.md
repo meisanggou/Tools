@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.7.6
+fix DAG fail not report
+
 ## 1.7.5
 DAG 自动保存fail掉的任务详情
 

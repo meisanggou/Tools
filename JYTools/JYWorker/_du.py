@@ -749,6 +749,7 @@ class DAGWorker(RedisWorker):
         if pipeline_report_tag is not None:
             self.current_task.is_report_task = False
             self.current_task.task_report_tag = pipeline_report_tag
+            self.current_task.task_type = TaskType.Normal
         self.clear_task_item(task_len)
         self.current_task.task_status = TaskStatus.FAIL
         # 自动保存fail掉的任务详情
