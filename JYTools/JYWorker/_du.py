@@ -751,6 +751,7 @@ class DAGWorker(RedisWorker):
             self.current_task.task_report_tag = pipeline_report_tag
         self.clear_task_item(task_len)
         self.current_task.task_status = TaskStatus.FAIL
+        # 自动保存fail掉的任务详情
         with FileWriter(self.current_task.log_path + ".r") as w:
             w.write(json.dumps(self.current_task.to_dict(), indent=2))
         return True
