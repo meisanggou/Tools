@@ -3,6 +3,7 @@
 
 import os
 import re
+import json
 import types
 from JYTools.util.string import SimpleString
 from JYTools import StringTool
@@ -248,7 +249,6 @@ class WorkerTask(object):
         return json.dumps(self.to_dict())
 
 if __name__ == "__main__":
-    import json
     print(json.dumps({"s": SimpleString("s")}))
     print(SimpleString("Abc") == "abc")
     StringTool.is_string(SimpleString("ddd"))

@@ -1,7 +1,7 @@
 # Tools
 jingyun tools
 
-## 1.7.6
+## 1.7.7
 fix DAG fail not report
 
 ## 1.7.5
