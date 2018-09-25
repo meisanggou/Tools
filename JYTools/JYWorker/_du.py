@@ -2,10 +2,12 @@
 # coding: utf-8
 
 import re
+import json
 import logging
 from time import time
 from JYTools import is_num, logger
 from JYTools.StringTool import is_string, join_decode
+from JYTools.util.file import FileWriter
 from JYTools.JYWorker.util import ValueVerify, ReportScene
 from ._Task import TaskStatus, TaskType
 from ._redis import RedisWorker
@@ -749,6 +751,8 @@ class DAGWorker(RedisWorker):
             self.current_task.task_report_tag = pipeline_report_tag
         self.clear_task_item(task_len)
         self.current_task.task_status = TaskStatus.FAIL
+        with FileWriter(self.current_task.log_path + ".r") as w:
+            w.write(json.dumps(self.current_task.to_dict(), indent=2))
         return True
 
     def fail_pipeline(self, *args):

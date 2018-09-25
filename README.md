@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.7.5
+DAG 自动保存fail掉的任务详情
+
 ## 1.7.4
 report-task 可以设置task_output
 
