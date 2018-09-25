@@ -244,6 +244,8 @@ class WorkerTask(object):
         for arg in args:
             self.task_errors.append(arg)
 
+    def __str__(self):
+        return json.dumps(self.to_dict())
 
 if __name__ == "__main__":
     import json
