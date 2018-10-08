@@ -84,6 +84,16 @@ class TaskType(object):
     Report = 2
     Control = 3
 
+    @classmethod
+    def parse(cls, t):
+        try:
+            i_t = int(t)
+        except ValueError:
+            return None
+        for tt in (TaskType.Normal, TaskType.Report, TaskType.Control):
+            if tt == i_t:
+                return tt
+        return None
 
 class WorkerTaskParams(dict):
     """

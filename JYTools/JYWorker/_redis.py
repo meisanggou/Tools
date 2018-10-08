@@ -13,6 +13,7 @@ from datetime import datetime
 from redis import RedisError
 from JYTools import TIME_FORMAT
 from JYTools import StringTool
+from JYTools.util.string import StringEscape
 from JYTools.StringTool import is_string
 from ._config import RedisWorkerConfig, WorkerConfig
 from .util import ValueVerify, ReportScene
@@ -51,6 +52,9 @@ class RedisQueue(_RedisHelper):
         conf_path_environ_key
         add in version 0.1.25
     """
+
+    part_handler = StringEscape(spec_chars={",": ";"})
+    sub_part_handler = StringEscape(spec_chars={"|": "%"})
 
     @staticmethod
     def package_task_info(work_tag, key, params, sub_key=None, report_tag=None, report_scene=ReportScene.END,
@@ -120,6 +124,123 @@ class RedisQueue(_RedisHelper):
             raise RuntimeError("Invalid task type")
         v = "%s,%s,%s" % (work_tag, key, args_s)
         return v
+
+    @classmethod
+    def package_task_v2(cls, work_tag, key, params, sub_key=None, task_type=TaskType.Normal, **kwargs):
+        """
+        add in 1.7.8 use to replace package_task and package_task_info
+        format:
+        $2,task_type,work_tag,key[|sub_key],report_tag[|report_scene],data_type|task_data
+        :param work_tag:
+        :param key:
+        :param params:
+        :param sub_key:
+        :param task_type:
+        :param kwargs:
+        :return:
+        """
+        # part 0 version + part 1 task_type
+        ps = ["$2", task_type]
+        if is_string(work_tag) is False:
+            raise InvalidWorkTag()
+        if ValueVerify.v_work_tag(work_tag) is False:
+            raise InvalidWorkTag()
+        # part 2 work_tag
+        ps.append(work_tag)
+        if sub_key is not None:
+            key = ("%s" % key, "%s" % sub_key)
+        # part 3 key
+        ps.append(key)
+        report_tag = kwargs.pop("report_tag", "")
+        if len(report_tag) > 0:
+            if ValueVerify.v_report_tag(report_tag) is False:
+                raise InvalidWorkTag()
+            report_scene = kwargs.pop("report_scene", ReportScene.END)
+            report_tag = (report_tag, "%s" % report_scene)
+        # report tag
+        ps.append(report_tag)
+        if task_type == TaskType.Normal:
+            if isinstance(params, dict):
+                args_s = ["json", json.dumps(params)]
+            else:
+                args_s = ["string", json.dumps(params)]
+        elif task_type == TaskType.Control:
+            if "expected_status" not in params:
+                raise RuntimeError("Not found expected_status in params")
+            expected_status = TaskStatus.parse(params["expected_status"])
+            if expected_status is None:
+                raise RuntimeError("Invalid expected_status")
+            params["expected_status"] = expected_status
+            args_s = ["json", json.dumps(params)]
+        elif task_type == TaskType.Report:
+            args_s = ["json", json.dumps(params)]
+        else:
+            raise RuntimeError("Invalid task type")
+        ps.append(args_s)
+
+        v = ",".join(map(lambda x: cls.part_handler.escape(cls._handle_package_sub_part(x)), ps))
+        return v
+
+    @classmethod
+    def _handle_package_sub_part(cls, data, action="package"):
+        if action == "package":
+            if isinstance(data, (tuple, list)):
+                p = "|".join(map(lambda x: cls.sub_part_handler.escape(x), data))
+            else:
+                p = cls.sub_part_handler.escape("%s" % data)
+            return p
+        elif action == "unpack":
+            s_data = data.split("|")
+            return map(cls.sub_part_handler.unescape, s_data)
+        return None
+
+    @classmethod
+    def unpack_task_v2(cls, task_info):
+        data = dict()
+        parts = map(cls.part_handler.unescape, task_info.split(","))
+        print(parts)
+        if len(parts) != 6:
+            return False, "package parts not right, forward 6, now is %s" % len(parts)
+        # part 0 version info
+        if parts[0] != "$2":
+            return False, "version prefix not match, please make sure is $2"
+        # part 1 task_type
+        task_type = TaskType.parse(parts[1])
+        if task_type is None:
+            return False, "Invalid task_type:%s" % parts[1]
+        data["task_type"] = task_type
+        # part 2 work_tag
+        data["work_tag"] = parts[2]
+        # part 3 key
+        s_keys = cls._handle_package_sub_part(parts[3], action="unpack")
+        if len(s_keys) >= 2:
+            data["key"] = s_keys[0]
+            data["sub_key"] = s_keys[1]
+        else:
+            data["key"] = s_keys[0]
+        # part 4 report tag
+        s_report = cls._handle_package_sub_part(parts[4], action="unpack")
+        if len(s_report) >= 2:
+            data["report_tag"] = s_report[0]
+            try:
+                data["report_scene"] = int(s_report[1])
+            except ValueError:
+                return False, "Invalid report scene: %s" % s_report[1]
+        elif len(s_report[0]) > 0:
+            data["report_tag"] = s_report[0]
+        # part 5 data
+        s_data = cls._handle_package_sub_part(parts[5], action="unpack")
+        if len(s_data) != 2:
+            return False, "Invalid data part"
+        if s_data[0] == "json":
+            data["params"] = json.loads(s_data[1])
+        return True, data
+
+    @classmethod
+    def unpack_task(cls, task_info):
+        if task_info.startswith("$2,") is True:
+            return cls.unpack_task_v2(task_info)
+        return False, "Unknown package version prefix"
 
     def _push(self, key, params, work_tag, sub_key=None, report_tag=None, is_head=False, is_report=False):
         if work_tag is None:
