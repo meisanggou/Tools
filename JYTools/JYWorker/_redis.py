@@ -803,11 +803,9 @@ class RedisWorker(RedisWorkerConfig, Worker):
         self.worker_log(error_info, level="WARNING")
 
     def parse_task_info(self, task_info):
-        print(task_info)
         task_item = WorkerTask(task_info=task_info)
         if task_info.startswith("$2") is True:
             un_r, data = RedisQueue.unpack_task(task_info)
-            print(data)
             if un_r is False:
                 return False, data
             if len(data["key"]) <= 0:
