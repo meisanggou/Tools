@@ -207,6 +207,22 @@ def look_task_item():
                     continue
 
 
+def clear_dirty_item():
+    arg_man.add_argument("-w", "--work-tag", dest="work_tag", help="work tag", metavar="")
+    args = parse_args()
+    rs = RedisStat()
+    work_tag = args.work_tag
+    dirty_items = rs.get_dirty_item(work_tag=args.work_tag)
+    for item in dirty_items:
+        message = "Are You Sure Delete %s, Include [%s]. Message Is %s" % (item["prefix"], ",".join(item["sub_keys"]),
+                                                                           item["message"])
+        message += "\nInput Y/n  "
+        sure = jy_input(message)
+        if sure.lower() == "y":
+            print("Delete %s" % item["prefix"])
+            rs.clear_task_item(work_tag, item["prefix"])
+
+
 def verify_pipeline():
     arg_man.add_argument("file", help="pipeline file", metavar="file")
     empty_help()
@@ -240,9 +256,9 @@ def clear_worker():
 
 if __name__ == "__main__":
     # sys.argv.append("--debug")
-    # sys.argv.extend(["-w", "Pipeline"])
+    sys.argv.extend(["-w", "Pipeline"])
     # wash_worker()
-    sys.argv.extend(["--report-tag", "Pipeline", "-k", "100", "-s", "2", "--task-output", '{"a":"a"}', "--task-status", "Success", "success"])
+    # sys.argv.extend(["--report-tag", "Pipeline", "-k", "100", "-s", "2", "--task-output", '{"a":"a"}', "--task-status", "Success", "success"])
     print(" ".join(sys.argv))
     # list_queue()
-    report_task()
+    clear_dirty_item()

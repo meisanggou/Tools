@@ -22,5 +22,6 @@ q = rs.list_queue()
 # for item in lh:
 #     print(rs.list_heartbeat_detail(item))
 
-task_items = rs.list_task_item("Pipeline", 210)
-print(task_items)
+# task_items = rs.list_task_item("Pipeline", 210)
+# print(task_items)
+rs.get_dirty_item("Pipeline")

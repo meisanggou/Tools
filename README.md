@@ -4,6 +4,8 @@ jingyun tools
 ## 1.7.8
 add StringEscape
 add package_task_v2 unpack_task_v2
+DAG Worker 可以处理stop信号
+add jyworker.delete-dirty-item
 
 ## 1.7.7
 fix DAG fail not report

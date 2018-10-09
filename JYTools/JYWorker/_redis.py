@@ -493,6 +493,41 @@ class RedisStat(_RedisHelper):
                 task_items["values"][key] = RedisData.unpack_data(item[key])
         return task_items
 
+    def get_dirty_item(self, work_tag):
+        k_l = [self.queue_prefix_key, work_tag, "*"]
+        key_prefix = StringTool.join_decode(k_l, "_")
+        prefix_len = len(key_prefix) - 1
+        hs = self.redis_man.keys(key_prefix)
+        all_keys = dict()
+        find_sub_key = re.compile("_(\d+)$")
+        for item in hs:
+            if self.redis_man.type(item) != "hash":
+                continue
+            search_r = find_sub_key.search(item)
+            if search_r is None:
+                continue
+            sub_key = search_r.groups()[0]
+            p = item[:0 - len(sub_key) - 1]
+            if p in all_keys:
+                all_keys[p].append(sub_key)
+            else:
+                all_keys[p] = [sub_key]
+        delete_items = []
+        # 删除 没有任务描述的零散任务
+        for key in all_keys.keys():
+            union_key = key[prefix_len:]
+            if "0" not in all_keys[key]:
+                delete_items.append(dict(prefix=union_key, sub_keys=all_keys[key], message="未发现pipeline信息"))
+                continue
+            task_len = RedisData.unpack_data(self.redis_man.hget(key + "_0", "task_len"))
+            if task_len is None:
+                delete_items.append(dict(prefix=union_key, sub_keys=all_keys[key], message="pipeline信息未发现task_len"))
+                continue
+            for i in range(task_len):
+                if "%s" % i not in all_keys[key]:
+                    delete_items.append(dict(prefix=union_key, sub_keys=all_keys[key], message="缺少子任务%s的信息" % i))
+        return delete_items
+
     def clear_task_item(self, work_tag, key):
         k_l = [self.queue_prefix_key, work_tag, key, "*"]
         key_prefix = StringTool.join_decode(k_l, "_")

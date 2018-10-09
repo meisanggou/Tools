@@ -16,7 +16,7 @@ if sys.version_info <= (2, 7):
     sys.exit(1)
 
 name = "JYTools"
-version = "1.7.7"
+version = "1.7.8"
 url = "https://github.com/meisanggou/Tools"
 author = __author__
 short_description = "Jing Yun Tools Library"
@@ -35,6 +35,7 @@ entry_points = {'console_scripts': [
     'jyworker.wash-worker=JYTools.JYWorker.cli:wash_worker',
     'jyworker.list-worker=JYTools.JYWorker.cli:list_worker',
     'jyworker.look-item=JYTools.JYWorker.cli:look_task_item',
+    'jyworker.delete-dirty-item=JYTools.JYWorker.cli:clear_dirty_item',
     'jyworker.dag-verify=JYTools.JYWorker.cli:verify_pipeline',
     'jyworker.push-task=JYTools.JYWorker.cli:push_task',
     'jyworker.report-task=JYTools.JYWorker.cli:report_task'
