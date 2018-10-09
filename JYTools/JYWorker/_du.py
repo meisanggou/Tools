@@ -1002,7 +1002,7 @@ class DAGWorker(RedisWorker):
                     continue
                 inp = task_item[item_key]
                 if is_string(inp) is True and inp.startswith("&"):
-                    self.task_log("Task ", index + 1, " Handle Input ", item_key)
+                    self.task_log("Task", index + 1, "Handle Input", item_key)
                     ref_r, ref_info = self.analysis_ref(inp[1:], index, task_len, allow_non_required=True)
                     if ref_r is False:
                         self.set_task_item(index + 1, "task_status", TaskStatus.FAIL)
@@ -1021,7 +1021,7 @@ class DAGWorker(RedisWorker):
                         self.set_task_item(index + 1, item_key, ref_output)
                     else:
                         self.task_log("Task ", index + 1, " Input ", item_key, " Ref Task", ref_index, " ", ref_key,
-                                      " , But not found and the input is not required, so delete this input", )
+                                      ", But not found and the input is not required, so delete this input", )
                         self.del_task_item(index + 1, hash_key=item_key)
                 elif isinstance(inp, list):
                     for sub_i in range(len(inp)):
