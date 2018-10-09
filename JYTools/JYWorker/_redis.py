@@ -139,6 +139,8 @@ class RedisQueue(_RedisHelper):
         :param kwargs:
         :return:
         """
+        if "is_report" in kwargs and kwargs["is_report"] is True:
+            task_type = TaskType.Report
         # part 0 version + part 1 task_type
         ps = ["$2", task_type]
         if is_string(work_tag) is False:
@@ -152,11 +154,13 @@ class RedisQueue(_RedisHelper):
         # part 3 key
         ps.append(key)
         report_tag = kwargs.pop("report_tag", "")
-        if len(report_tag) > 0:
+        if report_tag is not None and len(report_tag) > 0:
             if ValueVerify.v_report_tag(report_tag) is False:
                 raise InvalidWorkTag()
             report_scene = kwargs.pop("report_scene", ReportScene.END)
             report_tag = (report_tag, "%s" % report_scene)
+        if report_tag is None:
+            report_tag = ""
         # report tag
         ps.append(report_tag)
         if task_type == TaskType.Normal:
@@ -198,7 +202,6 @@ class RedisQueue(_RedisHelper):
     def unpack_task_v2(cls, task_info):
         data = dict()
         parts = map(cls.part_handler.unescape, task_info.split(","))
-        print(parts)
         if len(parts) != 6:
             return False, "package parts not right, forward 6, now is %s" % len(parts)
         # part 0 version info
@@ -234,6 +237,20 @@ class RedisQueue(_RedisHelper):
             return False, "Invalid data part(5)"
         if s_data[0] == "json":
             data["params"] = json.loads(s_data[1])
+            if task_type == TaskType.Report:
+                data["params"] = WorkerTask(**data["params"])
+            elif task_type == TaskType.Control:
+                if "expected_status" not in data["params"]:
+                    return False, "Invalid Task, not found expected_status in params"
+                expected_status = TaskStatus.parse(data["params"]["expected_status"])
+                if expected_status is None:
+                    return False, "Invalid Task, unknown expected status, %s" % data["params"]["expected_status"]
+                data["params"] = WorkerTaskParams(**data["params"])
+            else:
+                data["params"] = WorkerTaskParams(**data["params"])
+        else:
+            if task_type in (TaskType.Report, TaskType.Control):
+                return False, "task_type not match data type. need json data"
         return True, data
 
     @classmethod
@@ -245,7 +262,7 @@ class RedisQueue(_RedisHelper):
     def _push(self, key, params, work_tag, sub_key=None, report_tag=None, is_head=False, is_report=False):
         if work_tag is None:
             work_tag = self.work_tag
-        v = self.package_task_info(work_tag, key, params, sub_key=sub_key, report_tag=report_tag, is_report=is_report)
+        v = self.package_task_v2(work_tag, key, params, sub_key=sub_key, report_tag=report_tag, is_report=is_report)
         queue_key = self.queue_prefix_key + "_" + work_tag
         if is_head is True:
             self.redis_man.lpush(queue_key, v)
@@ -256,7 +273,7 @@ class RedisQueue(_RedisHelper):
         if work_tag is None:
             work_tag = self.work_tag
         params.update(expected_status=expected_status)
-        v = self.package_task(work_tag, key, params, sub_key=sub_key, task_type=TaskType.Control)
+        v = self.package_task_v2(work_tag, key, params, sub_key=sub_key, task_type=TaskType.Control)
         queue_key = self.queue_prefix_key + "_" + work_tag
         self.redis_man.rpush(queue_key, v)
 
@@ -675,8 +692,8 @@ class RedisWorker(RedisWorkerConfig, Worker):
             work_tag = self.work_tag
         else:
             queue_key = self.queue_prefix_key + "_" + work_tag
-        task_info = RedisQueue.package_task_info(work_tag, key, params, sub_key=sub_key, report_tag=report_tag,
-                                                 is_report=is_report, report_scene=report_scene)
+        task_info = RedisQueue.package_task_v2(work_tag, key, params, sub_key=sub_key, report_tag=report_tag,
+                                               is_report=is_report, report_scene=report_scene)
         self._push_to_queue(task_info, queue_key=queue_key, is_head=is_head)
 
     def push_task(self, key, params, work_tag=None, sub_key=None, report_tag=None, is_report=False,
@@ -786,62 +803,70 @@ class RedisWorker(RedisWorkerConfig, Worker):
         self.worker_log(error_info, level="WARNING")
 
     def parse_task_info(self, task_info):
+        print(task_info)
         task_item = WorkerTask(task_info=task_info)
         if task_info.startswith("$2") is True:
             un_r, data = RedisQueue.unpack_task(task_info)
+            print(data)
             if un_r is False:
                 return False, data
+            if len(data["key"]) <= 0:
+                return True, None
             task_item.set(**data)
-        partition_task = task_info.split(",", 3)
-        if len(partition_task) != 4:
-            error_msg = "Invalid task %s, task partition length is not 3" % task_info
-            return False, error_msg
-
-        work_tags = partition_task[0].split("|")  # 0 work tag 1 return tag
-        if work_tags[0] != self.work_tag:
-            error_msg = "Invalid task %s, task not match work tag %s" % (task_info, self.work_tag)
-            return False, error_msg
-        task_item.set(work_tag=work_tags[0])
-        if len(work_tags) > 1:
-            task_item.set(task_report_tag=work_tags[1])
-
-        keys = partition_task[1].split("|")
-        if len(keys[0]) <= 0:
-            return True, None
-        task_item.set(task_key=keys[0])
-        if len(keys) > 1:
-            task_item.set(task_sub_key=keys[1])
-
-        if partition_task[2] not in ("string", "json", "report", "control"):
-            error_msg = "Invalid task %s, task args type invalid" % task_info
-            return False, error_msg
-        params = partition_task[3]
-        if partition_task[2] in ("json", "report", "control"):
-            try:
-                params = json.loads(params)
-            except ValueError:
-                error_msg = "Invalid task %s, task args type and args not uniform" % task_info
-                return False, error_msg
-        if partition_task[2] == "report":
-            task_item.set(task_params=WorkerTask(**params))
-        elif partition_task[2] == "control":
-            task_item.set(task_type=TaskType.Control)
-            if "expected_status" not in params:
-                return False, "Invalid Task, not found expected_status in params"
-            expected_status = TaskStatus.parse(params["expected_status"])
-            if expected_status is None:
-                return False, "Invalid Task, unknown expected status, %s" % params["expected_status"]
-            task_item.set(task_params=WorkerTaskParams(**params))
-            task_item.task_params.debug_func = self.task_debug_log
+            if isinstance(task_item.task_params, WorkerTaskParams):
+                task_item.task_params.debug_func = self.task_debug_log
         else:
-            if self.expect_params_type is not None:
-                if not isinstance(params, self.expect_params_type):
-                    return False, "Invalid task, not expect param type"
-            if isinstance(self.expect_params_type, dict) is True:
+            self.worker_log("handle old data format")
+            partition_task = task_info.split(",", 3)
+            if len(partition_task) != 4:
+                error_msg = "Invalid task %s, task partition length is not 3" % task_info
+                return False, error_msg
+
+            work_tags = partition_task[0].split("|")  # 0 work tag 1 return tag
+            if work_tags[0] != self.work_tag:
+                error_msg = "Invalid task %s, task not match work tag %s" % (task_info, self.work_tag)
+                return False, error_msg
+            task_item.set(work_tag=work_tags[0])
+            if len(work_tags) > 1:
+                task_item.set(task_report_tag=work_tags[1])
+
+            keys = partition_task[1].split("|")
+            if len(keys[0]) <= 0:
+                return True, None
+            task_item.set(task_key=keys[0])
+            if len(keys) > 1:
+                task_item.set(task_sub_key=keys[1])
+
+            if partition_task[2] not in ("string", "json", "report", "control"):
+                error_msg = "Invalid task %s, task args type invalid" % task_info
+                return False, error_msg
+            params = partition_task[3]
+            if partition_task[2] in ("json", "report", "control"):
+                try:
+                    params = json.loads(params)
+                except ValueError:
+                    error_msg = "Invalid task %s, task args type and args not uniform" % task_info
+                    return False, error_msg
+            if partition_task[2] == "report":
+                task_item.set(task_params=WorkerTask(**params))
+            elif partition_task[2] == "control":
+                task_item.set(task_type=TaskType.Control)
+                if "expected_status" not in params:
+                    return False, "Invalid Task, not found expected_status in params"
+                expected_status = TaskStatus.parse(params["expected_status"])
+                if expected_status is None:
+                    return False, "Invalid Task, unknown expected status, %s" % params["expected_status"]
                 task_item.set(task_params=WorkerTaskParams(**params))
                 task_item.task_params.debug_func = self.task_debug_log
             else:
-                task_item.set(task_params=params)
+                if self.expect_params_type is not None:
+                    if not isinstance(params, self.expect_params_type):
+                        return False, "Invalid task, not expect param type"
+                if isinstance(self.expect_params_type, dict) is True:
+                    task_item.set(task_params=WorkerTaskParams(**params))
+                    task_item.task_params.debug_func = self.task_debug_log
+                else:
+                    task_item.set(task_params=params)
         if StringTool.is_string(self.log_dir) is True:
             log_name = StringTool.join_encode([self.work_tag, "_", task_item.task_key, ".log"], join_str="")
             task_item.log_path = StringTool.path_join(self.log_dir, log_name)
@@ -886,6 +911,10 @@ class RedisWorker(RedisWorkerConfig, Worker):
                 self.num_null_job += 1
                 continue
             if isinstance(task_item, WorkerTask):
+                if len(task_item.task_key) == 0:
+                    self.worker_log("Receive Null Package")
+                    self.num_null_job += 1
+                    continue
                 self.current_task = task_item
             else:
                 continue

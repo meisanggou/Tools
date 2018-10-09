@@ -95,6 +95,7 @@ class TaskType(object):
                 return tt
         return None
 
+
 class WorkerTaskParams(dict):
     """
         add in version 0.5.0
@@ -200,12 +201,15 @@ class WorkerTask(object):
             self.task_report_tag = report_tag
 
     def set(self, **kwargs):
+        alias_keys = {"report_tag": "task_report_tag", "key": "task_key", "sub_key": "task_sub_key",
+                      "report_scene": "task_report_scene", "params": "task_params"}
         allow_keys = ["task_key", "task_status", "task_name", "sub_task_detail", "task_sub_key", "task_info",
                       "task_params", "task_report_tag", "work_tag", "task_message", "start_time",
-                      "end_time", "task_output", "task_errors", "task_type"]
+                      "end_time", "task_output", "task_errors", "task_type", "task_report_scene"]
         for k, v in kwargs.items():
             if k not in allow_keys:
-                continue
+                if k in alias_keys.keys():
+                    k = alias_keys[k]
             if k == "task_report_tag":
                 self._set_report_tag(v)
                 continue
