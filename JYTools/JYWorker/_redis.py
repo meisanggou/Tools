@@ -231,7 +231,7 @@ class RedisQueue(_RedisHelper):
         # part 5 data
         s_data = cls._handle_package_sub_part(parts[5], action="unpack")
         if len(s_data) != 2:
-            return False, "Invalid data part"
+            return False, "Invalid data part(5)"
         if s_data[0] == "json":
             data["params"] = json.loads(s_data[1])
         return True, data
@@ -787,7 +787,11 @@ class RedisWorker(RedisWorkerConfig, Worker):
 
     def parse_task_info(self, task_info):
         task_item = WorkerTask(task_info=task_info)
-
+        if task_info.startswith("$2") is True:
+            un_r, data = RedisQueue.unpack_task(task_info)
+            if un_r is False:
+                return False, data
+            task_item.set(**data)
         partition_task = task_info.split(",", 3)
         if len(partition_task) != 4:
             error_msg = "Invalid task %s, task partition length is not 3" % task_info
@@ -819,7 +823,6 @@ class RedisWorker(RedisWorkerConfig, Worker):
                 error_msg = "Invalid task %s, task args type and args not uniform" % task_info
                 return False, error_msg
         if partition_task[2] == "report":
-            task_item.set(is_report_task=True)
             task_item.set(task_params=WorkerTask(**params))
         elif partition_task[2] == "control":
             task_item.set(task_type=TaskType.Control)

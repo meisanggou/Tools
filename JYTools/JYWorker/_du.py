@@ -700,7 +700,6 @@ class DAGWorker(RedisWorker):
         self.package_task_item(task_len)
         pipeline_report_tag = self.get_task_item(0, hash_key="report_tag")
         if pipeline_report_tag is not None:
-            self.current_task.is_report_task = False
             self.current_task.task_report_tag = pipeline_report_tag
             self.current_task.task_type = TaskType.Normal
         self.clear_task_item(task_len)
@@ -747,7 +746,6 @@ class DAGWorker(RedisWorker):
         self.package_task_item(task_len)
         pipeline_report_tag = self.get_task_item(0, hash_key="report_tag")
         if pipeline_report_tag is not None:
-            self.current_task.is_report_task = False
             self.current_task.task_report_tag = pipeline_report_tag
             self.current_task.task_type = TaskType.Normal
         self.clear_task_item(task_len)
@@ -918,7 +916,7 @@ class DAGWorker(RedisWorker):
         return pipeline_task
 
     def handle_task(self, key, params):
-        if self.current_task.is_report_task is False:
+        if self.current_task.task_type == TaskType.Normal:
             # 检测是否有同样的KEY在调度
             task_len = self.get_task_item(0, "task_len")
             self.task_log("Task Len Is ", task_len)
@@ -1069,5 +1067,4 @@ class DAGWorker(RedisWorker):
             if ReportScene.include_real_time(report_scene):
                 self.package_task_item()
                 self.current_task.task_status = TaskStatus.RUNNING
-                self.current_task.is_report_task = False
                 self.current_task.task_report_tag = pipeline_report_tag

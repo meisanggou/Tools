@@ -165,7 +165,7 @@ class WorkerTask(object):
         task_name add in version 0.2.6
     """
     __slots__ = ("task_key", "task_name", "task_sub_key", "task_info", "task_params", "task_status", "task_report_tag",
-                 "is_report_task", "task_output", "task_message", "task_errors", "work_tag", "start_time", "end_time",
+                 "task_output", "task_message", "task_errors", "work_tag", "start_time", "end_time",
                  "sub_task_detail", "log_path", "task_report_scene", "task_type")
 
     def __init__(self, **kwargs):
@@ -178,7 +178,6 @@ class WorkerTask(object):
         self.task_status = TaskStatus.NONE
         self.task_report_tag = None  # 任务结束后汇报的的work_tag
         self.task_report_scene = 2  # 仅任务结束后汇报
-        self.is_report_task = False
         self.task_output = dict()
         self.task_message = None  # 保存任务的执行结果的综述
         self.task_errors = []  # 保存多条错误记录
@@ -202,7 +201,7 @@ class WorkerTask(object):
 
     def set(self, **kwargs):
         allow_keys = ["task_key", "task_status", "task_name", "sub_task_detail", "task_sub_key", "task_info",
-                      "task_params", "task_report_tag", "is_report_task", "work_tag", "task_message", "start_time",
+                      "task_params", "task_report_tag", "work_tag", "task_message", "start_time",
                       "end_time", "task_output", "task_errors", "task_type"]
         for k, v in kwargs.items():
             if k not in allow_keys:
@@ -210,9 +209,6 @@ class WorkerTask(object):
             if k == "task_report_tag":
                 self._set_report_tag(v)
                 continue
-            if k == "is_report_task":
-                if v is True:
-                    self.task_type = TaskType.Report
             self.__setattr__(k, v)
 
     def to_dict(self):
