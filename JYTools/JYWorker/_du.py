@@ -967,8 +967,8 @@ class DAGWorker(RedisWorker):
         if self.current_task.task_type == TaskType.Normal:
             # 检测是否有同样的KEY在调度
             task_len = self.get_task_item(0, "task_len")
-            self.task_log("Task Len Is ", task_len)
             if task_len is not None:
+                self.task_log("Task Len Is ", task_len)
                 self.set_current_task_invalid("Have the same key in scheduling, replace key is recommended")
             self.task_log("Start Format Pipeline")
             sh = logging.StreamHandler(self)
@@ -991,12 +991,12 @@ class DAGWorker(RedisWorker):
         self.task_log("Task Len Is ", task_len)
         not_set_input_task = []
         for index in range(task_len):
-            self.task_log("Start Set Input For Task ", index + 1)
             task_item = self.get_task_item(index + 1)
             task_status = task_item.get("task_status", None)
             if TaskStatus.is_none(task_status) is False:
                 not_set_input_task.append("%s:%s" % (index + 1, task_status))
                 continue
+            self.task_log("Start Set Input For Task ", index + 1)
             for item_key in task_item.keys():
                 if item_key.startswith("input_") is False:
                     continue
