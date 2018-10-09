@@ -107,11 +107,14 @@ class WorkerTaskParams(dict):
         else:
             super(WorkerTaskParams, self).__init__(**kwargs)
         self.debug_func = None
+        self.known_key = set()  # 一个key保证值调用debug_func一次
 
     def get(self, k, d=None):
         v = dict.get(self, k, d)
         if isinstance(self.debug_func, types.MethodType) is True:
-            self.debug_func(k, v)
+            if k not in self.known_key:
+                self.debug_func(k, v)
+            self.known_key.add(k)
         return v
 
     def getint(self, k, d=None):
@@ -156,7 +159,9 @@ class WorkerTaskParams(dict):
             raise WorkerTaskParamsKeyNotFound(item)
         v = dict.__getitem__(self, item)
         if isinstance(self.debug_func, types.MethodType) is True:
-            self.debug_func(item, v)
+            if item not in self.known_key:
+                self.debug_func(item, v)
+            self.known_key.add(item)
         return v
 
 
