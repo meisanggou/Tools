@@ -126,7 +126,8 @@ class RedisQueue(_RedisHelper):
         return v
 
     @classmethod
-    def package_task_v2(cls, work_tag, key, params, sub_key=None, task_type=TaskType.Normal, **kwargs):
+    def package_task_v2(cls, work_tag, key, params, sub_key=None, task_type=TaskType.Normal, return_prefix=False,
+                        **kwargs):
         """
         add in 1.7.8 use to replace package_task and package_task_info
         format:
@@ -181,8 +182,10 @@ class RedisQueue(_RedisHelper):
         else:
             raise RuntimeError("Invalid task type")
         ps.append(args_s)
-
-        v = ",".join(map(lambda x: cls.part_handler.escape(cls._handle_package_sub_part(x)), ps))
+        if return_prefix is True:
+            v = ",".join(map(lambda x: cls.part_handler.escape(cls._handle_package_sub_part(x)), ps[:-2]))
+        else:
+            v = ",".join(map(lambda x: cls.part_handler.escape(cls._handle_package_sub_part(x)), ps))
         return v
 
     @classmethod
@@ -351,6 +354,7 @@ class RedisStat(_RedisHelper):
         return l_qd
 
     def remove_queue_task(self, work_tag, key, report_tag=None, sub_key=None):
+        task_key = key
         if report_tag is not None:
             re_work_tag = StringTool.join_decode([work_tag, report_tag], join_str="|")
         else:
@@ -358,13 +362,14 @@ class RedisStat(_RedisHelper):
         if sub_key is not None:
             key = StringTool.join_decode([key, sub_key], join_str="|")
         value_prefix = StringTool.join_decode([re_work_tag, key], ",")
+        value_prefix2 = RedisQueue.package_task_v2(work_tag, task_key, "", sub_key=sub_key, return_prefix=True)
         queue_tasks = self.list_queue_detail(work_tag)
         if queue_tasks is None:
             return 0
         count = 0
         key = StringTool.join_decode([self.queue_prefix_key, work_tag], join_str="_")
         for task in queue_tasks:
-            if task.startswith(value_prefix) is True:
+            if task.startswith(value_prefix) is True or task.startswith(value_prefix2) is True:
                 try:
                     count += self.redis_man.lrem(key, task, num=0)
                 except Exception:

@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # coding: utf-8
 
-from JYTools.JYWorker import RedisQueue
+from JYTools.JYWorker import RedisQueue, TaskStatus
 
 __author__ = 'meisanggou'
 
@@ -77,6 +77,7 @@ pipeline_detail4 = {"task_list": [pipeline_split], "task_output": {"m": "&1m"}, 
 
 import time
 key = int(time.time()) % 100
-pipeline_detail5 = {"task_list": [plus_task], "input_a": 3, "input_abc1": 6}
+pipeline_detail5 = {"task_list": [plus_task], "input_a": 30, "input_abc1": 6}
 print(key)
-r_queue.push(key, pipeline_detail5)
+r_queue.push(key, pipeline_detail5, report_tag="Result")
+r_queue.push_control(key, "Pipeline", TaskStatus.STOPPED, force=False, report_file="/tmp/pipeline/Pipeline_%s.r.json" % key)

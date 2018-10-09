@@ -582,15 +582,19 @@ class DAGWorker(RedisWorker):
         else:
             self.current_task.task_sub_key = None
         reporter_sub_key = int(sp_keys[-1])  # 子任务在父任务中的位置 位置从1开始
-        self.task_log("Task ", r_task.work_tag, reporter_sub_key, " Report")
         task_status = r_task.task_status
+        self.task_log("Task ", r_task.work_tag, reporter_sub_key, " Report. Status Is", task_status)
+        # 获得父任务状态  父任务状态如不存在 说明父任务已经结束，此次汇报无效
+        pipeline_status = self.get_task_item(0, hash_key="task_status")
+        if pipeline_status is None:
+            self.set_current_task_invalid("Not found parent pipeline status.")
+
         # 防止重新汇报 只允许Running状态下可以多次汇报
         old_status = self.get_task_item(reporter_sub_key, "task_status")
         if old_status == task_status and not TaskStatus.is_running(task_status):
             self.task_log("Task", reporter_sub_key, "Old Status is", old_status, ". This Report Is Same. IGNORE")
             return
         task_message = r_task.task_message
-        self.task_log("Task ", reporter_sub_key, " Status Is ", task_status)
         self.set_task_item(reporter_sub_key, "task_status", task_status)
         self.set_task_item(reporter_sub_key, "task_message", task_message)
         if r_task.sub_task_detail is not None:
@@ -609,10 +613,12 @@ class DAGWorker(RedisWorker):
         self.set_task_item(reporter_sub_key, "end_time", r_task.end_time)
         self.set_task_item(reporter_sub_key, "finished_time", time())
         # 获取当前pipeline状态
-        pipeline_status = self.get_task_item(0, hash_key="task_status")
         if TaskStatus.is_fail(pipeline_status):
             self.task_log("Current Task Status Is ", pipeline_status)
             return self.try_finish_pipeline()
+        if pipeline_status == TaskStatus.STOPPED or pipeline_status == TaskStatus.STOPPING:
+            self.task_log("Current Task Status Is ", pipeline_status)
+            return self.stop_pipeline()
         self.handle_task(self.current_task.task_key, None)
 
     def format_pipeline(self, key, params):
@@ -753,6 +759,48 @@ class DAGWorker(RedisWorker):
         # 自动保存fail掉的任务详情
         with FileWriter(self.current_task.log_path + ".r") as w:
             w.write(json.dumps(self.current_task.to_dict(), indent=2))
+        return True
+
+    def stop_pipeline(self, force=False):
+        self.task_log("start stop pipeline")
+        self.set_task_item(0, "task_status", TaskStatus.STOPPING)
+        self.try_remove_ready_or_running_task()
+        task_len = self.get_task_item(0, hash_key="task_len")
+        if task_len is None:
+            self.set_current_task_error("Not Found Pipeline Task Len")
+            return False
+        running_count = 0
+        ready_count = 0
+        success_count = 0  # 停止任务时，可能任务已经全部完成或者非强制停止，随后的任务顺利完成。若任务全部完成将任务状态置成success
+        for index in range(task_len):
+            task_status = self.get_task_item(index + 1, "task_status")
+            if TaskStatus.is_running(task_status) is True:
+                if force is True:
+                    self.set_task_item(index + 1, "task_status", TaskStatus.STOPPED)
+                    continue
+                running_count += 1
+                # TODO passing stop command
+            if TaskStatus.is_ready(task_status) is True:
+                if force is True:
+                    self.set_task_item(index + 1, "task_status", TaskStatus.STOPPED)
+                    continue
+                ready_count += 1
+                # TODO passing stop command
+            if TaskStatus.is_success(task_status) is True:
+                success_count += 1
+        if running_count + ready_count != 0:
+            return False
+        report_file = self.get_task_item(0, hash_key="report_file")
+        if success_count == task_len:
+            self.task_log("all task success")
+            self.completed_pipeline()
+        else:
+            self.package_task_item(task_len)
+            self.clear_task_item(task_len)
+            self.current_task.task_status = TaskStatus.STOPPED
+        if report_file is not None:
+            with FileWriter(report_file) as w:
+                w.write(json.dumps(self.current_task.to_dict(), indent=2))
         return True
 
     def fail_pipeline(self, *args):
@@ -1054,6 +1102,15 @@ class DAGWorker(RedisWorker):
                 self.task_log("Pipeline Has Endless Loop Waiting")
                 self.fail_pipeline("Pipeline Has Endless Loop Waiting")
             return self.try_finish_pipeline()
+
+    def handle_control(self, expected_status, **params):
+        pipeline_status = self.get_task_item(0, hash_key="task_status")
+        if TaskStatus.STOPPED == expected_status:
+            if TaskStatus.is_running(pipeline_status) is False:
+                self.set_current_task_invalid("Only in running pipeline can stop. now pipeline is", pipeline_status)
+            if "report_file" in params:
+                self.set_task_item(0, "report_file", params["report_file"])
+            self.stop_pipeline(params.get("force", False))
 
     def after_handle(self):
         pipeline_status = self.get_task_item(0, hash_key="task_status")
