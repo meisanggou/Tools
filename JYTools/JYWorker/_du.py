@@ -574,6 +574,19 @@ class DAGWorker(RedisWorker):
             sub_key = "%s_%s" % (self.current_task.task_sub_key, task_index)
         return sub_key
 
+    def _prepare_report(self, task_status):
+        task_len = self.get_task_item(0, "task_len")
+        if task_len is None:
+            self.set_current_task_error("Not Found Pipeline Task Len. not execute prepare report")
+        self.current_task.task_status = task_status
+        self.package_task_item(task_len)
+        pipeline_report_tag = self.get_task_item(0, hash_key="report_tag")
+        if pipeline_report_tag is not None:
+            self.current_task.task_report_tag = pipeline_report_tag
+            self.current_task.task_type = TaskType.Normal
+        if TaskStatus.is_running(task_status) is False:
+            self.clear_task_item(task_len)
+
     def handle_report_task(self):
         r_task = self.current_task.task_params
         sp_keys = self.current_task.task_sub_key.rsplit("_", 1)
@@ -703,12 +716,7 @@ class DAGWorker(RedisWorker):
                         out_value[sub_i] = ref_info["ref_output"]
                     outputs[out_key] = out_value
             self.set_multi_output(**outputs)
-        self.package_task_item(task_len)
-        pipeline_report_tag = self.get_task_item(0, hash_key="report_tag")
-        if pipeline_report_tag is not None:
-            self.current_task.task_report_tag = pipeline_report_tag
-            self.current_task.task_type = TaskType.Normal
-        self.clear_task_item(task_len)
+        self._prepare_report(TaskStatus.SUCCESS)
 
     def try_remove_ready_or_running_task(self):
         self.task_log("Try to remove or stop ready or running task")
@@ -749,13 +757,7 @@ class DAGWorker(RedisWorker):
                 ready_count += 1
         if running_count + ready_count != 0:
             return False
-        self.package_task_item(task_len)
-        pipeline_report_tag = self.get_task_item(0, hash_key="report_tag")
-        if pipeline_report_tag is not None:
-            self.current_task.task_report_tag = pipeline_report_tag
-            self.current_task.task_type = TaskType.Normal
-        self.clear_task_item(task_len)
-        self.current_task.task_status = TaskStatus.FAIL
+        self._prepare_report(TaskStatus.FAIL)
         # 自动保存fail掉的任务详情
         with FileWriter(self.current_task.log_path + ".r") as w:
             w.write(json.dumps(self.current_task.to_dict(), indent=2))
@@ -795,9 +797,7 @@ class DAGWorker(RedisWorker):
             self.task_log("execute stop pipeline but all task success. pipeline success")
             self.completed_pipeline()
         else:
-            self.package_task_item(task_len)
-            self.clear_task_item(task_len)
-            self.current_task.task_status = TaskStatus.STOPPED
+            self._prepare_report(TaskStatus.STOPPED)
         if report_file is not None:
             with FileWriter(report_file) as w:
                 w.write(json.dumps(self.current_task.to_dict(), indent=2))
@@ -1111,16 +1111,14 @@ class DAGWorker(RedisWorker):
             if "report_file" in params:
                 self.set_task_item(0, "report_file", params["report_file"])
             self.stop_pipeline(params.get("force", False))
+        else:
+            self.set_current_task_invalid("CAN NOT HANDLE EXPECTED STATUS", expected_status)
 
     def after_handle(self):
         pipeline_status = self.get_task_item(0, hash_key="task_status")
         if TaskStatus.is_running(pipeline_status) is False:
             return
         self.task_debug_log("Pipeline is Running.")
-        pipeline_report_tag = self.get_task_item(0, hash_key="report_tag")
-        if pipeline_report_tag is not None:
-            report_scene = self.get_task_item(0, hash_key="report_scene")
-            if ReportScene.include_real_time(report_scene):
-                self.package_task_item()
-                self.current_task.task_status = TaskStatus.RUNNING
-                self.current_task.task_report_tag = pipeline_report_tag
+        report_scene = self.get_task_item(0, hash_key="report_scene")
+        if ReportScene.include_real_time(report_scene):
+            self._prepare_report(TaskStatus.RUNNING)
