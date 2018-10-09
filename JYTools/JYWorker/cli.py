@@ -209,10 +209,13 @@ def look_task_item():
 
 def clear_dirty_item():
     arg_man.add_argument("-w", "--work-tag", dest="work_tag", help="work tag", metavar="")
+    empty_help()
     args = parse_args()
     rs = RedisStat()
     work_tag = args.work_tag
     dirty_items = rs.get_dirty_item(work_tag=args.work_tag)
+    if len(dirty_items) == 0:
+        print("Not Found")
     for item in dirty_items:
         message = "Are You Sure Delete %s, Include [%s]. Message Is %s" % (item["prefix"], ",".join(item["sub_keys"]),
                                                                            item["message"])
