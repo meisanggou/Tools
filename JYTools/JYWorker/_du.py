@@ -792,7 +792,7 @@ class DAGWorker(RedisWorker):
             return False
         report_file = self.get_task_item(0, hash_key="report_file")
         if success_count == task_len:
-            self.task_log("all task success")
+            self.task_log("execute stop pipeline but all task success. pipeline success")
             self.completed_pipeline()
         else:
             self.package_task_item(task_len)
