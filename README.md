@@ -3,6 +3,7 @@ jingyun tools
 
 ## 1.7.9
 WorkerTaskParams 获取key的值时会调用debug_func。防止调用多次，一个key只允许调用一次
+减少合并DAG调度中的日志
 
 ## 1.7.8
 add StringEscape

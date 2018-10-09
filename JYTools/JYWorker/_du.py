@@ -989,12 +989,13 @@ class DAGWorker(RedisWorker):
         if task_len is None:
             self.set_current_task_error("Task Len Is None.")
         self.task_log("Task Len Is ", task_len)
+        not_set_input_task = []
         for index in range(task_len):
             self.task_log("Start Set Input For Task ", index + 1)
             task_item = self.get_task_item(index + 1)
             task_status = task_item.get("task_status", None)
             if TaskStatus.is_none(task_status) is False:
-                self.task_log("Task ", index + 1, " Not Need Set Input, Status Is ", task_item["task_status"])
+                not_set_input_task.append("%s:%s" % (index + 1, task_status))
                 continue
             for item_key in task_item.keys():
                 if item_key.startswith("input_") is False:
@@ -1036,7 +1037,8 @@ class DAGWorker(RedisWorker):
                             continue
                         ref_output = ref_info["ref_output"]
                         self.set_task_item(index + 1, "%s_%s" % (item_key, sub_i), ref_output)
-
+        if len(not_set_input_task) > 0:
+            self.task_log("Some Task Not Need Set Input, ", not_set_input_task)
         ready_count = 0
         success_count = 0
         for index in range(task_len):
