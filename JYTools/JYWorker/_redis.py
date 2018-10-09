@@ -714,6 +714,34 @@ class RedisWorker(RedisWorkerConfig, Worker):
             item_key += "_%s" % item_index
         return item_key
 
+    def _task_item_key2(self, item_index=None, key=None, sub_key=None):
+        """
+        add in 1.7.8 use to replace _task_item_key
+        :param item_index:
+        :param key:
+        :param sub_key:
+        :return:queue_key + _ + key + _ + sub_key + _ + item_index
+        """
+        item_keys = [self.queue_key]
+        if key is None:
+            key = self.current_task.task_key
+        if key is None:
+            return None
+        item_keys.append(key)
+        if sub_key is None:
+            sub_key = self.current_task.task_sub_key
+        if sub_key is not None:
+            item_keys.append(sub_key)
+        else:
+            item_keys.append("")
+        if item_index is not None:
+            item_keys.append("%s" % item_index)
+        else:
+            item_keys.append("")
+        escape_handler = StringEscape(transfer_c="#", spec_chars={"_": "-"})
+        item_key = "_".join(map(escape_handler.escape, item_keys))
+        return item_key
+
     def set_task_item(self, item_index, hash_key, hash_value, key=None, sub_key=None, nx=False):
         item_key = self._task_item_key(item_index, key, sub_key)
         if nx is True:

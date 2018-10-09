@@ -1056,7 +1056,6 @@ class DAGWorker(RedisWorker):
             return self.try_finish_pipeline()
 
     def after_handle(self):
-        self.task_debug_log("enter after handle")
         pipeline_status = self.get_task_item(0, hash_key="task_status")
         if TaskStatus.is_running(pipeline_status) is False:
             return
