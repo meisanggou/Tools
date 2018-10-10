@@ -48,7 +48,7 @@ repeat_pipeline_detail2["input_a"] = 2
 repeat_pipeline_detail2["input_b"] = 3
 
 repeat_plus_task = {"work_tag": "Plus", "input_a": [], "input_b": 10, "task_type": "repeat-app",
-                    "task_output": {"lc": "&c"}}
+                    "task_output": {"lc": "&c"}, "task_name": "+10"}
 for i in range(10):
     repeat_plus_task["input_a"].append(i)
 
@@ -77,7 +77,7 @@ pipeline_detail4 = {"task_list": [pipeline_split], "task_output": {"m": "&1m"}, 
 
 import time
 key = int(time.time()) % 100
-pipeline_detail5 = {"task_list": [plus_task], "input_a": 10, "input_abc1": 6}
+pipeline_detail5 = {"task_list": [plus_task, repeat_plus_task], "input_a": 10, "input_abc1": 6}
 print(key)
 r_queue.push(key, pipeline_detail5, report_tag="Result")
 # r_queue.push_control(key, "Pipeline", TaskStatus.STOPPED, force=True, report_file="/tmp/pipeline/Pipeline_%s.r.json" % key)

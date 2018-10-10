@@ -1036,6 +1036,8 @@ class DAGWorker(RedisWorker):
             else:
                 other_keys.append(item_key)
         task_item["task_output"] = task_output
+        if "task_name" in task_item:
+            other_keys.append("task_name")
         if "task_list" in task_item:
             other_keys.append("task_list")
         if task_item["task_type"].endswith("pipeline"):
@@ -1051,7 +1053,7 @@ class DAGWorker(RedisWorker):
             if repeat_freq % k_l != 0:
                 self.set_task_item(index + 1, "task_status", TaskStatus.INVALID)
                 self.set_task_item(index + 1, "task_message", "list input length different")
-                self.fail_pipeline("Task ", index + 1, " list input length different")
+                self.fail_pipeline("Task", index + 1, "list input length different")
             task_item[list_key] *= repeat_freq / k_l
         pipeline_task = dict(task_list=[], task_output=dict(), task_type="pipeline", work_tag=self.work_tag)
         output_ref_def = dict()
