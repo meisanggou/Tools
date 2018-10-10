@@ -587,6 +587,89 @@ class DAGWorker(RedisWorker):
         if TaskStatus.is_running(task_status) is False:
             self.clear_task_item(task_len)
 
+    def _handle_none_pipeline_sub_task_report(self):
+        """
+        父Pipeline任务状态已不存在（父任务被强制STOP或者父任务已经失败汇报了或者出现BUG）
+
+        子任务状态为：成功Success，失败出错Error或Fail，无效Invalid，已停止STOPPED，忽略汇报
+
+        子任务状态为：停止中STOPPING，一般只有pipeline子任务才会汇报此状态，非BUG不会出现，忽略汇报
+
+        子任务状态为：具备运行条件Ready，非BUG不可能出现
+
+        子任务状态为：运行中Running，队列中Queue，强制停止
+
+                    pipeline子任务无需处理，可能还未处理到 forceSTOP命令汇报了Running。pipeline子任务非BUG不可能出现Queue
+                    有Agent的task子任务，交给Agent强制停止。无Agent非BUG不会出现Queue
+                    无Agent不处理，暂时无法处理
+        :return:
+        """
+        pass
+
+    def _handle_stopping_pipeline_sub_task_report(self):
+        """
+        父Pipeline任务状态处于STOPPING（父任务非强制STOP）
+
+        子任务状态为：成功Success，已停止STOPPED，停止中STOPPING，更新子任务状态，再次尝试STOP Pipeline
+
+        子任务状态为：具备运行条件Ready，非BUG不可能出现，忽略
+
+        子任务状态为：失败出错Error或Fail，无效Invalid，更新子任务状态，父任务状态更新为失败，尝试失败操作
+
+        子任务状态为：运行中Running，更新子任务状态，无其他操作
+
+        子任务状态为：队列中Queue，停止任务
+
+                                    pipeline子任务非BUG不可能出现
+
+                                    无Agent非BUG不会出现
+
+                                    有Agnet的task子任务交给Agent进行非强制停止
+
+
+
+        :return:
+        """
+        pass
+
+    def _handle_fail_pipeline_sub_task_report(self):
+        """
+        父Pipeline任务状态处于Fail（有子任务失败）
+
+        子任务状态为：成功Success，已停止STOPPED，停止中STOPPING，失败出错Error或Fail，无效Invalid，更新子任务状态，再次尝试失败操作
+
+        子任务状态为：具备运行条件Ready，非BUG不可能出现，忽略
+
+        子任务状态为：运行中Running，更新子任务状态，无其他操作
+
+        子任务状态为：队列中Queue，停止任务
+
+                                    pipeline子任务非BUG不可能出现
+
+                                    无Agent非BUG不会出现
+
+                                    有task子任务交给Agent进行force stop
+        :return:
+        """
+        pass
+
+    def _handle_running_pipeline_sub_task_report(self):
+        """
+        父Pipeline任务状态处于Running
+
+        子任务状态为：成功Success，更新子任务状态，处理任务是否可运行
+
+        子任务状态为：已停止STOPPED，停止中STOPPING，更新子任务状态，父任务状态更新为STOPPING，再次尝试STOP Pipeline
+
+        子任务状态为：失败出错Error或Fail，无效Invalid，更新子任务状态，父任务状态更新为失败，尝试失败操作
+
+        子任务状态为：运行中Running，队列中Queue，更新子任务状态，无其他操作
+
+
+        :return:
+        """
+        pass
+
     def handle_report_task(self):
         r_task = self.current_task.task_params
         sp_keys = self.current_task.task_sub_key.rsplit("_", 1)
@@ -1124,3 +1207,29 @@ class DAGWorker(RedisWorker):
         report_scene = self.get_task_item(0, hash_key="report_scene")
         if ReportScene.include_real_time(report_scene):
             self._prepare_report(TaskStatus.RUNNING)
+
+"""
+接收到STOP命令后
+任务已完成Success，不处理
+任务参数未达到运行状态None，不处理
+任务失败或者无效 不会出现
+任务参数准备好Ready，尝试从相应redis队列中删除任务或者从Agent队列中删除 如果是force STOP 更改任务状态为STOPPED
+任务在排队中Queue，将STOP命令传送给Agent 如果是force STOP 更改任务状态为STOPPED
+
+
+Pipeline处于STOPPING接收到任务汇报（说明stop时为非force）
+若任务是失败，Pipeline状态置为失败。走失败的流程
+若任务为成功，再次尝试stop pipeline
+若任务为运行中Running，不处理
+若任务为队列中Queue，告诉Agent 非force stop任务
+若任务为STOPPED，再次尝试STOP pipeline
+若任务为STOPPING，再次尝试STOP pipeline
+
+Pipeline已不存在接收到任务汇报（说明stop时为force）
+若任务是失败，Pipeline状态置为失败。忽略
+若任务为成功，忽略
+若任务为运行中Running，告诉Agent force stop任务
+若任务为队列中Queue，告诉Agent force stop任务
+若任务为STOPPED，忽略
+若任务为STOPPING，忽略
+"""
