@@ -604,7 +604,7 @@ class DAGWorker(RedisWorker):
                     无Agent不处理，暂时无法处理
         :return:
         """
-        pass
+        self.set_current_task_invalid("Not found parent pipeline status.")
 
     def _handle_stopping_pipeline_sub_task_report(self):
         """
@@ -683,7 +683,7 @@ class DAGWorker(RedisWorker):
         # 获得父任务状态  父任务状态如不存在 说明父任务已经结束，此次汇报无效
         pipeline_status = self.get_task_item(0, hash_key="task_status")
         if pipeline_status is None:
-            self.set_current_task_invalid("Not found parent pipeline status.")
+            return self._handle_none_pipeline_sub_task_report()
 
         # 防止重新汇报 只允许Running状态下可以多次汇报
         old_status = self.get_task_item(reporter_sub_key, "task_status")

@@ -22,6 +22,7 @@ class TaskStatus(object):
     ERROR = SimpleString("Fail")  # 任务执行失败 完全等同于FAIL
     INVALID = SimpleString("Invalid")  # 任务无效，缺少必须要的参数，或者参数不符合要求
     READY = SimpleString("Ready")  # 任务已具备运行的条件，等待执行，可能在排队或者硬件资源不足
+    QUEUE = SimpleString("Queue")  # 任务排队中，等待硬件资源完备即可运行。一般有结合硬件调度Agent时才会出现该状态
     RUNNING = SimpleString("Running")  # 任务正在运行
     STOPPING = SimpleString("Stopping")  # 任务接收到终止信号 正在终止中
     STOPPED = SimpleString("Stopped")  # 任务接收到终止信号 已经终止
