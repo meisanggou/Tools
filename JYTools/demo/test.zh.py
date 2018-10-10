@@ -80,4 +80,4 @@ key = int(time.time()) % 100
 pipeline_detail5 = {"task_list": [plus_task], "input_a": 10, "input_abc1": 6}
 print(key)
 r_queue.push(key, pipeline_detail5, report_tag="Result")
-r_queue.push_control(key, "Pipeline", TaskStatus.STOPPED, force=True, report_file="/tmp/pipeline/Pipeline_%s.r.json" % key)
+# r_queue.push_control(key, "Pipeline", TaskStatus.STOPPED, force=True, report_file="/tmp/pipeline/Pipeline_%s.r.json" % key)

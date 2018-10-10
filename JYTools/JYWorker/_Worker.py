@@ -252,7 +252,7 @@ class Worker(WorkerConfig, _WorkerLog):
             self.worker_log("Invalid Task ", it.task_info, " Invalid Info: ", it.invalid_message)
             self.num_invalid_job += 1
         except Exception as e:
-            if TaskStatus.is_fail(self.current_task.task_status) is True:
+            if TaskStatus.is_fail(self.current_task.task_status) is False:
                 #  防止重复设置FAIL和覆盖用户设置的Fail
                 self.current_task.task_status = TaskStatus.FAIL
                 self.current_task.task_message = str(e)

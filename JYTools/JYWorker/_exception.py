@@ -22,7 +22,7 @@ class TaskErrorException(Exception):
     def __init__(self, key, params, *args):
         self.key = key
         self.params = params
-        self.error_message = StringTool.join(args, "")
+        self.error_message = StringTool.join(args, " ")
 
 
 class InvalidTaskKey(Exception):
