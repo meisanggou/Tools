@@ -1,6 +1,11 @@
 # Tools
 jingyun tools
 
+## 1.8.0
+整理汇报处理逻辑
+允许放入的任务信息里包含task_name
+repeat-app拆分成多个并行任务时可使用同一个task_name
+
 ## 1.7.9
 WorkerTaskParams 获取key的值时会调用debug_func。防止调用多次，一个key只允许调用一次
 减少合并DAG调度中的日志
