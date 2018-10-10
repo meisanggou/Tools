@@ -8,7 +8,7 @@ __author__ = 'meisanggou'
 r_queue = RedisQueue("/mnt/data/Tools/JYTools/demo/redis_worker.conf", work_tag="Pipeline")
 
 
-plus_task = {"work_tag": "Plus", "input_a": "&0a", "input_b": "&0abc*"}
+plus_task = {"work_tag": "Plus", "input_a": "&0a", "input_b": "&0abc*", "task_name": "Plusa+0"}
 plus_10_task = {"work_tag": "Plus", "input_a": "&1c", "input_b": 10}
 
 mult_10_task = {"work_tag": "Mult", "input_a": "&1c", "input_b": 10}

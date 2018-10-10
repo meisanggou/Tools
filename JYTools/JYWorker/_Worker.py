@@ -199,7 +199,10 @@ class Worker(WorkerConfig, _WorkerLog):
         return r_code, exec_msg
 
     def _execute(self):
-        self.worker_log("Start Execute", self.current_task.task_key)
+        if self.current_task.task_name is not None:
+            self.worker_log("Start Execute", self.current_task.task_key, self.current_task.task_name)
+        else:
+            self.worker_log("Start Execute", self.current_task.task_key)
         self.hang_up_clock(1)
         self.current_task.start_time = time()
         standard_out = None

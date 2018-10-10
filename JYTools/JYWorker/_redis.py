@@ -151,7 +151,9 @@ class RedisQueue(_RedisHelper):
         # part 2 work_tag
         ps.append(work_tag)
         if sub_key is not None:
-            key = ("%s" % key, "%s" % sub_key)
+            key = ["%s" % key, "%s" % sub_key]
+            if "task_name" in kwargs and is_string(kwargs["task_name"]):
+                key.append(kwargs["task_name"])
         # part 3 key
         ps.append(key)
         report_tag = kwargs.pop("report_tag", "")
@@ -192,7 +194,7 @@ class RedisQueue(_RedisHelper):
     def _handle_package_sub_part(cls, data, action="package"):
         if action == "package":
             if isinstance(data, (tuple, list)):
-                p = "|".join(map(lambda x: cls.sub_part_handler.escape(x), data))
+                p = StringTool.join_decode(map(lambda x: cls.sub_part_handler.escape(x), data), "|")
             else:
                 p = cls.sub_part_handler.escape("%s" % data)
             return p
@@ -222,6 +224,8 @@ class RedisQueue(_RedisHelper):
         if len(s_keys) >= 2:
             data["key"] = s_keys[0]
             data["sub_key"] = s_keys[1]
+            if len(s_keys) >= 3:
+                data["task_name"] = s_keys[2]
         else:
             data["key"] = s_keys[0]
         # part 4 report tag
@@ -726,14 +730,14 @@ class RedisWorker(RedisWorkerConfig, Worker):
             self._push_to_queue(task_info, queue_key, is_head, freq=freq+1)
 
     def _push_task(self, key, params, work_tag=None, sub_key=None, report_tag=None, is_report=False,
-                   report_scene=ReportScene.END, is_head=False):
+                   report_scene=ReportScene.END, is_head=False, task_name=None):
         if work_tag is None:
             queue_key = self.queue_key
             work_tag = self.work_tag
         else:
             queue_key = self.queue_prefix_key + "_" + work_tag
         task_info = RedisQueue.package_task_v2(work_tag, key, params, sub_key=sub_key, report_tag=report_tag,
-                                               is_report=is_report, report_scene=report_scene)
+                                               is_report=is_report, report_scene=report_scene, task_name=task_name)
         self._push_to_queue(task_info, queue_key=queue_key, is_head=is_head)
 
     def push_task(self, key, params, work_tag=None, sub_key=None, report_tag=None, is_report=False,

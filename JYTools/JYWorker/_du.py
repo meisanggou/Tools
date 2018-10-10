@@ -158,7 +158,7 @@ class DAGTools(object):
                     return False, dict(code=15, data=repeat_freq, message=error_msg)
 
         # 检查是否有多余的key---------------------------------------------------------------------------------------------
-        avail_keys = ["task_type", "task_output", "task_status"]
+        avail_keys = ["task_type", "task_output", "task_status", "task_name"]
         if item["task_type"].endswith("pipeline") is True:
             avail_keys.append("task_list")
         else:
@@ -347,14 +347,15 @@ class DAGWorker(RedisWorker):
         self.after_handle_funcs.append(self.after_handle)
 
     def push_task(self, key, params, work_tag=None, sub_key=None, report_tag=None, is_report=False,
-                  report_scene=None):
+                  report_scene=None, task_name=None):
         if self.agent_tag is not None:
             if work_tag is not None and work_tag not in (self.work_tag, self.upload_log_tag) and is_report is False:
                 params = dict(work_tag=work_tag, params=params)
                 work_tag = self.agent_tag
         if report_scene is None:
             report_scene = ReportScene.Begin | ReportScene.End
-        self._push_task(key, params, work_tag, sub_key, report_tag, is_report=is_report, report_scene=report_scene)
+        self._push_task(key, params, work_tag, sub_key, report_tag, is_report=is_report, report_scene=report_scene,
+                        task_name=task_name)
 
     @staticmethod
     def split_ref(ref_str):
@@ -1210,8 +1211,9 @@ class DAGWorker(RedisWorker):
                         sub_key = "%s_%s" % (self.current_task.task_sub_key, index + 1)
                     self.task_log("Task ", index + 1, " ", task_item["work_tag"], " Is Ready, Push to Queue")
                     self.set_task_item(index + 1, "begin_time", time())
+                    task_name = task_item.get("task_name", None)
                     self.push_task(key, sub_task_params, sub_key=sub_key, work_tag=sub_task_params["work_tag"],
-                                   report_tag=self.work_tag)
+                                   report_tag=self.work_tag, task_name=task_name)
                 ready_count += 1
         if success_count == task_len:
             self.task_log("Task All Success")
