@@ -918,6 +918,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
                     error_msg = "Invalid task %s, task args type and args not uniform" % task_info
                     return False, error_msg
             if partition_task[2] == "report":
+                task_item.set(task_type=TaskType.Report)
                 task_item.set(task_params=WorkerTask(**params))
             elif partition_task[2] == "control":
                 task_item.set(task_type=TaskType.Control)
