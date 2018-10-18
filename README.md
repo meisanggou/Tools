@@ -1,6 +1,11 @@
 # Tools
 jingyun tools
 
+## 1.8.3
+test时允许单独指定report_scene
+worker_run 支持--report-scene
+runtime作为task信息标准参数
+
 ## 1.8.2
 DAG 支持汇报runtime信息
 
