@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.8.4
+修复BUG pipeline任务并行时 出现提前fail pipeline
+
 ## 1.8.3
 test时允许单独指定report_scene
 worker_run 支持--report-scene

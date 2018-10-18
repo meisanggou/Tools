@@ -1188,6 +1188,9 @@ class DAGWorker(RedisWorker):
                 elif TaskStatus.is_running(task_item["task_status"]):
                     ready_count += 1
                     continue
+                elif TaskStatus.QUEUE == task_item["task_status"]:
+                    ready_count += 1
+                    continue
                 elif TaskStatus.is_ready(task_item["task_status"]):
                     ready_count += 1
                     continue
