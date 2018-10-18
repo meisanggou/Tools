@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.8.2
+DAG 支持汇报runtime信息
+
 ## 1.8.1
 修复一代数据格式处理问题(未将report任务标记出来)
 

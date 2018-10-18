@@ -590,8 +590,24 @@ class DAGWorker(RedisWorker):
 
     def _save_report_task_status(self, reporter_sub_key, report_task):
         task_status = report_task.task_status
+        old_status = self.get_task_item(reporter_sub_key, hash_key="task_status")
+        old_runtime = self.get_task_item(reporter_sub_key, hash_key="runtime")
+        if old_runtime is None:
+            old_runtime = dict()
+        runtime = report_task.runtime
+        if isinstance(runtime, dict) is False:
+            runtime = dict()
+        merge_runtime = dict()
+        com_status = TaskStatus.compare(task_status, old_status)
+        if com_status >= 0:
+            merge_runtime.update(old_runtime)
+            merge_runtime.update(runtime)
+        else:
+            merge_runtime.update(runtime)
+            merge_runtime.update(old_runtime)
         task_message = report_task.task_message
         sub_task_detail = report_task.sub_task_detail
+        self.set_task_item(reporter_sub_key, "runtime", merge_runtime)
         self.set_task_item(reporter_sub_key, "task_status", task_status)
         self.set_task_item(reporter_sub_key, "task_message", task_message)
         if sub_task_detail is not None:
