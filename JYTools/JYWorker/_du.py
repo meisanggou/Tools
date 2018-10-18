@@ -5,7 +5,8 @@ import re
 import json
 import logging
 from time import time
-from JYTools import is_num, logger
+from JYTools import logger
+from JYTools.util import is_num
 from JYTools.StringTool import is_string, join_decode
 from JYTools.util.file import FileWriter
 from JYTools.JYWorker.util import ValueVerify, ReportScene

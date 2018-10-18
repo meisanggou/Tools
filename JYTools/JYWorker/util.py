@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 # coding: utf-8
+
+from JYTools.util import is_number
 import re
 
 __author__ = '鹛桑够'
@@ -7,6 +9,7 @@ __author__ = '鹛桑够'
 
 class ReportScene(object):
 
+    NONE = 0
     BEGIN = 1
     Begin = 1
     END = 2
@@ -17,6 +20,8 @@ class ReportScene(object):
     def include_begin(cls, scene):
         if scene is None:
             return False
+        if is_number(scene) is False:
+            return False
         if scene & cls.Begin == cls.Begin:
             return True
         return False
@@ -25,6 +30,8 @@ class ReportScene(object):
     def include_end(cls, scene):
         if scene is None:
             return False
+        if is_number(scene) is False:
+            return False
         if scene & cls.End == cls.End:
             return True
         return False
@@ -32,6 +39,8 @@ class ReportScene(object):
     @classmethod
     def include_real_time(cls, scene):
         if scene is None:
+            return False
+        if is_number(scene) is False:
             return False
         if scene & cls.RealTime == cls.RealTime:
             return True

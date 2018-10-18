@@ -95,7 +95,8 @@ def worker_run(worker_class, default_work_tag=None):
         app = worker_class(conf_path=args.conf_path, heartbeat_value=args.heartbeat_value, work_tag=args.work_tag,
                            log_dir=args.log_dir)
         if args.example_path is not None:
-            o = app.test(key=args.key, params_path=args.example_path, sub_key=args.sub_key, report_tag=args.report_tag)
+            o = app.test(key=args.key, params_path=args.example_path, sub_key=args.sub_key, report_tag=args.report_tag,
+                         report_scene=args.report_scene)
             return 0, o
         else:
             app.work(args.daemon)

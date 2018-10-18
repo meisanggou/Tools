@@ -1013,6 +1013,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
         cls.test_parser.add_argument("-e", "--example-path", dest="example_path", help="run an example use this file")
         cls.test_parser.add_argument("-k", "--key", dest="key", help="task key")
         cls.test_parser.add_argument("-r", "--report-tag", dest="report_tag", help="report tag")
+        cls.test_parser.add_argument("--report-scene", dest="report_scene", help="report scene")
         cls.test_parser.add_argument("-s", "--sub-key", dest="sub_key", help="task sub key")
 
         cls.work_parser.add_argument("-D", "--daemon", dest="daemon", help="work in daemon", action="store_true",

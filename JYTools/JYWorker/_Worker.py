@@ -378,7 +378,7 @@ class Worker(WorkerConfig, _WorkerLog):
     def run(self, wash_old=False):
         pass
 
-    def test(self, key, params=None, params_path=None, sub_key=None, report_tag=None, debug=True):
+    def test(self, key, params=None, params_path=None, sub_key=None, report_tag=None, report_scene=None, debug=True):
         if self.is_running is True:  # 一旦运行起来，不可再进入test模式即调用test方法
             raise RuntimeError("Can not test, current is running")
         self.debug = debug
@@ -386,7 +386,9 @@ class Worker(WorkerConfig, _WorkerLog):
             with open(params_path, "r") as rp:
                 c = rp.read()
                 params = json.loads(c)
-        task_item = WorkerTask(task_key=key, task_sub_key=sub_key, task_report_tag=report_tag, work_tag=self.work_tag)
+        task_item = WorkerTask(work_tag=self.work_tag, task_key=key, task_sub_key=sub_key, task_report_tag=report_tag)
+        if report_scene is not None:
+            task_item.set(task_report_scene=report_scene)
         if self.expect_params_type is not None:
             if not isinstance(params, self.expect_params_type):
                 raise TypeError("params should", self.expect_params_type)

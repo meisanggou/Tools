@@ -34,11 +34,3 @@ def jy_input(prompt, prompt_prefix=None):
         return raw_input(prompt)
     else:
         return input(prompt)
-
-
-def is_num(v):
-    return isinstance(v, (int, long))
-
-
-def is_number(v):
-    return is_num(v)

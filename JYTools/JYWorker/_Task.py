@@ -5,6 +5,7 @@ import os
 import re
 import json
 import types
+from JYTools.util import is_number
 from JYTools.util.string import SimpleString
 from JYTools import StringTool
 from _exception import WorkerTaskParamsKeyNotFound, WorkerTaskParamsValueTypeError
@@ -229,6 +230,16 @@ class WorkerTask(object):
         else:
             self.task_report_tag = report_tag
 
+    def _set_report_scene(self, report_scene):
+        if is_number(report_scene) is False:
+            try:
+                if StringTool.is_string(report_scene) is False:
+                    return None
+                report_scene = int(report_scene)
+            except ValueError:
+                return None
+        self.task_report_scene = report_scene
+
     def set(self, **kwargs):
         alias_keys = {"report_tag": "task_report_tag", "key": "task_key", "sub_key": "task_sub_key",
                       "report_scene": "task_report_scene", "params": "task_params"}
@@ -241,6 +252,9 @@ class WorkerTask(object):
                     k = alias_keys[k]
             if k == "task_report_tag":
                 self._set_report_tag(v)
+                continue
+            if k == "task_report_scene":
+                self._set_report_scene(v)
                 continue
             self.__setattr__(k, v)
 
