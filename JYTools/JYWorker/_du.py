@@ -158,7 +158,7 @@ class DAGTools(object):
                     return False, dict(code=15, data=repeat_freq, message=error_msg)
 
         # 检查是否有多余的key---------------------------------------------------------------------------------------------
-        avail_keys = ["task_type", "task_output", "task_status", "task_name"]
+        avail_keys = ["task_type", "task_output", "task_status", "task_name", "runtime"]
         if item["task_type"].endswith("pipeline") is True:
             avail_keys.append("task_list")
         else:
