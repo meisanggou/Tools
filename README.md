@@ -3,6 +3,7 @@ jingyun tools
 
 ## 1.8.5
 RedisWorker Add push_control
+DAG Worker 接收到STOP命令，将控制传递给子任务
 
 ## 1.8.4
 修复BUG pipeline任务并行时 出现提前fail pipeline

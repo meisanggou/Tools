@@ -358,6 +358,15 @@ class DAGWorker(RedisWorker):
         self._push_task(key, params, work_tag, sub_key, report_tag, is_report=is_report, report_scene=report_scene,
                         task_name=task_name)
 
+    def push_control(self, key, expected_status, params=None, work_tag=None, sub_key=None, report_tag=None,
+                     report_scene=ReportScene.END):
+        if self.agent_tag is not None:
+            if params is None:
+                params = dict()
+            params.update(work_tag=work_tag)
+            work_tag = self.agent_tag
+        RedisWorker.push_control(self, key, expected_status, params, work_tag, sub_key, report_tag, report_scene)
+
     @staticmethod
     def split_ref(ref_str):
         """
@@ -622,7 +631,7 @@ class DAGWorker(RedisWorker):
         self.set_task_item(reporter_sub_key, "end_time", report_task.end_time)
         self.set_task_item(reporter_sub_key, "finished_time", time())
 
-    def _handle_none_pipeline_sub_task_report(self, task_status):
+    def _handle_none_pipeline_sub_task_report(self, task_status, reporter_sub_key):
         """
         父Pipeline任务状态已不存在（父任务被强制STOP或者父任务已经失败汇报了或者出现BUG）
 
@@ -643,8 +652,13 @@ class DAGWorker(RedisWorker):
         if self.agent_tag is None:
             self.task_log("no agent. temporarily unable to handle")
         if task_status == TaskStatus.QUEUE or task_status == TaskStatus.RUNNING:
-            # TODO push force stop to agent
-            pass
+            # push force stop to agent
+            work_tag = self.get_task_item(reporter_sub_key, "work_tag")
+            runtime = self.get_task_item(reporter_sub_key, "runtime")
+            if runtime is not None:
+                runtime["force"] = True
+                self.push_control(self.current_task.task_key, TaskStatus.STOPPED, runtime, work_tag,
+                                  sub_key=reporter_sub_key, report_tag=self.work_tag)
 
     def _handle_stopping_pipeline_sub_task_report(self, task_status, reporter_sub_key, report_task):
         """
@@ -677,8 +691,11 @@ class DAGWorker(RedisWorker):
             task_message = report_task.task_message
             return self.fail_pipeline("Sub Task", reporter_sub_key, reporter_work_tag, "Failed,", task_message)
         elif task_status == TaskStatus.QUEUE or task_status == TaskStatus.RUNNING:
-            # TODO push stop to agent
-            pass
+            # push stop（not force） to agent
+            work_tag = self.get_task_item(reporter_sub_key, "work_tag")
+            runtime = self.get_task_item(reporter_sub_key, "runtime")
+            self.push_control(self.current_task.task_key, TaskStatus.STOPPED, runtime, work_tag,
+                              sub_key=reporter_sub_key, report_tag=self.work_tag)
         elif task_status in (TaskStatus.SUCCESS, TaskStatus.STOPPED, TaskStatus.STOPPING):
             self.stop_pipeline()
         else:
@@ -759,7 +776,7 @@ class DAGWorker(RedisWorker):
         # 获得父任务状态  父任务状态如不存在 说明父任务已经结束，此次汇报无效
         pipeline_status = self.get_task_item(0, hash_key="task_status")
         if pipeline_status is None:
-            return self._handle_none_pipeline_sub_task_report(task_status)
+            return self._handle_none_pipeline_sub_task_report(task_status, reporter_sub_key)
 
         # 防止重新汇报 只允许Running状态下可以多次汇报
         old_status = self.get_task_item(reporter_sub_key, "task_status")
@@ -888,20 +905,44 @@ class DAGWorker(RedisWorker):
         success_count = 0  # 停止任务时，可能任务已经全部完成或者非强制停止，随后的任务顺利完成。若任务全部完成将任务状态置成success
         for index in range(task_len):
             task_status = self.get_task_item(index + 1, "task_status")
+            work_tag = self.get_task_item(index + 1, "work_tag")
+            runtime = self.get_task_item(index + 1, "runtime")
+            if runtime is None:
+                runtime = dict(force=force)
+            else:
+                runtime.update(force=force)
             if TaskStatus.is_running(task_status) is True:
                 if force is True:
+                    if self.current_task.task_sub_key is None:
+                        sub_key = index + 1
+                    else:
+                        sub_key = "%s_%s" % (self.current_task.task_sub_key, index + 1)
+                    # 发送强制停止的指令给子任务
+                    self.push_control(self.current_task.task_key, TaskStatus.STOPPED, runtime, work_tag,
+                                      sub_key=sub_key, report_tag=self.work_tag)
                     self.set_task_item(index + 1, "task_status", TaskStatus.STOPPED)
                     continue
+                # 非强制停止时，不处理正在运行的，让它继续跑
                 running_count += 1
-                # TODO passing stop command
-                self.push_
-            if TaskStatus.is_ready(task_status) is True:
+            elif TaskStatus.QUEUE == task_status:
+                if self.current_task.task_sub_key is None:
+                    sub_key = index + 1
+                else:
+                    sub_key = "%s_%s" % (self.current_task.task_sub_key, index + 1)
+                self.push_control(self.current_task.task_key, TaskStatus.STOPPED, runtime, work_tag, sub_key=sub_key,
+                                  report_tag=self.work_tag)
                 if force is True:
                     self.set_task_item(index + 1, "task_status", TaskStatus.STOPPED)
                     continue
                 ready_count += 1
-                # TODO passing stop command
-            if TaskStatus.is_success(task_status) is True:
+            elif TaskStatus.is_ready(task_status) is True:
+                # 一般Ready应该都被移出了 可能有些Queue的任务汇报还没处理，造成一些任务时Ready而且移出不掉的情况
+                # 我们交给汇报处理
+                if force is True:
+                    self.set_task_item(index + 1, "task_status", TaskStatus.STOPPED)
+                    continue
+                ready_count += 1
+            elif TaskStatus.is_success(task_status) is True:
                 success_count += 1
         if running_count + ready_count != 0:
             return False
