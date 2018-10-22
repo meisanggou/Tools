@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.8.5
+RedisWorker Add push_control
+
 ## 1.8.4
 修复BUG pipeline任务并行时 出现提前fail pipeline
 

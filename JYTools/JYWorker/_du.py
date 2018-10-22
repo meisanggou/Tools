@@ -894,6 +894,7 @@ class DAGWorker(RedisWorker):
                     continue
                 running_count += 1
                 # TODO passing stop command
+                self.push_
             if TaskStatus.is_ready(task_status) is True:
                 if force is True:
                     self.set_task_item(index + 1, "task_status", TaskStatus.STOPPED)
