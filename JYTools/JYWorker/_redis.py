@@ -730,14 +730,15 @@ class RedisWorker(RedisWorkerConfig, Worker):
             self._push_to_queue(task_info, queue_key, is_head, freq=freq+1)
 
     def _push_task(self, key, params, work_tag=None, sub_key=None, report_tag=None, is_report=False,
-                   report_scene=ReportScene.END, is_head=False, task_name=None):
+                   report_scene=ReportScene.END, is_head=False, task_name=None, task_type=TaskType.Normal):
         if work_tag is None:
             queue_key = self.queue_key
             work_tag = self.work_tag
         else:
             queue_key = self.queue_prefix_key + "_" + work_tag
-        task_info = RedisQueue.package_task_v2(work_tag, key, params, sub_key=sub_key, report_tag=report_tag,
-                                               is_report=is_report, report_scene=report_scene, task_name=task_name)
+        task_info = RedisQueue.package_task_v2(work_tag, key, params, sub_key=sub_key, task_type=task_type,
+                                               report_tag=report_tag, is_report=is_report, report_scene=report_scene,
+                                               task_name=task_name)
         self._push_to_queue(task_info, queue_key=queue_key, is_head=is_head)
 
     def push_task(self, key, params, work_tag=None, sub_key=None, report_tag=None, is_report=False,
@@ -751,7 +752,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
         else:
             params.update(expected_status=expected_status)
         self._push_task(key, params, work_tag=work_tag, sub_key=sub_key, report_tag=report_tag,
-                        report_scene=report_scene, is_head=True)
+                        report_scene=report_scene, is_head=True, task_type=TaskType.Control)
 
     def _task_item_key(self, item_index=None, key=None, sub_key=None):
         if key is None:

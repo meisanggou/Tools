@@ -1,7 +1,7 @@
 # Tools
 jingyun tools
 
-## 1.8.5
+## 1.8.6
 RedisWorker Add push_control
 DAG Worker 接收到STOP命令，将控制传递给子任务
 
