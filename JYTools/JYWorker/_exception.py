@@ -15,7 +15,7 @@ class InvalidTaskException(Exception):
         self.key = key
         self.params = params
         self.task_info = task_info
-        self.invalid_message = StringTool.join(args, "")
+        self.invalid_message = StringTool.join(args, " ")
 
 
 class TaskErrorException(Exception):
