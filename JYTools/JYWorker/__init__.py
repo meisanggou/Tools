@@ -7,7 +7,7 @@ import types
 from ._redis import RedisWorker, RedisQueue, RedisStat
 from ._Worker import ReadWorkerLog
 from ._async import AsyncRedisWorker, AsyncStatRedisWorker
-from ._Task import TaskStatus
+from ._Task import TaskStatus, TaskType
 from ._du import DAGWorker, DAGTools
 from .UploadLog import UploadLogWorker
 
