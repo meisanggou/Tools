@@ -1,6 +1,11 @@
 # Tools
 jingyun tools
 
+## 1.8.8
+WorkerTask add _auto_report auto_report
+当auto_report为True 可汇报
+
+
 ## 1.8.7
 可以从JYTools.JYWorker 引用TaskType
 

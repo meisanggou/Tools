@@ -196,7 +196,7 @@ class WorkerTask(object):
     """
     __slots__ = ("task_key", "task_name", "task_sub_key", "task_info", "task_params", "task_status", "task_report_tag",
                  "task_output", "task_message", "task_errors", "work_tag", "start_time", "end_time",
-                 "sub_task_detail", "log_path", "task_report_scene", "task_type", "runtime")
+                 "sub_task_detail", "log_path", "task_report_scene", "task_type", "runtime", "_auto_report")
 
     def __init__(self, **kwargs):
         self.task_type = TaskType.Normal
@@ -217,6 +217,7 @@ class WorkerTask(object):
         self.end_time = None  # 任务真正执行结束的时间
         self.sub_task_detail = None
         self.log_path = None  # add in 1.1.8
+        self._auto_report = False  # add in 1.8.8
         self.set(**kwargs)
 
     def _set_report_tag(self, report_tag):
@@ -276,6 +277,17 @@ class WorkerTask(object):
         d["runtime"] = self.runtime
         return d
 
+    @property
+    def auto_report(self):
+        if self.task_type == TaskType.Normal:
+            return True
+        return self._auto_report
+
+    @auto_report.setter
+    def auto_report(self, v):
+        if isinstance(v, bool) is True:
+            self._auto_report = v
+
     def __getitem__(self, item):
         return self.to_dict()[item]
 
@@ -319,4 +331,7 @@ if __name__ == "__main__":
     print(TaskStatus.is_running("ABD"))
     import json
     print(json.dumps({"expected_status": TaskStatus.STOPPED}))
+
+    wt = WorkerTask()
+    print(wt.auto_report)
 

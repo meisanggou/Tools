@@ -273,7 +273,7 @@ class Worker(WorkerConfig, _WorkerLog):
             if standard_out is not None:
                 sys.stdout = standard_out
             self.current_task.end_time = time()
-            if self.current_task.task_type == TaskType.Normal and self.current_task.task_report_tag is not None:
+            if self.current_task.auto_report is True and self.current_task.task_report_tag is not None:
                 self.task_debug_log("Start Report Task Status")
                 self.push_task(self.current_task.task_key, self.current_task.to_dict(),
                                work_tag=self.current_task.task_report_tag, sub_key=self.current_task.task_sub_key,
