@@ -332,6 +332,6 @@ if __name__ == "__main__":
     import json
     print(json.dumps({"expected_status": TaskStatus.STOPPED}))
 
-    wt = WorkerTask()
+    wt = WorkerTask(task_type=TaskType.Report)
     print(wt.auto_report)
 
