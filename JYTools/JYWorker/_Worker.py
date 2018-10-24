@@ -152,11 +152,14 @@ class Worker(WorkerConfig, _WorkerLog):
         p.kill()
         return
 
-    def execute_subprocess(self, cmd, stdout=None, stderr=None, error_continue=False, timeout=None):
+    def execute_subprocess(self, cmd, stdout=None, stderr=None, error_continue=False, timeout=None, out_file=None):
         self.task_debug_log(cmd)
         if isinstance(cmd, list) is True:
             cmd = map(lambda x: str(x) if isinstance(x, int) else x, cmd)
-        std_out = stdout
+        if out_file is not None:
+            std_out = open(out_file, mode="w")
+        else:
+            std_out = stdout
         std_err = stderr
         if std_out is None:
             std_out = subprocess.PIPE

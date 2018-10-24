@@ -1,6 +1,9 @@
 # Tools
 jingyun tools
 
+## 1.8.9
+Worker execute_subprocess add out_file
+
 ## 1.8.8
 WorkerTask add _auto_report auto_report
 当auto_report为True 可汇报
