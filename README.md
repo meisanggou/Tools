@@ -3,6 +3,7 @@ jingyun tools
 
 ## 1.8.9
 Worker execute_subprocess add out_file
+execute_subprocess支持倒数第二为> 最后一个参数为标准输出的文件路径
 
 ## 1.8.8
 WorkerTask add _auto_report auto_report
