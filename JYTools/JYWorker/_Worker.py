@@ -162,6 +162,7 @@ class Worker(WorkerConfig, _WorkerLog):
             std_out = stdout
         if std_out is None and len(cmd) > 2 and cmd[-2] == ">":
             std_out = open(cmd[-1], mode="w")
+            cmd = cmd[:-2]
         std_err = stderr
         if std_out is None:
             std_out = subprocess.PIPE
