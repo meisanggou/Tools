@@ -1001,7 +1001,9 @@ class DAGWorker(RedisWorker):
             task_status = self.get_task_item(index + 1, "task_status")
             if TaskStatus.is_running(task_status) is True:
                 running_count += 1
-            if TaskStatus.is_ready(task_status) is True:
+            elif TaskStatus.is_ready(task_status) is True:
+                ready_count += 1
+            elif TaskStatus.QUEUE == task_status:
                 ready_count += 1
         if running_count + ready_count != 0:
             return False
