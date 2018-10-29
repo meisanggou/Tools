@@ -1002,6 +1002,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
             self._worker_status = 150
             self._execute()
             self._worker_status = 200
+        self.worker_log("if you see this log, this is a bug. in run after while.")
 
     def handle_sign(self, sign, frame):
         self.worker_log("Redis Worker Receive SIGN", sign)
