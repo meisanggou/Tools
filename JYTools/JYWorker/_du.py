@@ -165,6 +165,8 @@ class DAGTools(object):
             avail_keys.append("task_list")
         else:
             avail_keys.append("work_tag")
+        if item["task_status"] == TaskStatus.SUCCESS:
+            avail_keys.extend(["start_time", "begin_time", "finished_time", "end_time", "task_message"])
         if item["task_type"].startswith("repeat-") is True:
             avail_keys.append("repeat_freq")
         surplus_keys = filter(lambda x: x not in avail_keys, item_keys)
