@@ -827,6 +827,8 @@ class DAGWorker(RedisWorker):
                     for key in task_item["task_output"].keys():
                         if "output_%s" % key not in task_item:
                             task_item["output_%s" % key] = task_item["task_output"][key]
+                        else:
+                            self.task_log("output key", key, "in task_output and have key output_" % key)
         task_output = params.get("task_output", dict())
         for key in params:
             if key.startswith("input_"):
