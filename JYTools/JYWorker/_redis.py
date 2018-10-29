@@ -1004,9 +1004,10 @@ class RedisWorker(RedisWorkerConfig, Worker):
             self._worker_status = 200
 
     def handle_sign(self, sign, frame):
-        self.task_log("Redis Worker Receive SIGN", sign)
+        self.worker_log("Redis Worker Receive SIGN", sign)
         if sign not in (signal.SIGUSR1, signal.SIGUSR2):
             if self.current_task is not None:
+                self.worker_log("current task is not none, key is", self.current_task.task_key)
                 self._push_to_delay_queue(self.current_task.task_info)
         self.worker_log("call close, because receive sign", sign)
         self.close(sign)
