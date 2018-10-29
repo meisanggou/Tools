@@ -797,7 +797,12 @@ class DAGWorker(RedisWorker):
 
     def format_pipeline(self, key, params):
         if "task_list" not in params:
-            self.set_current_task_invalid("Need task_list")
+            if "sub_task_detail" in params:
+                params["task_list"] = params["sub_task_detail"]
+                self.task_log("make sub_task_detail as task_list")
+                del params["sub_task_detail"]
+            else:
+                self.set_current_task_invalid("Need task_list")
         if "name" in params:
             self.set_task_item(0, "task_name", params["name"])
         task_list = params["task_list"]
