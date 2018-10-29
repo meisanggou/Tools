@@ -595,6 +595,8 @@ class DAGWorker(RedisWorker):
         if pipeline_report_tag is not None:
             self.current_task.task_report_tag = pipeline_report_tag
             self.current_task.auto_report = True
+        else:
+            self.task_log("not found pipeline report tag, not report!")
         if TaskStatus.is_running(task_status) is False:
             self.clear_task_item(task_len)
 
