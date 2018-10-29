@@ -37,6 +37,13 @@ class _WorkerLog(WorkerLogConfig):
         kwargs.update(level="DEBUG")
         self.task_log(*args, **kwargs)
 
+    """
+    add in 1.9.1
+    """
+    def task_warning_log(self, *args, **kwargs):
+        kwargs.update(level="WARNING")
+        self.task_log(*args, **kwargs)
+
 
 class Worker(WorkerConfig, _WorkerLog):
 

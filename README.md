@@ -1,6 +1,11 @@
 # Tools
 jingyun tools
 
+## 1.9.1
+update DAGTools
+format pipeline not save task_output
+DAG more warning log
+
 ## 1.9.0
 Worker execute_subprocess add out_file
 execute_subprocess支持倒数第二为> 最后一个参数为标准输出的文件路径

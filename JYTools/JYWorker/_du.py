@@ -828,7 +828,10 @@ class DAGWorker(RedisWorker):
                         if "output_%s" % key not in task_item:
                             task_item["output_%s" % key] = task_item["task_output"][key]
                         else:
-                            self.task_log("output key", key, "in task_output and have key output_" % key)
+                            self.task_warning_log("output key", key, "in task_output and have key output_" % key)
+                else:
+                    self.task_warning_log("Sub task", index + 1, "task_output is not dict. ignore and delete")
+                del task_item["task_output"]
         task_output = params.get("task_output", dict())
         for key in params:
             if key.startswith("input_"):
