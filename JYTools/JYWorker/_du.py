@@ -104,7 +104,8 @@ class DAGTools(object):
                 logger.error(error_msg)
                 return False, dict(code=12, data=type(task_output), message=error_msg)
             for key in task_output.keys():
-                item["output_%s" % key] = task_output[key]
+                if "output_%s" % key not in item:
+                    item["output_%s" % key] = task_output[key]
 
         # 检查work_tag -------------------------------------------------------------------------------------------------
         if item["task_type"] in ["app", "repeat-app"]:
