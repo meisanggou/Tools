@@ -94,6 +94,6 @@ class EmailManager(object):
 
 if __name__ == "__main__":
     email_man = EmailManager(conf_dir="/mnt/data/JINGD/conf")
-    email_man.send_mail("zhouheng@gene.ac", "TEST", "TEST NEW SEND")
-    email_man.send_attachment("zhou5315938@163.com", "Only Test", "TEST send Fom local", ["/home/msg/a.txt", "/home/msg/a.txt", "/home/msg/a.txt"])
-    email_man.send_attachment("zhouheng@gene.ac", "Only Test", "TEST send Fom local", ["/home/msg/a.txt", "/home/msg/a.txt", "/home/msg/a.txt"])
+    email_man.send_mail("zhouheng@gene.ac", "Final TEST", "TEST NEW SEND. Only send content")
+    email_man.send_attachment("zhou5315938@163.com", "Final Test", "TEST send Fom local", ["/home/msg/a.txt", "/home/msg/a.txt", "/home/msg/a.txt"])
+    email_man.send_attachment("zhouheng@gene.ac", "Final Test", "TEST send Fom local", ["/home/msg/a.txt", "/home/msg/a.txt", "/home/msg/a.txt"])
