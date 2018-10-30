@@ -8,7 +8,7 @@ __author__ = 'meisanggou'
 r_queue = RedisQueue("/mnt/data/Tools/JYTools/demo/redis_worker.conf", work_tag="Pipeline")
 
 
-plus_task = {"work_tag": "Plus", "input_a": "&0a", "input_b": "&0abc*", "task_name": "Plusa+0"}
+plus_task = {"work_tag": "Plus", "input_a": "&2a", "input_b": "&0abc*", "task_name": "Plusa+0"}
 plus_10_task = {"work_tag": "Plus", "input_a": "&1c", "input_b": 10}
 
 mult_10_task = {"work_tag": "Mult", "input_a": "&1c", "input_b": 10}
@@ -77,7 +77,9 @@ pipeline_detail4 = {"task_list": [pipeline_split], "task_output": {"m": "&1m"}, 
 
 import time
 key = int(time.time()) % 100
-pipeline_detail5 = {"task_list": [plus_task, repeat_plus_task], "input_a": 10, "input_abc1": 6}
+
+s_plus = {"work_tag": "Plus", "input_a": "&0a", "input_b": "&0abc*", "task_name": "Plusa+0", "task_status": "Success", "task_output": dict(a="&a"), "output_a": "output a"}
+pipeline_detail5 = {"task_list": [plus_task, s_plus], "input_a": 10, "input_abc1": 6}
 print(key)
 r_queue.push(key, pipeline_detail5, report_tag="Result")
 # r_queue.push_control(key, "Pipeline", TaskStatus.STOPPED, force=True, report_file="/tmp/pipeline/Pipeline_%s.r.json" % key)
