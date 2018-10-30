@@ -1014,7 +1014,9 @@ class DAGWorker(RedisWorker):
             return False
         self._prepare_report(TaskStatus.FAIL)
         # 自动保存fail掉的任务详情
-        with FileWriter(self.current_task.log_path + ".r") as w:
+        fail_result_path = join_decode([self.current_task.log_path, int(time()), "r"], join_str=".")
+        self.task_log("write fail log", fail_result_path)
+        with FileWriter(fail_result_path) as w:
             t_o = self.current_task.to_dict()
             w.write(json.dumps(t_o, indent=2))
         if len(args) > 0:

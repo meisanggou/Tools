@@ -1,12 +1,11 @@
  Tools
 jingyun tools
 
-## 1.9.3
-fix bug. 修复BUG 。 当pipeline结构中包含task_output 且key和output_*重复，写警告日志错误的BUG
-
 ## 1.9.2
 fix bug. bug is 任务失败没有计算 Queue 的任务数量
 DAG support sub_task_detail as task_list
+fix bug. 修复BUG 。 当pipeline结构中包含task_output 且key和output_*重复，写警告日志错误的BUG
+DAG 自动保存fail掉的任务详情时 保存的文件名加入时间戳，防止被覆盖
 
 ## 1.9.1
 update DAGTools
