@@ -1,6 +1,9 @@
  Tools
 jingyun tools
 
+## 1.9.3
+MyEmail support send attachment
+
 ## 1.9.2
 fix bug. bug is 任务失败没有计算 Queue 的任务数量
 DAG support sub_task_detail as task_list
