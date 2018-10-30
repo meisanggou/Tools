@@ -20,6 +20,8 @@ class EmailManager(object):
         if os.path.exists(conf_path) is False:
             conf_path = os.path.join(conf_dir, "email.conf")
         self._int_app(conf_path)
+        self.encoding = 'utf-8'
+        self.send_user = '%s <%s>' % (Header(self.sender, self.encoding), self.encoded(self.m_user))
 
     def _int_app(self, conf_path):
         config = ConfigParser.ConfigParser()
@@ -28,28 +30,26 @@ class EmailManager(object):
         try:
             self.m_user = config.get(section, "email")
             self.m_password = config.get(section, "password")
+            self._send = self._remote_send
         except ConfigParser.Error:
-            self.m_user = ""
+            self.m_user = "admin@gene.ac"
             self.m_password = ""
+            self._send = self._local_send
 
     def encoded(self, s, encoding="utf-8"):
         return s.encode(encoding) if isinstance(s, unicode) else s
 
-    def send_mail(self, to, sub, content):
+    def _remote_send(self, to, sub, msg):
         try:
-            encoding = 'utf-8'
             SMTP = smtplib.SMTP_SSL
             smtp = SMTP("smtp.%s" % self.email_server, 465)
             # smtp.set_debuglevel(True)
-            user = self.m_user
-            smtp.login(user, self.m_password)
-            user = self.encoded(user, encoding)
-            user = '{nick_name} <{user}>'.format(nick_name=Header(self.sender, encoding), user=user)
-            msg = MIMEMultipart('alternative')
-            msg['From'] = user
-            msg['To'] = self.encoded(to, encoding)
-            msg['Subject'] = Header(self.encoded(sub, encoding), encoding)
-            msg.attach(MIMEText(self.encoded(content, encoding), "html", encoding))
+            smtp.login(self.m_user, self.m_password)
+
+            msg['From'] = self.send_user
+            msg['To'] = self.encoded(to, self.encoding)
+            msg['Subject'] = Header(self.encoded(sub, self.encoding), self.encoding)
+
             smtp.sendmail(self.m_user, to, msg.as_string())
             smtp.quit()
             return True
@@ -58,27 +58,14 @@ class EmailManager(object):
             print(error_message)
             return False
 
-    def send_attachment(self, to, sub, content, attachments):
+    def _local_send(self, to, sub, msg):
         try:
-            encoding = 'utf-8'
-            SMTP = smtplib.SMTP_SSL
-            smtp = SMTP("smtp.%s" % self.email_server, 465)
-            # smtp.set_debuglevel(True)
-            user = self.m_user
-            smtp.login(user, self.m_password)
-            user = self.encoded(user, encoding)
-            user = '{nick_name} <{user}>'.format(nick_name=Header(self.sender, encoding), user=user)
-            msg = MIMEMultipart('alternative')
-            msg['From'] = user
-            msg['To'] = self.encoded(to, encoding)
-            msg['Subject'] = Header(self.encoded(sub, encoding), encoding)
-            msg.attach(MIMEText(self.encoded(content, encoding), "html", encoding))
-            real_attachments = set(map(lambda x: os.path.realpath(x), attachments))
-            for attach in real_attachments:
-                att_item = MIMEText(open(attach, "rb").read(), 'base64', encoding)
-                att_item["Content-Type"] = "application/octet-stream"
-                att_item["Content-Disposition"] = "attachment; filename=%s" % os.path.basename(attach)
-                msg.attach(att_item)
+            smtp = smtplib.SMTP("localhost")
+            smtp.set_debuglevel(True)
+            msg['From'] = self.send_user
+            msg['To'] = self.encoded(to, self.encoding)
+            msg['Subject'] = Header(self.encoded(sub, self.encoding), self.encoding)
+
             smtp.sendmail(self.m_user, to, msg.as_string())
             smtp.quit()
             return True
@@ -86,11 +73,27 @@ class EmailManager(object):
             error_message = "MyEmailManager send_mail error %s" % str(e)
             print(error_message)
             return False
+
+    def send_mail(self, to, sub, content):
+        return self.send_attachment(to, sub, content, [])
+
+    def send_attachment(self, to, sub, content, attachments):
+        msg = MIMEMultipart('alternative')
+        msg.attach(MIMEText(self.encoded(content, self.encoding), "html", self.encoding))
+        if isinstance(attachments, list):
+            real_attachments = set(map(lambda x: os.path.realpath(x), attachments))
+            for attach in real_attachments:
+                att_item = MIMEText(open(attach, "rb").read(), 'base64', self.encoding)
+                att_item["Content-Type"] = "application/octet-stream"
+                att_item["Content-Disposition"] = "attachment; filename=%s" % os.path.basename(attach)
+                msg.attach(att_item)
+        return self._send(to, sub, msg)
 
     def send_mail_thread(self, to, sub, content):
         return thread.start_new_thread(self.send_mail, (to, sub, content))
 
 if __name__ == "__main__":
     email_man = EmailManager(conf_dir="/mnt/data/JINGD/conf")
-    # email_man.send_mail("zhouheng@gene.ac", "TEST", "TEST SSL SEND")
-    email_man.send_attachment("zhouheng@gene.ac", "TEST", "TEST SSL SEND", ["/home/msg/a.txt", "/home/msg/a.txt", "/home/msg/a.txt"])
+    email_man.send_mail("zhouheng@gene.ac", "TEST", "TEST NEW SEND")
+    email_man.send_attachment("zhou5315938@163.com", "Only Test", "TEST send Fom local", ["/home/msg/a.txt", "/home/msg/a.txt", "/home/msg/a.txt"])
+    email_man.send_attachment("zhouheng@gene.ac", "Only Test", "TEST send Fom local", ["/home/msg/a.txt", "/home/msg/a.txt", "/home/msg/a.txt"])
