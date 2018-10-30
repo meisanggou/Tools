@@ -6,14 +6,14 @@ from email.header import Header
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import smtplib
-import thread
+from multiprocessing.pool import ThreadPool
 import ConfigParser
 
 __author__ = 'ZhouHeng'
 
 
 class EmailManager(object):
-    def __init__(self, conf_dir):
+    def __init__(self, conf_dir, thread_num=5):
         self.email_server = "ym.163.com"
         self.sender = "晶云平台"
         conf_path = os.path.join(conf_dir, "email_app.conf")
@@ -22,6 +22,7 @@ class EmailManager(object):
         self._int_app(conf_path)
         self.encoding = 'utf-8'
         self.send_user = '%s <%s>' % (Header(self.sender, self.encoding), self.encoded(self.m_user))
+        self.t_pool = ThreadPool(thread_num)
 
     def _int_app(self, conf_path):
         config = ConfigParser.ConfigParser()
@@ -43,7 +44,7 @@ class EmailManager(object):
         try:
             SMTP = smtplib.SMTP_SSL
             smtp = SMTP("smtp.%s" % self.email_server, 465)
-            # smtp.set_debuglevel(True)
+            smtp.set_debuglevel(True)
             smtp.login(self.m_user, self.m_password)
 
             msg['From'] = self.send_user
@@ -90,10 +91,16 @@ class EmailManager(object):
         return self._send(to, sub, msg)
 
     def send_mail_thread(self, to, sub, content):
-        return thread.start_new_thread(self.send_mail, (to, sub, content))
+        return self.t_pool.apply_async(self.send_mail, (to, sub, content))
+
+    def send_attachment_thread(self, to, sub, content, attachments):
+        return self.t_pool.apply_async(self.send_attachment, (to, sub, content, attachments))
 
 if __name__ == "__main__":
     email_man = EmailManager(conf_dir="/mnt/data/JINGD/conf")
-    email_man.send_mail("zhouheng@gene.ac", "Final TEST", "TEST NEW SEND. Only send content")
-    email_man.send_attachment("zhou5315938@163.com", "Final Test", "TEST send Fom local", ["/home/msg/a.txt", "/home/msg/a.txt", "/home/msg/a.txt"])
-    email_man.send_attachment("zhouheng@gene.ac", "Final Test", "TEST send Fom local", ["/home/msg/a.txt", "/home/msg/a.txt", "/home/msg/a.txt"])
+    # email_man.send_mail("zhouheng@gene.ac", "Final TEST", "TEST NEW SEND. Only send content")
+    # email_man.send_attachment("zhou5315938@163.com", "Final Test", "TEST send Fom local", ["/home/msg/a.txt", "/home/msg/a.txt", "/home/msg/a.txt"])
+    p = email_man.send_attachment_thread("zhouheng@gene.ac", "Final Test", "TEST send Fom local", ["/home/msg/a.txt", "/home/msg/a.txt", "/home/msg/a.txt"])
+    p = email_man.send_mail_thread("zhouheng@gene.ac", "Final TEST", "TEST NEW SEND. Only send content")
+    email_man.t_pool.close()
+    email_man.t_pool.join()
