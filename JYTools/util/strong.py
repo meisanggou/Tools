@@ -22,19 +22,20 @@ class CacheRedis(Redis):
 
     def __init__(self, key_prefix=None, host='localhost', port=6379, db=0, password=None):
         self.key_prefix = key_prefix
-        Redis.__init__(self, host, port, db, password=password)
+        if key_prefix is not None:
+            Redis.__init__(self, host, port, db, password=password)
 
     def execute_command(self, *args, **options):
         try:
             return Redis.execute_command(self, *args, **options)
         except RedisError as r_error:
-            syslog.syslog(*args)
-            syslog.syslog(r_error)
+            print(r_error)
             return None
 
     def get(self, name):
         if self.key_prefix is None:
             return None
+        name = self.key_prefix + name
         v = Redis.get(self, name)
         v = StringData.unpack_data(v)
         return v
@@ -60,6 +61,14 @@ class CacheRedis(Redis):
         name = self.key_prefix + name
         return Redis.setex(self, name, value, time)
 
+    def delete(self, *names):
+        if self.key_prefix is None:
+            return None
+        names = map(lambda x: self.key_prefix + x, names)
+        return Redis.delete(self, *names)
+
 if __name__ == "__main__":
-    redis_man = CacheRedis(None)
-    redis_man.set("bac", "123")
+    redis_man = CacheRedis("jy_api", host="172.16.110.5", port=9532, db=1)
+    print(redis_man.set("bac", dict(s="123")))
+    print(redis_man.get("bac"))
+    redis_man.delete("bac")
