@@ -1,6 +1,9 @@
  Tools
 jingyun tools
 
+## 1.9.4
+add CacheRedis
+
 ## 1.9.3
 MyEmail support send attachment
 

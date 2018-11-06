@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import syslog
+from JYTools.util.string import StringData
 from redis import Redis, RedisError
 
 __author__ = '鹛桑够'
@@ -15,3 +16,46 @@ class StrongRedis(Redis):
         except RedisError as r_error:
             syslog.syslog(*args)
             syslog.syslog(r_error)
+
+
+class CacheRedis(Redis):
+
+    def __init__(self, key_prefix=None, host='localhost', port=6379, db=0, password=None):
+        self.key_prefix = key_prefix
+        Redis.__init__(self, host, port, db, password=password)
+
+    def execute_command(self, *args, **options):
+        try:
+            return Redis.execute_command(self, *args, **options)
+        except RedisError as r_error:
+            syslog.syslog(*args)
+            syslog.syslog(r_error)
+            return None
+
+    def get(self, name):
+        if self.key_prefix is None:
+            return None
+        v = Redis.get(self, name)
+        v = StringData.unpack_data(v)
+        return v
+
+    def set(self, name, value, ex=None, px=None, nx=False, xx=False):
+        if self.key_prefix is None:
+            return None
+        value = StringData.package_data(value)
+        name = self.key_prefix + name
+        return Redis.set(self, name, value, ex=ex, px=px, nx=nx, xx=xx)
+
+    def setnx(self, name, value):
+        if self.key_prefix is None:
+            return None
+        name = self.key_prefix + name
+        value = StringData.package_data(value)
+        return Redis.setnx(self, name, value)
+
+    def setex(self, name, value, time):
+        if self.key_prefix is None:
+            return None
+        value = StringData.package_data(value)
+        name = self.key_prefix + name
+        return Redis.setex(self, name, value, time)
