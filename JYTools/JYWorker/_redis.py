@@ -7,13 +7,12 @@ import json
 import threading
 import logging
 import re
-import six
 import time
 from datetime import datetime
 from redis import RedisError
 from JYTools import TIME_FORMAT
 from JYTools import StringTool
-from JYTools.util.string import StringEscape
+from JYTools.util.string import StringEscape, StringData
 from JYTools.StringTool import is_string
 from ._config import RedisWorkerConfig, WorkerConfig
 from .util import ValueVerify, ReportScene
@@ -494,7 +493,7 @@ class RedisStat(_RedisHelper):
         if self.redis_man.type(get_key) == "hash":
             item = self.redis_man.hgetall(get_key)
             for key in item.keys():
-                task_items["values"][key] = RedisData.unpack_data(item[key])
+                task_items["values"][key] = StringData.unpack_data(item[key])
         return task_items
 
     def get_dirty_item(self, work_tag):
@@ -523,7 +522,7 @@ class RedisStat(_RedisHelper):
             if "0" not in all_keys[key]:
                 delete_items.append(dict(prefix=union_key, sub_keys=all_keys[key], message="未发现pipeline信息"))
                 continue
-            task_len = RedisData.unpack_data(self.redis_man.hget(key + "_0", "task_len"))
+            task_len = StringData.unpack_data(self.redis_man.hget(key + "_0", "task_len"))
             if task_len is None:
                 delete_items.append(dict(prefix=union_key, sub_keys=all_keys[key], message="pipeline信息未发现task_len"))
                 continue
@@ -544,49 +543,8 @@ class RedisStat(_RedisHelper):
         return task_items
 
 
-class RedisData(object):
-    BOOL_VALUE = [False, True]
-
-    @staticmethod
-    def package_data(data):
-        if data is None:
-            return "n_"
-        if isinstance(data, dict):
-            return "d_" + json.dumps(data)
-        if isinstance(data, list):
-            return "l_" + json.dumps(data)
-        if isinstance(data, bool):
-            return "b_%s" % RedisData.BOOL_VALUE.index(data)
-        if isinstance(data, six.integer_types):
-            return "i_%s" % data
-        if isinstance(data, float):
-            return "f_%s" % data
-        else:
-            return "s_%s" % data
-
-    @staticmethod
-    def unpack_data(p_data):
-        if is_string(p_data) is False:
-            return p_data
-        sp_data = p_data.split("_", 1)
-        if len(sp_data) != 2:
-            return p_data
-        sign = sp_data[0]
-        if sign == "s":
-            return sp_data[1]
-        if sign == "d":
-            return json.loads(sp_data[1])
-        elif sign == "l":
-            return json.loads(sp_data[1])
-        elif sign == "i":
-            return int(sp_data[1])
-        elif sign == "f":
-            return float(sp_data[1])
-        elif sign == "b":
-            return RedisData.BOOL_VALUE[int(sp_data[1])]
-        elif sign == "n":
-            return None
-        return p_data
+class RedisData(StringData):
+    pass
 
 
 class RedisWorker(RedisWorkerConfig, Worker):
@@ -799,8 +757,8 @@ class RedisWorker(RedisWorkerConfig, Worker):
     def set_task_item(self, item_index, hash_key, hash_value, key=None, sub_key=None, nx=False):
         item_key = self._task_item_key(item_index, key, sub_key)
         if nx is True:
-            return self.redis_man.hsetnx(item_key, hash_key, RedisData.package_data(hash_value))
-        self.redis_man.hset(item_key, hash_key, RedisData.package_data(hash_value))
+            return self.redis_man.hsetnx(item_key, hash_key, StringData.package_data(hash_value))
+        self.redis_man.hset(item_key, hash_key, StringData.package_data(hash_value))
 
     def has_task_item(self, item_index, hash_key=None, key=None, sub_key=None):
         item_key = self._task_item_key(item_index, key, sub_key)
@@ -811,9 +769,9 @@ class RedisWorker(RedisWorkerConfig, Worker):
         if hash_key is None:
             item = self.redis_man.hgetall(item_key)
             for key in item.keys():
-                item[key] = RedisData.unpack_data(item[key])
+                item[key] = StringData.unpack_data(item[key])
             return item
-        return RedisData.unpack_data(self.redis_man.hget(item_key, hash_key))
+        return StringData.unpack_data(self.redis_man.hget(item_key, hash_key))
 
     def del_task_item(self, item_index, hash_key=None, key=None, sub_key=None):
         item_key = self._task_item_key(item_index, key, sub_key)

@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import six
+import json
 
 
 __author__ = '鹛桑够'
@@ -88,6 +89,52 @@ class StringEscape(object):
                     index += 1
             return us
         return s
+
+
+class StringData(object):
+    BOOL_VALUE = [False, True]
+
+    @staticmethod
+    def package_data(data):
+        if data is None:
+            return "n_"
+        if isinstance(data, dict):
+            return "d_" + json.dumps(data)
+        if isinstance(data, list):
+            return "l_" + json.dumps(data)
+        if isinstance(data, bool):
+            return "b_%s" % StringData.BOOL_VALUE.index(data)
+        if isinstance(data, six.integer_types):
+            return "i_%s" % data
+        if isinstance(data, float):
+            return "f_%s" % data
+        else:
+            return "s_%s" % data
+
+    @staticmethod
+    def unpack_data(p_data):
+        if is_string(p_data) is False:
+            return p_data
+        sp_data = p_data.split("_", 1)
+        if len(sp_data) != 2:
+            return p_data
+        sign = sp_data[0]
+        if sign == "s":
+            return sp_data[1]
+        if sign == "d":
+            return json.loads(sp_data[1])
+        elif sign == "l":
+            return json.loads(sp_data[1])
+        elif sign == "i":
+            return int(sp_data[1])
+        elif sign == "f":
+            return float(sp_data[1])
+        elif sign == "b":
+            return StringData.BOOL_VALUE[int(sp_data[1])]
+        elif sign == "n":
+            return None
+        return
+
 
 if __name__ == "__main__":
     origin_str = "abc_MS_END_1\nabc|MS|END|1\nabc-MS_END-1"
