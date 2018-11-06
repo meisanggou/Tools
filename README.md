@@ -1,7 +1,7 @@
  Tools
 jingyun tools
 
-## 1.9.4
+## 1.9.5
 add CacheRedis
 
 ## 1.9.3
