@@ -29,7 +29,7 @@ class CacheRedis(Redis):
         try:
             return Redis.execute_command(self, *args, **options)
         except RedisError as r_error:
-            print(r_error)
+            syslog.syslog(str(r_error))
             return None
 
     def get(self, name):
