@@ -99,8 +99,8 @@ class EmailManager(object):
 if __name__ == "__main__":
     email_man = EmailManager(conf_dir="/mnt/data/JINGD/conf")
     # email_man.send_mail("zhouheng@gene.ac", "Final TEST", "TEST NEW SEND. Only send content")
-    email_man.send_attachment("zhou5315938@163.com", "Final Test", "TEST send Fom local", ["/home/msg/a.txt", "/home/msg/a.txt", "/home/msg/a.txt"])
-    email_man.send_attachment_thread("zhouheng@gene.ac", "Final Test", "TEST send Fom local", ["/home/msg/a.txt", "/home/msg/a.txt", "/home/msg/a.txt"])
-    email_man.send_mail_thread("zhouheng@gene.ac", "Final TEST", "TEST NEW SEND. Only send content")
+    # email_man.send_attachment("zhou5315938@163.com", "Final Test", "TEST send Fom local", ["/home/msg/a.txt", "/home/msg/a.txt", "/home/msg/a.txt"])
+    # email_man.send_attachment_thread("zhouheng@gene.ac", "Final Test", "TEST send Fom local", ["/home/msg/a.txt", "/home/msg/a.txt", "/home/msg/a.txt"])
+    email_man.send_mail_thread("zhouheng@gene.ac", "邮箱验证码", open("/home/msg/tmpmail_21.html").read())
     email_man.t_pool.close()
     email_man.t_pool.join()
