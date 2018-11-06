@@ -12,8 +12,7 @@ from datetime import datetime
 from redis import RedisError
 from JYTools import TIME_FORMAT
 from JYTools import StringTool
-from JYTools.util.string_rich import StringEscape, StringData
-from JYTools.StringTool import is_string
+from JYTools.util.string_rich import StringEscape, StringData, is_string
 from ._config import RedisWorkerConfig, WorkerConfig
 from .util import ValueVerify, ReportScene
 from ._Worker import Worker
