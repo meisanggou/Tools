@@ -2,7 +2,7 @@
 # coding: utf-8
 
 import syslog
-from JYTools.util.string import StringData
+from JYTools.util.string_rich import StringData
 from redis import Redis, RedisError
 
 __author__ = '鹛桑够'
@@ -59,3 +59,7 @@ class CacheRedis(Redis):
         value = StringData.package_data(value)
         name = self.key_prefix + name
         return Redis.setex(self, name, value, time)
+
+if __name__ == "__main__":
+    redis_man = CacheRedis(None)
+    redis_man.set("bac", "123")

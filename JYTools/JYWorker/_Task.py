@@ -6,7 +6,7 @@ import re
 import json
 import types
 from JYTools.util import is_number
-from JYTools.util.string import SimpleString
+from JYTools.util.string_rich import SimpleString
 from JYTools import StringTool
 from _exception import WorkerTaskParamsKeyNotFound, WorkerTaskParamsValueTypeError
 

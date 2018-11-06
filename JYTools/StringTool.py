@@ -5,7 +5,7 @@ import os
 import string
 import six
 import random
-from JYTools.util.string import is_string
+from JYTools.util.string_rich import is_string
 
 # add in version 0.1.7
 
