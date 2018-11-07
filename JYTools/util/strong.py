@@ -21,12 +21,13 @@ class StrongRedis(Redis):
 
 class CacheRedis(Redis):
 
-    def __init__(self, key_prefix=None, host='localhost', port=6379, db=0, password=None, socket_connect_timeout=1):
+    def __init__(self, key_prefix=None, error_sleep=1000, host='localhost', port=6379, db=0, password=None,
+                 socket_connect_timeout=1):
         self.key_prefix = key_prefix
         if key_prefix is not None:
             Redis.__init__(self, host, port, db, password=password, socket_connect_timeout=socket_connect_timeout)
         self.error_num = 0
-        self.error_sleep = 10000
+        self.error_sleep = error_sleep
 
     def execute_command(self, *args, **options):
         if 0 < self.error_num < self.error_sleep:
