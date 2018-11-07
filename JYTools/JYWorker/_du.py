@@ -736,6 +736,7 @@ class DAGWorker(RedisWorker):
             return self.fail_pipeline()
         elif task_status in (TaskStatus.FAIL, TaskStatus.INVALID):
             self.fail_pipeline("Sub Task", reporter_sub_key, report_task.work_tag, "Failed,", report_task.task_message)
+            return
         else:
             self.set_current_task_invalid("Can not handle task report status, [", task_status, "]")
 
@@ -760,7 +761,7 @@ class DAGWorker(RedisWorker):
             self.handle_task(self.current_task.task_key, None)
         elif TaskStatus.is_fail(task_status) or task_status == TaskStatus.INVALID:
             task_message = report_task.task_message
-            self.fail_pipeline("Sub Task", reporter_sub_key, report_task.work_tag, "Failed,", task_message)
+            return self.fail_pipeline("Sub Task", reporter_sub_key, report_task.work_tag, "Failed,", task_message)
         elif TaskStatus.STOPPED == task_status or TaskStatus.STOPPING == task_status:
             self.stop_pipeline()
         elif task_status in (TaskStatus.RUNNING, TaskStatus.QUEUE):
@@ -1132,7 +1133,7 @@ class DAGWorker(RedisWorker):
             if repeat_freq % k_l != 0:
                 self.set_task_item(index + 1, "task_status", TaskStatus.INVALID)
                 self.set_task_item(index + 1, "task_message", "list input length different")
-                self.fail_pipeline("Task", index + 1, "list input length different")
+                return self.fail_pipeline("Task", index + 1, "list input length different")
             task_item[list_key] *= repeat_freq / k_l
         pipeline_task = dict(task_list=[], task_output=dict(), task_type="pipeline", work_tag=self.work_tag)
         output_ref_def = dict()
@@ -1207,7 +1208,7 @@ class DAGWorker(RedisWorker):
                     if ref_r is False:
                         self.set_task_item(index + 1, "task_status", TaskStatus.FAIL)
                         self.set_task_item(index + 1, "task_message", ref_info)
-                        self.fail_pipeline("Task ", index + 1, " ", ref_info)
+                        return self.fail_pipeline("Task ", index + 1, " ", ref_info)
                     if ref_info is None:
                         continue
                     # 若ref_output在返回中说明，拿到了引用值。
@@ -1232,7 +1233,7 @@ class DAGWorker(RedisWorker):
                         if ref_r is False:
                             self.set_task_item(index + 1, "task_status", TaskStatus.FAIL)
                             self.set_task_item(index + 1, "task_message", ref_info)
-                            self.fail_pipeline("Task ", index + 1, " ", ref_info)
+                            return self.fail_pipeline("Task ", index + 1, " ", ref_info)
                         if ref_info is None:
                             continue
                         ref_output = ref_info["ref_output"]
@@ -1306,7 +1307,7 @@ class DAGWorker(RedisWorker):
             task_status = self.get_task_item(0, "task_status")
             if task_status is None:
                 self.task_log("Pipeline Has Endless Loop Waiting")
-                self.fail_pipeline("Pipeline Has Endless Loop Waiting")
+                return self.fail_pipeline("Pipeline Has Endless Loop Waiting")
             return self.fail_pipeline()
 
     def handle_control(self, expected_status, **params):

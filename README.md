@@ -1,6 +1,10 @@
  Tools
 jingyun tools
 
+## 1.9.6
+CacheRedis 添加方法setex2
+修复BUG DAG当调用fail_pipeline时当不直接将任务置成error时有些未return
+
 ## 1.9.5
 add CacheRedis
 
