@@ -1,5 +1,8 @@
- Tools
+Tools
 jingyun tools
+
+## 1.9.7
+fix bug redisworker params为string时 解析数据错误
 
 ## 1.9.6
 CacheRedis 添加方法setex2

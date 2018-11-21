@@ -168,7 +168,7 @@ class RedisQueue(_RedisHelper):
             if isinstance(params, dict):
                 args_s = ["json", json.dumps(params)]
             else:
-                args_s = ["string", json.dumps(params)]
+                args_s = ["str", str(params)]
         elif task_type == TaskType.Control:
             if "expected_status" not in params:
                 raise RuntimeError("Not found expected_status in params")
@@ -253,6 +253,10 @@ class RedisQueue(_RedisHelper):
                 data["params"] = WorkerTaskParams(**data["params"])
             else:
                 data["params"] = WorkerTaskParams(**data["params"])
+        elif s_data[0] == "string":
+            data["params"] = json.loads(s_data[1])
+        elif s_data[0] == "str":
+            data["params"] = s_data[1]
         else:
             if task_type in (TaskType.Report, TaskType.Control):
                 return False, "task_type not match data type. need json data"
