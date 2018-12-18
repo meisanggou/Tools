@@ -441,7 +441,7 @@ class Worker(WorkerConfig, _WorkerLog):
             except OSError:
                 sys.exit(1)
         else:
-            self.run()
+            self.run(wash_old)
 
     def close(self, exit_code=0):
         self.is_running = False

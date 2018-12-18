@@ -1,6 +1,9 @@
 Tools
 jingyun tools
 
+## 1.9.8
+打卡时判断is_running
+
 ## 1.9.7
 fix bug redisworker params为string时 解析数据错误
 

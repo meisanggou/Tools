@@ -620,7 +620,7 @@ class RedisWorker(RedisWorkerConfig, Worker):
             freq = 0
         key = self.clock_key
         hang_freq = 0
-        while True:
+        while self.is_running:
             # run以后才启动线程，所以此判断可以不用了
             # if self.is_running is False and loop_run is True:
             #     time.sleep(5)
