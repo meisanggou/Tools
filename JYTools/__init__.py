@@ -3,8 +3,8 @@
 
 import sys
 import logging
-from MyEmail import EmailManager
-import StringTool
+from JYTools.MyEmail import EmailManager
+from JYTools import StringTool
 
 
 __author__ = 'meisanggou'
@@ -30,7 +30,4 @@ def jy_input(prompt, prompt_prefix=None):
         prompt = StringTool.join([prompt_prefix, prompt], "")
     if not prompt.endswith("\n"):
         prompt += "\n"
-    if sys.version_info[0] == 2:
-        return raw_input(prompt)
-    else:
-        return input(prompt)
+    return input(prompt)

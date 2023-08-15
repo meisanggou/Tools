@@ -10,19 +10,19 @@ import sys
 
 __author__ = 'meisanggou'
 
-if sys.version_info <= (2, 7):
-    sys.stderr.write("ERROR: jingyun tools requires Python Version 2.7 or above.\n")
+if sys.version_info <= (3, 5):
+    sys.stderr.write("ERROR: jingyun tools requires Python Version 3.6 or above.\n")
     sys.stderr.write("Your Python Version is %s.%s.%s.\n" % sys.version_info[:3])
     sys.exit(1)
 
 name = "JYTools"
-version = "1.9.8"
+version = "2.0.0"
 url = "https://github.com/meisanggou/Tools"
 author = __author__
 short_description = "Jing Yun Tools Library"
 long_description = """Jing Yun Tools Library."""
 keywords = "JYTools"
-install_requires = ["redis", "six"]
+install_requires = ["redis", "six", "flask-helper"]
 
 
 entry_points = {'console_scripts': [

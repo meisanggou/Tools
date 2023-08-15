@@ -14,7 +14,7 @@ def is_string(s):
     return True
 
 
-class SimpleString(unicode):
+class SimpleString(str):
 
     def __eq__(self, other):
         if is_string(other) is False:

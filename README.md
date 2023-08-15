@@ -1,6 +1,10 @@
 Tools
 jingyun tools
 
+## 2.0.0
+移除JYFlask._falsk JYFlask._cross_domain JYFlaskCrossDomain
+只支持python3
+
 ## 1.9.8
 打卡时判断is_running
 

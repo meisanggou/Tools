@@ -28,5 +28,6 @@ def main():
     app.work(daemon=args.daemon)
 
 if __name__ == "__main__":
-    main()
+    from JYTools.JYWorker import worker_run
+    worker_run(DAGWorker, '')
 

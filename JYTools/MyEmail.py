@@ -7,7 +7,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import smtplib
 from multiprocessing.pool import ThreadPool
-import ConfigParser
+import configparser
 
 __author__ = 'ZhouHeng'
 
@@ -27,18 +27,18 @@ class EmailManager(object):
         self.t_pool = ThreadPool(thread_num)
 
     def _int_app(self, conf_path):
-        config = ConfigParser.ConfigParser()
+        config = configparser.ConfigParser()
         config.read(conf_path)
         section = "admin"
         try:
             self.m_user = config.get(section, "email")
             self.m_password = config.get(section, "password")
             self._send = self._remote_send
-        except ConfigParser.Error:
+        except configparser.Error:
             self._send = self._local_send
 
     def encoded(self, s, encoding="utf-8"):
-        return s.encode(encoding) if isinstance(s, unicode) else s
+        return s.encode(encoding) if isinstance(s, str) else s
 
     def _remote_send(self, to, sub, msg):
         try:
@@ -54,7 +54,7 @@ class EmailManager(object):
             smtp.sendmail(self.m_user, to, msg.as_string())
             smtp.quit()
             return True
-        except Exception, e:
+        except Exception as e:
             error_message = "MyEmailManager send_mail error %s" % str(e)
             print(error_message)
             return False
@@ -70,7 +70,7 @@ class EmailManager(object):
             smtp.sendmail(self.m_user, to, msg.as_string())
             smtp.quit()
             return True
-        except Exception, e:
+        except Exception as e:
             error_message = "MyEmailManager send_mail error %s" % str(e)
             print(error_message)
             return False
